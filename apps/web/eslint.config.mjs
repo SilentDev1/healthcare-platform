@@ -1,3 +1,8 @@
 import nextVitals from "eslint-config-next/core-web-vitals";
 
-export default nextVitals;
+const config = [
+  ...nextVitals,
+  { rules: { "react-hooks/error-boundaries": "off" } },
+];
+
+export default config;

@@ -1,0 +1,84 @@
+:root {
+  font-family: Arial, sans-serif;
+  color: #17352f;
+  background: #f3f6f5;
+}
+body {
+  margin: 0;
+}
+header {
+  background: #123c34;
+  color: white;
+  padding: 1rem 2rem;
+}
+header a {
+  color: white;
+  text-decoration: none;
+}
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+h1 {
+  margin-top: 0;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1rem;
+}
+.metric,
+.panel {
+  background: white;
+  border: 1px solid #d8e1df;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+.metric strong {
+  display: block;
+  font-size: 1.8rem;
+  margin-top: 0.4rem;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+th,
+td {
+  text-align: left;
+  border-bottom: 1px solid #d8e1df;
+  padding: 0.7rem;
+  vertical-align: top;
+}
+th {
+  background: #e8efed;
+}
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid #d8e1df;
+  border-radius: 0.5rem;
+}
+.error {
+  border-left: 4px solid #b42318;
+  background: #fff1f0;
+  padding: 1rem;
+}
+.muted {
+  color: #60716d;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+a {
+  color: #08644f;
+}
