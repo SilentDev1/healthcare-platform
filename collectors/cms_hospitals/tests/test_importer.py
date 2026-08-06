@@ -18,7 +18,7 @@ def test_import_filters_nh_tracks_rejections_and_is_idempotent(tmp_path: Path) -
         cms_rejected_data_dir=tmp_path / "rejected", cms_raw_data_dir=tmp_path / "raw"
     )
     with sessions() as session:
-        first = run_import(session, settings, source_path=FIXTURE, source_url="fixture://cms")
+        first = run_import(session, settings, source_path=FIXTURE)
         assert (first.rows_read, first.rows_inserted, first.rows_rejected) == (4, 2, 1)
         assert session.scalar(select(func.count(Facility.id))) == 2
         facility = session.scalar(
@@ -26,9 +26,12 @@ def test_import_filters_nh_tracks_rejections_and_is_idempotent(tmp_path: Path) -
         )
         assert facility is not None
         assert facility.locations[0].state == "NH"
-        second = run_import(session, settings, source_path=FIXTURE, source_url="fixture://cms")
+        second = run_import(session, settings, source_path=FIXTURE)
         assert second.rows_inserted == 0
         assert second.rows_updated == 2
         assert session.scalar(select(func.count(Facility.id))) == 2
         assert session.scalar(select(func.count(SourceFile.id))) == 2
         assert session.scalar(select(func.count(ImportRun.id))) == 2
+        source_urls = session.scalars(select(SourceFile.source_url)).all()
+        assert source_urls == [FIXTURE.resolve().as_uri(), FIXTURE.resolve().as_uri()]
+    engine.dispose()

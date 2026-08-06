@@ -59,6 +59,10 @@ def setup_function() -> None:
         session.add(facility)
 
 
+def teardown_module() -> None:
+    engine.dispose()
+
+
 def test_health_and_ready() -> None:
     assert client.get("/health").json() == {"status": "ok"}
     assert client.get("/ready").json() == {"status": "ready"}

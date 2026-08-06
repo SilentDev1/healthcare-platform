@@ -10,6 +10,7 @@ __pycache__/
 node_modules/
 .next/
 coverage/
+.coverage*
 dist/
 data/raw/
 data/rejected/

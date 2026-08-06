@@ -11,6 +11,9 @@ Run offline validation:
 uv run python -m collectors.cms_hospitals --source-file data/fixtures/cms_hospitals.csv
 ```
 
+Local inputs record their absolute `file://` URI as the source URL. Supplying `--source-url`
+overrides that value when a different canonical source identifier is required.
+
 Run the configured source:
 
 ```bash

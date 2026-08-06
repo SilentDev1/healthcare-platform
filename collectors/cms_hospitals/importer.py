@@ -78,7 +78,9 @@ def run_import(
     source_path: Path | None = None,
     source_url: str | None = None,
 ) -> ImportSummary:
-    url = source_url or settings.cms_hospitals_source_url
+    url = source_url or (
+        source_path.resolve().as_uri() if source_path else settings.cms_hospitals_source_url
+    )
     result = (
         _local_result(source_path)
         if source_path
