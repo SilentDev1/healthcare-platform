@@ -11,26 +11,43 @@ from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.sql.elements import ColumnElement
 
 from packages.database import (
+    DataHealthEvaluation,
+    DataHealthRule,
+    EntityDataHealthScore,
     Facility,
+    FacilityIdentityCandidate,
     FacilityLocation,
     FacilityQualityMeasureObservation,
     FacilitySourceObservation,
     ImportRun,
+    PipelineStatusSnapshot,
+    Procedure,
+    ProcedureAlias,
+    ProcedureCategory,
     QualityMeasureDefinition,
     SourceFile,
     UnmatchedSourceRecord,
     get_session,
 )
+from packages.search import search
 from services.api.app.logging import configure_logging
 from services.api.app.schemas import (
     AdminDashboardResponse,
     AdminFacilityDetailResponse,
     AdminFacilityPage,
+    DataHealthPage,
+    FacilityHealthPage,
     FacilityPage,
     FacilityQualityPage,
     FacilityResponse,
+    IdentityCandidatePage,
     ImportRunPage,
+    PipelineStatusPage,
+    ProcedureCategoryResponse,
+    ProcedurePage,
+    ProcedureResponse,
     QualityMeasurePage,
+    SearchPage,
     SourceFilePage,
     StatusResponse,
     UnmatchedRecordPage,
@@ -476,3 +493,285 @@ def admin_facility_quality(
     category: Annotated[str | None, Query(max_length=100)] = None,
 ) -> FacilityQualityPage:
     return facility_quality(facility_id, session, page, page_size, category)
+
+
+@app.get("/api/v1/search", response_model=SearchPage, tags=["search"])
+def unified_search(
+    session: Annotated[Session, Depends(get_session)],
+    q: Annotated[str, Query(min_length=2, max_length=100)],
+    entity_type: Annotated[
+        str | None, Query(pattern="^(facility|procedure|procedure_category)$")
+    ] = None,
+    state_code: Annotated[str | None, Query(alias="state", min_length=2, max_length=2)] = None,
+    city: Annotated[str | None, Query(max_length=100)] = None,
+    postal_code: Annotated[str | None, Query(min_length=5, max_length=10)] = None,
+    category: Annotated[str | None, Query(max_length=100)] = None,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=50)] = 20,
+) -> SearchPage:
+    started = time.perf_counter()
+    all_items = search(session, q, entity_type, state_code, city, postal_code, category)
+    items = all_items[(page - 1) * page_size : page * page_size]
+    return SearchPage(
+        items=[item.__dict__ for item in items],
+        page=page,
+        page_size=page_size,
+        total=len(all_items),
+        elapsed_ms=round((time.perf_counter() - started) * 1000, 2),
+    )
+
+
+@app.get("/api/v1/search/suggestions", response_model=list[dict[str, object]], tags=["search"])
+def search_suggestions(
+    session: Annotated[Session, Depends(get_session)],
+    q: Annotated[str, Query(min_length=2, max_length=100)],
+    entity_type: Annotated[
+        str | None, Query(pattern="^(facility|procedure|procedure_category)$")
+    ] = None,
+    state_code: Annotated[str | None, Query(alias="state", min_length=2, max_length=2)] = None,
+    limit: Annotated[int, Query(ge=1, le=20)] = 8,
+) -> list[dict[str, object]]:
+    return [
+        {
+            "entity_type": item.entity_type,
+            "entity_id": item.entity_id,
+            "title": item.title,
+            "match_reason": item.match_reason,
+        }
+        for item in search(session, q, entity_type, state_code)[:limit]
+    ]
+
+
+def _procedure_response(session: Session, procedure: Procedure) -> ProcedureResponse:
+    category = session.get(ProcedureCategory, procedure.category_id)
+    if category is None:
+        raise RuntimeError("procedure category missing")
+    aliases = session.scalars(
+        select(ProcedureAlias.alias_name)
+        .where(ProcedureAlias.procedure_id == procedure.id, ProcedureAlias.active.is_(True))
+        .order_by(ProcedureAlias.alias_name)
+    ).all()
+    return ProcedureResponse(
+        id=procedure.id,
+        slug=procedure.slug,
+        consumer_name=procedure.consumer_name,
+        short_description=procedure.short_description,
+        long_description=procedure.long_description,
+        category=ProcedureCategoryResponse.model_validate(category),
+        service_setting=procedure.service_setting,
+        complexity=procedure.complexity,
+        shoppable=procedure.shoppable,
+        aliases=list(aliases),
+    )
+
+
+@app.get("/api/v1/procedures", response_model=ProcedurePage, tags=["procedures"])
+def list_procedures(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    category: Annotated[str | None, Query(max_length=100)] = None,
+) -> ProcedurePage:
+    statement = select(Procedure).join(ProcedureCategory).where(Procedure.active.is_(True))
+    count = (
+        select(func.count(Procedure.id)).join(ProcedureCategory).where(Procedure.active.is_(True))
+    )
+    if category:
+        statement, count = (
+            statement.where(ProcedureCategory.slug == category),
+            count.where(ProcedureCategory.slug == category),
+        )
+    rows = session.scalars(
+        statement.order_by(Procedure.consumer_name, Procedure.id)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    return ProcedurePage(
+        items=[_procedure_response(session, item) for item in rows],
+        page=page,
+        page_size=page_size,
+        total=session.scalar(count) or 0,
+    )
+
+
+@app.get("/api/v1/procedures/{slug}", response_model=ProcedureResponse, tags=["procedures"])
+def get_procedure(
+    slug: str, session: Annotated[Session, Depends(get_session)]
+) -> ProcedureResponse:
+    item = session.scalar(
+        select(Procedure).where(Procedure.slug == slug, Procedure.active.is_(True))
+    )
+    if item is None:
+        raise HTTPException(status_code=404, detail="procedure not found")
+    return _procedure_response(session, item)
+
+
+@app.get(
+    "/api/v1/procedure-categories",
+    response_model=list[ProcedureCategoryResponse],
+    tags=["procedures"],
+)
+def list_procedure_categories(
+    session: Annotated[Session, Depends(get_session)],
+) -> list[ProcedureCategory]:
+    return list(
+        session.scalars(
+            select(ProcedureCategory)
+            .where(ProcedureCategory.active.is_(True))
+            .order_by(ProcedureCategory.sort_order, ProcedureCategory.name)
+        )
+    )
+
+
+@app.get("/api/v1/admin/identity-candidates", response_model=IdentityCandidatePage, tags=["admin"])
+def identity_candidates(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    candidate_status: Annotated[str | None, Query(alias="status", max_length=30)] = None,
+) -> IdentityCandidatePage:
+    filters = [FacilityIdentityCandidate.status == candidate_status] if candidate_status else []
+    items = session.scalars(
+        select(FacilityIdentityCandidate)
+        .where(*filters)
+        .order_by(desc(FacilityIdentityCandidate.created_at), FacilityIdentityCandidate.id)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    return IdentityCandidatePage(
+        items=list(items),
+        page=page,
+        page_size=page_size,
+        total=session.scalar(select(func.count(FacilityIdentityCandidate.id)).where(*filters)) or 0,
+    )
+
+
+@app.get(
+    "/api/v1/admin/identity-candidates/{candidate_id}",
+    response_model=dict[str, object],
+    tags=["admin"],
+)
+def identity_candidate_detail(
+    candidate_id: uuid.UUID, session: Annotated[Session, Depends(get_session)]
+) -> dict[str, object]:
+    item = session.get(FacilityIdentityCandidate, candidate_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="identity candidate not found")
+    return {
+        "id": item.id,
+        "status": item.status,
+        "reason": item.reason,
+        "raw_payload": item.raw_payload,
+        "review_workflow": "read_only_in_phase_3",
+    }
+
+
+@app.get("/api/v1/admin/data-health", response_model=DataHealthPage, tags=["admin"])
+def data_health(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    severity: Annotated[str | None, Query(pattern="^(info|warning|error|critical)$")] = None,
+    evaluation_status: Annotated[
+        str | None, Query(alias="status", pattern="^(pass|warning|fail|skipped)$")
+    ] = None,
+    entity_type: Annotated[str | None, Query(max_length=40)] = None,
+) -> DataHealthPage:
+    filters = []
+    if severity:
+        filters.append(DataHealthRule.severity == severity)
+    if evaluation_status:
+        filters.append(DataHealthEvaluation.status == evaluation_status)
+    if entity_type:
+        filters.append(DataHealthEvaluation.entity_type == entity_type)
+    rows = session.execute(
+        select(DataHealthEvaluation, DataHealthRule)
+        .join(DataHealthRule)
+        .where(*filters)
+        .order_by(desc(DataHealthEvaluation.evaluated_at), DataHealthEvaluation.id)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    items = [
+        {
+            "id": evaluation.id,
+            "rule_key": rule.rule_key,
+            "rule_name": rule.name,
+            "severity": rule.severity,
+            "entity_type": evaluation.entity_type,
+            "entity_id": evaluation.entity_id,
+            "status": evaluation.status,
+            "score": evaluation.score,
+            "message": evaluation.message,
+            "details": evaluation.details,
+            "evaluated_at": evaluation.evaluated_at,
+        }
+        for evaluation, rule in rows
+    ]
+    total = (
+        session.scalar(
+            select(func.count(DataHealthEvaluation.id)).join(DataHealthRule).where(*filters)
+        )
+        or 0
+    )
+    return DataHealthPage(items=items, page=page, page_size=page_size, total=total)
+
+
+@app.get("/api/v1/admin/data-health/facilities", response_model=FacilityHealthPage, tags=["admin"])
+def facility_health(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    minimum_score: Annotated[float | None, Query(ge=0, le=100)] = None,
+    maximum_score: Annotated[float | None, Query(ge=0, le=100)] = None,
+) -> FacilityHealthPage:
+    filters = [EntityDataHealthScore.entity_type == "facility"]
+    if minimum_score is not None:
+        filters.append(EntityDataHealthScore.overall_score >= minimum_score)
+    if maximum_score is not None:
+        filters.append(EntityDataHealthScore.overall_score <= maximum_score)
+    items = session.scalars(
+        select(EntityDataHealthScore)
+        .where(*filters)
+        .order_by(EntityDataHealthScore.overall_score, EntityDataHealthScore.entity_id)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    return FacilityHealthPage(
+        items=list(items),
+        page=page,
+        page_size=page_size,
+        total=session.scalar(select(func.count(EntityDataHealthScore.id)).where(*filters)) or 0,
+    )
+
+
+@app.get("/api/v1/admin/data-health/sources", response_model=DataHealthPage, tags=["admin"])
+def source_health(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+) -> DataHealthPage:
+    return data_health(session, page, page_size, None, None, "source")
+
+
+@app.get("/api/v1/admin/pipeline-status", response_model=PipelineStatusPage, tags=["admin"])
+def pipeline_status(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    current_status: Annotated[str | None, Query(alias="status", max_length=30)] = None,
+) -> PipelineStatusPage:
+    filters = [PipelineStatusSnapshot.current_status == current_status] if current_status else []
+    items = session.scalars(
+        select(PipelineStatusSnapshot)
+        .where(*filters)
+        .order_by(PipelineStatusSnapshot.importer_name, desc(PipelineStatusSnapshot.calculated_at))
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    return PipelineStatusPage(
+        items=list(items),
+        page=page,
+        page_size=page_size,
+        total=session.scalar(select(func.count(PipelineStatusSnapshot.id)).where(*filters)) or 0,
+    )

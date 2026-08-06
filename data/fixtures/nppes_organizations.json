@@ -1,0 +1,49 @@
+{
+  "result_count": 3,
+  "results": [
+    {
+      "number": "1234567893",
+      "basic": { "organization_name": "CONCORD HOSPITAL" },
+      "addresses": [
+        {
+          "address_purpose": "LOCATION",
+          "address_1": "250 PLEASANT ST",
+          "city": "CONCORD",
+          "state": "NH",
+          "postal_code": "03301",
+          "telephone_number": "6032252711"
+        }
+      ],
+      "taxonomies": [{ "code": "282N00000X" }]
+    },
+    {
+      "number": "1234567894",
+      "basic": { "organization_name": "ALICE PECK DAY MEMORIAL HOSPITAL" },
+      "addresses": [
+        {
+          "address_purpose": "LOCATION",
+          "address_1": "10 ALICE PECK DAY DRIVE",
+          "city": "LEBANON",
+          "state": "NH",
+          "postal_code": "03766",
+          "telephone_number": "6034483121"
+        }
+      ],
+      "taxonomies": [{ "code": "282N00000X" }]
+    },
+    {
+      "number": "1234567895",
+      "basic": { "organization_name": "UNMATCHED IMAGING CENTER" },
+      "addresses": [
+        {
+          "address_purpose": "LOCATION",
+          "address_1": "99 UNKNOWN ROAD",
+          "city": "NASHUA",
+          "state": "NH",
+          "postal_code": "03060"
+        }
+      ],
+      "taxonomies": [{ "code": "261QR0200X" }]
+    }
+  ]
+}

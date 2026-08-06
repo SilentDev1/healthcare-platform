@@ -20,7 +20,7 @@ class FacilityLocationResponse(BaseModel):
 class FacilityResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID
-    cms_certification_number: str
+    cms_certification_number: str | None
     legal_name: str
     display_name: str
     facility_type: str | None
@@ -153,7 +153,7 @@ class UnmatchedRecordPage(PageMetadata):
 
 class AdminFacilityResponse(BaseModel):
     id: uuid.UUID
-    cms_certification_number: str
+    cms_certification_number: str | None
     display_name: str
     legal_name: str
     facility_type: str | None
@@ -186,3 +186,128 @@ class AdminDashboardResponse(BaseModel):
     facilities_with_quality: int
     facilities_without_quality: int
     latest_source_downloaded_at: datetime | None
+
+
+class SearchResultResponse(BaseModel):
+    entity_type: str
+    entity_id: uuid.UUID
+    title: str
+    subtitle: str
+    location: str | None
+    score: float
+    match_reason: str
+    matched_term: str
+    metadata: dict[str, object]
+
+
+class SearchPage(PageMetadata):
+    items: list[SearchResultResponse]
+    elapsed_ms: float
+
+
+class ProcedureCategoryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: uuid.UUID
+    parent_id: uuid.UUID | None
+    slug: str
+    name: str
+    description: str
+    sort_order: int
+
+
+class ProcedureResponse(BaseModel):
+    id: uuid.UUID
+    slug: str
+    consumer_name: str
+    short_description: str
+    long_description: str
+    category: ProcedureCategoryResponse
+    service_setting: str
+    complexity: str
+    shoppable: bool
+    aliases: list[str]
+    billing_notice: str = "Final treatment and billing may involve multiple services."
+
+
+class ProcedurePage(PageMetadata):
+    items: list[ProcedureResponse]
+
+
+class IdentityCandidateResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: uuid.UUID
+    source_file_id: uuid.UUID
+    import_run_id: uuid.UUID
+    source_record_identifier: str
+    candidate_facility_id: uuid.UUID | None
+    supplied_name: str | None
+    supplied_address: str | None
+    supplied_city: str | None
+    supplied_state: str | None
+    supplied_postal_code: str | None
+    supplied_phone: str | None
+    supplied_identifiers: dict[str, object]
+    deterministic_method: str
+    score: Decimal
+    reason: str
+    status: str
+    raw_payload: dict[str, object]
+    created_at: datetime
+
+
+class IdentityCandidatePage(PageMetadata):
+    items: list[IdentityCandidateResponse]
+
+
+class DataHealthEvaluationResponse(BaseModel):
+    id: uuid.UUID
+    rule_key: str
+    rule_name: str
+    severity: str
+    entity_type: str
+    entity_id: uuid.UUID | None
+    status: str
+    score: Decimal
+    message: str
+    details: dict[str, object]
+    evaluated_at: datetime
+
+
+class DataHealthPage(PageMetadata):
+    items: list[DataHealthEvaluationResponse]
+
+
+class FacilityHealthResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    entity_id: uuid.UUID
+    completeness_score: Decimal
+    freshness_score: Decimal
+    validity_score: Decimal
+    provenance_score: Decimal
+    overall_score: Decimal
+    details: dict[str, object]
+    calculated_at: datetime
+
+
+class FacilityHealthPage(PageMetadata):
+    items: list[FacilityHealthResponse]
+
+
+class PipelineStatusResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: uuid.UUID
+    importer_name: str
+    source_type: str
+    latest_import_run_id: uuid.UUID | None
+    latest_success_at: datetime | None
+    latest_failure_at: datetime | None
+    current_status: str
+    freshness_status: str
+    expected_refresh_interval_hours: int | None
+    records_last_imported: int | None
+    error_summary: str | None
+    calculated_at: datetime
+
+
+class PipelineStatusPage(PageMetadata):
+    items: list[PipelineStatusResponse]

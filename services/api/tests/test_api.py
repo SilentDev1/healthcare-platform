@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from packages.data_health import evaluate_data_health
 from packages.database import (
     Base,
     Facility,
@@ -19,6 +20,8 @@ from packages.database import (
 )
 from packages.database.models import ImportStatus, SourceStatus
 from packages.database.session import get_session
+from packages.search import rebuild_index
+from scripts.seed_procedure_catalog import seed_catalog
 from services.api.app.main import app
 
 engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
@@ -120,6 +123,10 @@ def setup_function() -> None:
                 ),
             ]
         )
+        session.flush()
+        seed_catalog(session)
+        rebuild_index(session)
+        evaluate_data_health(session)
 
 
 def teardown_module() -> None:
@@ -172,3 +179,27 @@ def test_admin_read_endpoints() -> None:
     assert detail.json()["quality_measure_count"] == 1
     quality = client.get("/api/v1/admin/facilities/00000000-0000-0000-0000-000000000001/quality")
     assert quality.status_code == 200
+
+
+def test_phase_3_public_and_admin_endpoints() -> None:
+    procedures = client.get("/api/v1/procedures?category=imaging")
+    assert procedures.status_code == 200
+    assert procedures.json()["total"] >= 10
+    detail = client.get("/api/v1/procedures/mri-brain-without-contrast")
+    assert detail.status_code == 200
+    assert "multiple services" in detail.json()["billing_notice"]
+    exact = client.get("/api/v1/search?q=MRI%20brain%20without%20contrast")
+    assert exact.status_code == 200
+    assert exact.json()["items"][0]["match_reason"] == "exact_primary"
+    assert client.get("/api/v1/search?q=Concor&state=NH").json()["total"] == 1
+    assert client.get("/api/v1/search?q=03060").json()["total"] == 0
+    assert client.get("/api/v1/search/suggestions?q=MRI").status_code == 200
+    for path in (
+        "/api/v1/procedure-categories",
+        "/api/v1/admin/identity-candidates",
+        "/api/v1/admin/data-health",
+        "/api/v1/admin/data-health/facilities",
+        "/api/v1/admin/data-health/sources",
+        "/api/v1/admin/pipeline-status",
+    ):
+        assert client.get(path).status_code == 200
