@@ -1,0 +1,4 @@
+Facility ID,Facility Name,State,Measure ID,Measure Name,Score,Footnote,Start Date,End Date
+300001,CONCORD GENERAL HOSPITAL,NH,OP_18B,Average time in emergency department,142,,01/01/2024,12/31/2024
+300001,CONCORD GENERAL HOSPITAL,NH,GMCS,Global Malnutrition Composite Score,Not Available,5,01/01/2024,12/31/2024
+

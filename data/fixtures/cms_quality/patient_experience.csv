@@ -1,0 +1,4 @@
+Facility ID,Facility Name,State,HCAHPS Measure ID,HCAHPS Question,Patient Survey Star Rating,Patient Survey Star Rating Footnote,Start Date,End Date
+300001,CONCORD GENERAL HOSPITAL,NH,H_HSP_RATING_STAR_RATING,Overall patient experience star rating,4,,07/01/2024,06/30/2025
+300001,CONCORD GENERAL HOSPITAL,NH,H_COMP_1_A_P,Nurse communication percent,82,,07/01/2024,06/30/2025
+
