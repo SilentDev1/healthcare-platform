@@ -1,5 +1,19 @@
 # Local development
 
+After `make db-up` and `make migrate`, initialize Phase 3 with:
+
+```bash
+uv run python -m collectors.nppes_organizations --source-file data/fixtures/nppes_organizations.json
+make seed-procedure-catalog
+make rebuild-search-index
+make evaluate-data-health
+make api
+```
+
+Run `make web` on port 3000 and `make admin` on port 3001. A clean verification uses
+`make verify-phase-3`. Live NPPES verification is optional and bounded; the offline fixture is
+the reproducible default. PostgreSQL 17 is required for migration/search verification.
+
 Install Docker, Python 3.12, uv, Node.js 22, and npm. Then:
 
 ```bash

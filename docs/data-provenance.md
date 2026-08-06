@@ -1,5 +1,12 @@
 # Data provenance
 
+Phase 3 sources follow the existing chain: `source_files` records URL, archive path, checksum,
+size, parser version, and timestamps; `import_runs` records processing outcomes; immutable
+observations retain source records. Facility identifiers and aliases may additionally point to
+their source file and observation. Identity candidates retain raw payloads and decisions append
+review evidence. A nullable source pointer on the canonical facility is only a compatibility
+convenience and must not be interpreted as exclusive ownership by one source.
+
 Every imported facility references a `source_files` row containing the official source URL,
 download timestamp, source publication timestamp when available, SHA-256 checksum, HTTP
 metadata, file size, storage path, and parser version. Each execution also creates an

@@ -1,4 +1,4 @@
-.PHONY: setup dev db-up db-down migrate test lint typecheck import-cms-hospitals import-cms-quality api admin web build verify-phase-2
+.PHONY: setup dev db-up db-down migrate test lint typecheck import-cms-hospitals import-cms-quality import-nppes-organizations seed-facility-identity seed-procedure-catalog rebuild-search-index evaluate-data-health api admin web build verify-phase-2 verify-phase-3
 
 setup:
 	command -v uv >/dev/null || (echo "Install uv: https://docs.astral.sh/uv/" && exit 1)
@@ -40,6 +40,21 @@ import-cms-hospitals:
 import-cms-quality:
 	uv run python -m collectors.cms_quality
 
+import-nppes-organizations:
+	uv run python -m collectors.nppes_organizations
+
+seed-facility-identity:
+	uv run python -m scripts.seed_facility_identity
+
+seed-procedure-catalog:
+	uv run python -m scripts.seed_procedure_catalog
+
+rebuild-search-index:
+	uv run python -m scripts.rebuild_search_index
+
+evaluate-data-health:
+	uv run python -m scripts.evaluate_data_health
+
 api:
 	uv run uvicorn services.api.app.main:app --reload --port $${API_PORT:-8000}
 
@@ -55,3 +70,16 @@ verify-phase-2: migrate
 	$(MAKE) lint
 	$(MAKE) typecheck
 	$(MAKE) build
+
+verify-phase-3: migrate
+	uv run python -m scripts.seed_facility_identity
+	uv run python -m collectors.nppes_organizations --source-file data/fixtures/nppes_organizations.json
+	uv run python -m scripts.seed_procedure_catalog
+	uv run python -m scripts.rebuild_search_index
+	uv run python -m scripts.evaluate_data_health
+	uv run python -m scripts.benchmark_search
+	uv run pytest --cov=services --cov=collectors --cov=packages --cov=scripts --cov-report=term-missing
+	$(MAKE) lint
+	$(MAKE) typecheck
+	$(MAKE) build
+	npm audit --audit-level=high

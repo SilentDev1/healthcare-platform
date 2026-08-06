@@ -1,5 +1,17 @@
 # Architecture
 
+## Phase 3 platform layer
+
+Facility identity is source-neutral: identifiers, aliases, relationships, candidates, and
+decisions reference canonical facilities and preserve their own provenance. The legacy
+`facilities.source_file_id` remains a nullable latest-source compatibility pointer; matching
+does not depend on it. Immutable source observations remain the authoritative lineage.
+
+The consumer procedure catalog separates original descriptions from governed code mappings and
+bundles. A PostgreSQL-owned search projection combines facilities, aliases, geography,
+procedures, and categories. Data-health rules produce replaceable operational snapshots without
+mutating imported evidence. FastAPI exposes bounded read APIs consumed by both Next.js apps.
+
 ## Scope
 
 Phase 1 is a modular monorepo with two Next.js clients, a FastAPI service, source-specific
