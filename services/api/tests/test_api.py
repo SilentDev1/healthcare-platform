@@ -6,8 +6,18 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from packages.database import Base, Facility, FacilityLocation, SourceFile
-from packages.database.models import SourceStatus
+from packages.database import (
+    Base,
+    Facility,
+    FacilityLocation,
+    FacilityQualityMeasureObservation,
+    FacilitySourceObservation,
+    ImportRun,
+    QualityMeasureDefinition,
+    SourceFile,
+    UnmatchedSourceRecord,
+)
+from packages.database.models import ImportStatus, SourceStatus
 from packages.database.session import get_session
 from services.api.app.main import app
 
@@ -57,6 +67,59 @@ def setup_function() -> None:
             )
         )
         session.add(facility)
+        session.flush()
+        run = ImportRun(
+            importer_name="cms_quality:overall_rating",
+            status=ImportStatus.COMPLETED,
+            source_file_id=source.id,
+            rows_read=1,
+            rows_inserted=1,
+        )
+        definition = QualityMeasureDefinition(
+            cms_measure_id="OVERALL_RATING",
+            measure_name="Overall hospital rating",
+            consumer_name="Overall hospital rating",
+            category="overall_rating",
+            unit="stars",
+            directionality="higher_is_better",
+            data_type="numeric",
+        )
+        session.add_all([run, definition])
+        session.flush()
+        session.add_all(
+            [
+                FacilitySourceObservation(
+                    facility_id=facility.id,
+                    source_file_id=source.id,
+                    import_run_id=run.id,
+                    source_record_identifier="300001|OVERALL_RATING||",
+                    source_payload_hash="b" * 64,
+                    raw_payload={"Facility ID": "300001", "rating": "4"},
+                    observed_at=source.downloaded_at,
+                ),
+                FacilityQualityMeasureObservation(
+                    facility_id=facility.id,
+                    quality_measure_definition_id=definition.id,
+                    source_file_id=source.id,
+                    import_run_id=run.id,
+                    source_record_identifier="300001|OVERALL_RATING||",
+                    raw_value="4",
+                    numeric_value=4,
+                    text_value="4",
+                    score="4",
+                    observed_at=source.downloaded_at,
+                ),
+                UnmatchedSourceRecord(
+                    source_file_id=source.id,
+                    import_run_id=run.id,
+                    source_record_identifier="399999|OVERALL_RATING||",
+                    supplied_cms_certification_number="399999",
+                    supplied_facility_name="Unmatched Hospital",
+                    reason_unmatched="No facility with exact CMS certification number",
+                    raw_payload={"Facility ID": "399999"},
+                ),
+            ]
+        )
 
 
 def teardown_module() -> None:
@@ -80,3 +143,32 @@ def test_facility_detail_and_not_found() -> None:
     assert found.status_code == 200
     missing = client.get("/api/v1/facilities/00000000-0000-0000-0000-000000000002")
     assert missing.status_code == 404
+
+
+def test_public_quality_endpoints() -> None:
+    measures = client.get("/api/v1/quality-measures?category=overall_rating")
+    assert measures.status_code == 200
+    assert measures.json()["items"][0]["cms_measure_id"] == "OVERALL_RATING"
+    quality = client.get("/api/v1/facilities/00000000-0000-0000-0000-000000000001/quality")
+    assert quality.status_code == 200
+    assert quality.json()["items"][0]["score"] == "4"
+
+
+def test_admin_read_endpoints() -> None:
+    dashboard = client.get("/api/v1/admin/dashboard")
+    assert dashboard.status_code == 200
+    assert dashboard.json()["facilities_with_quality"] == 1
+    for path in (
+        "/api/v1/admin/import-runs?status=COMPLETED",
+        "/api/v1/admin/source-files?source_type=csv",
+        "/api/v1/admin/unmatched-records?status=pending",
+        "/api/v1/admin/facilities?state=NH",
+    ):
+        response = client.get(path)
+        assert response.status_code == 200
+        assert response.json()["total"] == 1
+    detail = client.get("/api/v1/admin/facilities/00000000-0000-0000-0000-000000000001")
+    assert detail.status_code == 200
+    assert detail.json()["quality_measure_count"] == 1
+    quality = client.get("/api/v1/admin/facilities/00000000-0000-0000-0000-000000000001/quality")
+    assert quality.status_code == 200
