@@ -42,3 +42,26 @@ export interface QualityPage {
   }>;
   total: number;
 }
+export interface SearchResult {
+  entity_type: string;
+  entity_id: string;
+  title: string;
+  subtitle: string;
+  location: string | null;
+  score: number;
+  match_reason: string;
+  metadata: { slug?: string; category?: string };
+}
+export interface Procedure {
+  id: string;
+  slug: string;
+  consumer_name: string;
+  short_description: string;
+  long_description: string;
+  service_setting: string;
+  complexity: string;
+  shoppable: boolean;
+  aliases: string[];
+  category: { slug: string; name: string; description: string };
+  billing_notice: string;
+}

@@ -7,10 +7,64 @@
 body {
   margin: 0;
 }
+header {
+  background: #075b47;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+}
+header a {
+  color: white;
+  background: none;
+  margin: 0;
+  padding: 0;
+  font-weight: 700;
+}
+nav {
+  display: flex;
+  gap: 1rem;
+}
 main {
-  max-width: 760px;
-  margin: 16vh auto;
+  max-width: 1000px;
+  margin: 3rem auto;
   padding: 3rem;
+}
+.search-form {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+}
+.search-form input {
+  flex: 1;
+  padding: 0.9rem;
+  border: 1px solid #9fb3ae;
+  border-radius: 0.5rem;
+}
+.search-form button {
+  padding: 0.8rem 1rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: #087f5b;
+  color: white;
+}
+.cards {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.card {
+  background: white;
+  border: 1px solid #d7e1de;
+  border-radius: 0.6rem;
+  padding: 1.2rem;
+}
+.card a {
+  margin: 0;
+  padding: 0;
+  background: none;
+  color: #087f5b;
+  font-weight: 700;
 }
 h1 {
   font-size: clamp(2.5rem, 7vw, 5rem);

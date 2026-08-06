@@ -64,6 +64,52 @@ export interface QualityMeasure {
   unit: string | null;
   directionality: string;
 }
+export interface SearchResult {
+  entity_type: string;
+  entity_id: string;
+  title: string;
+  subtitle: string;
+  score: number;
+  match_reason: string;
+  matched_term: string;
+}
+export interface Procedure {
+  id: string;
+  slug: string;
+  consumer_name: string;
+  service_setting: string;
+  category: { name: string };
+  aliases: string[];
+}
+export interface IdentityCandidate {
+  id: string;
+  supplied_name: string | null;
+  supplied_identifiers: Record<string, unknown>;
+  deterministic_method: string;
+  score: string;
+  reason: string;
+  status: string;
+}
+export interface HealthEvaluation {
+  id: string;
+  rule_name: string;
+  severity: string;
+  entity_type: string;
+  status: string;
+  score: string;
+  message: string;
+}
+export interface Pipeline {
+  id: string;
+  importer_name: string;
+  source_type: string;
+  current_status: string;
+  freshness_status: string;
+  latest_success_at: string | null;
+  latest_failure_at: string | null;
+  records_last_imported: number | null;
+  error_summary: string | null;
+}
 
 export function formatDate(value: string | null): string {
   return value

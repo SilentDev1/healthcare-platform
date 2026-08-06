@@ -19,6 +19,13 @@ export default function Layout({
             <Link href="/source-files">Source files</Link>
             <Link href="/unmatched-records">Unmatched records</Link>
             <Link href="/quality-measures">Quality measures</Link>
+            <Link href="/search">Search</Link>
+            <Link href="/procedures">Procedures</Link>
+            <Link href="/identities">Facility identities</Link>
+            <Link href="/identity-candidates">Identity candidates</Link>
+            <Link href="/data-health">Data health</Link>
+            <Link href="/pipeline-status">Pipelines</Link>
+            <Link href="/search-index">Search index</Link>
           </nav>
         </header>
         {children}

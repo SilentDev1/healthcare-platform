@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import "./styles.css";
 export const metadata: Metadata = {
   title: "CareCompare",
@@ -9,7 +10,17 @@ export default function Layout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <header>
+          <Link href="/">CareCompare</Link>
+          <nav aria-label="Main navigation">
+            <Link href="/search?q=hospital">Search</Link>
+            <Link href="/facilities">Facilities</Link>
+            <Link href="/procedures">Procedures</Link>
+          </nav>
+        </header>
+        {children}
+      </body>
     </html>
   );
 }
