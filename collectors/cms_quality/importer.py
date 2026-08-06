@@ -129,7 +129,7 @@ def _normalized(row: Mapping[str, Any], dataset: QualityDataset) -> dict[str, st
     category = dataset.category
     if measure_id == "MORT_30_AMI":
         category = "mortality"
-    elif measure_id == "PSI_90_SAFETY":
+    elif measure_id == "PSI_90":
         category = "patient_safety"
     return {
         "ccn": ccn,
@@ -171,6 +171,7 @@ def run_quality_imports(
                 SourceFile.checksum_sha256 == result.checksum_sha256,
                 SourceFile.parser_version == settings.cms_quality_parser_version,
                 SourceFile.source_name == dataset.name,
+                SourceFile.source_type == "cms_quality_csv",
                 SourceFile.status == SourceStatus.COMPLETED,
             )
         )

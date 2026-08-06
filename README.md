@@ -17,14 +17,24 @@ make import-cms-hospitals
 make api
 ```
 
-API docs are at <http://localhost:8000/docs>. Run `npm run dev --workspace @carecompare/web`
-for the public app or the corresponding `@carecompare/admin` command for admin.
+API docs are at <http://localhost:8000/docs>. Run `make web` for the public directory on port
+3000 or `make admin` for the operations dashboard on port 3001.
+
+After importing facilities, load the focused CMS quality datasets with
+`make import-cms-quality`. For a network-free run use:
+
+```bash
+uv run python -m collectors.cms_quality --fixtures-dir data/fixtures/cms_quality
+```
+
+`make verify-phase-2` runs migrations, the quality fixtures, tests, linting, type checking,
+and production builds. Unchanged fixture/source checksums are skipped intentionally.
 
 ## Architecture
 
 - `apps/`: Next.js public and administrative interfaces.
 - `services/api/`: FastAPI HTTP service.
-- `collectors/`: source-specific ingestion jobs.
+- `collectors/`: source-specific facility and CMS quality ingestion jobs.
 - `packages/database/`: SQLAlchemy models, sessions, and Alembic migrations.
 - `packages/shared_types/` and `packages/validation/`: shared TypeScript contracts.
 - `infrastructure/`: local and future cloud infrastructure definitions.

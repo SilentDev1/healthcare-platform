@@ -1,0 +1,1 @@
+"""CMS quality collector tests."""

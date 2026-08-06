@@ -16,7 +16,7 @@ but deterministic reviewed code performs imports. Reprocessing a checksum with a
 version creates a new source/import audit record and updates each facility's current source
 link; historical import records remain intact.
 
-## Phase 2 recommendation: multi-source matching
+## Multi-source facility and quality observations
 
 The Phase 1 mandatory `facilities.source_file_id` is acceptable while a facility is defined by
 one authoritative CMS feed: it identifies the source snapshot that most recently updated the
@@ -24,9 +24,13 @@ canonical row. It should not become the long-term multi-source provenance model.
 foreign key cannot represent multiple supporting or conflicting source observations and would
 force matching logic to overwrite earlier lineage.
 
-Before adding a second facility source in Phase 2, introduce source-specific observation rows
-(for example, `facility_source_records`) keyed to both the canonical facility and source file.
-Keep raw source identifiers and normalized values on those immutable observations, record the
-match method and confidence separately, and make canonical-field derivations traceable to one
-or more observations. At that point, deprecate or redefine `facilities.source_file_id` as a
-clearly named latest-primary-source pointer; do not use it as the complete provenance history.
+Phase 2 therefore adds `facility_source_observations`, keyed to canonical facility, source
+file, import run, and source record identifier. Raw payloads and hashes are immutable.
+`facility_quality_measure_observations` retain CMS values and reporting context separately
+from consumer-facing measure names and directionality. `facilities.source_file_id` remains the
+latest-primary-source pointer and is not treated as the complete provenance history.
+
+Consumer summaries may select the most recent reporting period and explain directionality,
+but raw observations are never overwritten or converted into invented ratings. Footnote codes
+remain attached to the observation and indicate CMS suppression or qualification; clients
+must display “Not available” rather than deriving a value when CMS withholds one.

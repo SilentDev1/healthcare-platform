@@ -1,0 +1,1 @@
+"""CMS hospital collector tests."""

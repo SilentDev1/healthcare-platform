@@ -30,7 +30,7 @@ class QualityCollectorSettings(BaseSettings):
     cms_quality_download_max_bytes: int = Field(250_000_000, gt=0)
     cms_quality_http_timeout_seconds: float = Field(120, gt=0, le=300)
     cms_quality_http_max_retries: int = Field(3, ge=0, le=10)
-    cms_quality_parser_version: str = "1.0.0"
+    cms_quality_parser_version: str = "1.1.0"
     cms_quality_raw_data_dir: Path = Path("data/raw/cms_quality")
     cms_quality_rejected_data_dir: Path = Path("data/rejected/cms_quality")
 
@@ -57,7 +57,7 @@ class QualityCollectorSettings(BaseSettings):
                 "CMS Unplanned Hospital Visits",
                 self.cms_quality_readmissions_dataset_id,
                 "readmission",
-                frozenset({"READM_30_HOSP_WIDE"}),
+                frozenset({"READM_30_HF"}),
                 self.cms_quality_readmissions_source_url,
             ),
             QualityDataset(
@@ -65,7 +65,7 @@ class QualityCollectorSettings(BaseSettings):
                 "CMS Complications and Deaths",
                 self.cms_quality_complications_dataset_id,
                 "clinical_outcomes",
-                frozenset({"MORT_30_AMI", "PSI_90_SAFETY"}),
+                frozenset({"MORT_30_AMI", "PSI_90"}),
                 self.cms_quality_complications_source_url,
             ),
             QualityDataset(
