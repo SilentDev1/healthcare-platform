@@ -1,0 +1,4 @@
+id,item_description,billing_code_type,billing_code,gross,cash_price,min_rate,max_rate,payer,plan,negotiated_rate,setting
+l1,Screening mammogram,CPT,77067,450.00,225.00,180.00,390.00,Aetna,Open Choice,210.00,outpatient
+l2,Local service,LOCAL,L100,100.00,75.00,,,Regional Payer,,70.00,outpatient
+bad,Missing code row,,,,80.00,,,,,,outpatient

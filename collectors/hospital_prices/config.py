@@ -1,0 +1,24 @@
+from pathlib import Path
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class HospitalPriceSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    hospital_price_max_bytes: int = Field(250_000_000, gt=0)
+    hospital_price_max_expanded_bytes: int = Field(500_000_000, gt=0)
+    hospital_price_max_archive_files: int = Field(5, ge=1, le=100)
+    hospital_price_connection_timeout_seconds: float = Field(15, gt=0, le=120)
+    hospital_price_read_timeout_seconds: float = Field(120, gt=0, le=600)
+    hospital_price_max_redirects: int = Field(5, ge=0, le=10)
+    hospital_price_http_retries: int = Field(2, ge=0, le=5)
+    hospital_price_batch_size: int = Field(500, ge=10, le=5000)
+    hospital_price_parser_version: str = "1.0.0"
+    hospital_price_user_agent: str = (
+        "CareCompare-HPT-Research/1.0 (public hospital transparency client)"
+    )
+    hospital_price_raw_dir: Path = Path("data/raw/hospital_prices/nh")
+
+
+hospital_price_settings = HospitalPriceSettings()

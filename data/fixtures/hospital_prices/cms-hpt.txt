@@ -1,0 +1,1 @@
+{"hospital_name":"Fixture Health System","last_updated_on":"2026-08-01","locations":[{"name":"Fixture Hospital","mrf_url":"https://example.test/300001_standardcharges.csv"},{"name":"Fixture Campus","mrf_url":"https://example.test/300002_standardcharges.json"}]}

@@ -1,0 +1,51 @@
+{
+  "cms_template_version": "2.0",
+  "standard_charge_information": [
+    {
+      "source_record_identifier": "j1",
+      "description": "MRI lumbar spine without contrast",
+      "setting": "outpatient",
+      "billing_class": "facility",
+      "code_type": "CPT",
+      "code": "72148",
+      "gross_charge": "1900.00",
+      "discounted_cash_price": "975.00",
+      "deidentified_minimum_negotiated_rate": "720.00",
+      "deidentified_maximum_negotiated_rate": "1500.00",
+      "payer_rates": [
+        {
+          "payer_name": "Anthem Blue Cross and Blue Shield",
+          "plan_name": "Pathway",
+          "negotiated_rate": "900.00",
+          "negotiated_rate_type": "dollar"
+        },
+        {
+          "payer_name": "Harvard Pilgrim",
+          "plan_name": "HMO",
+          "negotiated_rate": "925.00",
+          "negotiated_rate_type": "dollar"
+        }
+      ]
+    },
+    {
+      "source_record_identifier": "j2",
+      "description": "CT scan of abdomen and pelvis",
+      "setting": "outpatient",
+      "billing_class": "facility",
+      "code_type": "CPT",
+      "code": "74176",
+      "gross_charge": "2200.00",
+      "discounted_cash_price": "1100.00",
+      "deidentified_minimum_negotiated_rate": "800.00",
+      "deidentified_maximum_negotiated_rate": "1700.00",
+      "payer_rates": [
+        {
+          "payer_name": "UHC",
+          "plan_name": "Choice Plus",
+          "negotiated_rate": "1050.00",
+          "negotiated_rate_type": "dollar"
+        }
+      ]
+    }
+  ]
+}

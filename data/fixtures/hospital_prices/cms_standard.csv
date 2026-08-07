@@ -1,0 +1,10 @@
+cms_template_version,source_record_identifier,description,setting,billing_class,code_type,code,gross_charge,discounted_cash_price,deidentified_minimum_negotiated_rate,deidentified_maximum_negotiated_rate,payer_name,plan_name,negotiated_rate,negotiated_rate_type
+2.0,1,MRI brain without contrast,outpatient,facility,CPT,70551,1800.00,950.00,700.00,1400.00,Anthem BCBS,Pathway,875.25,dollar
+2.0,2,MRI knee without contrast,outpatient,facility,CPT,73721,1600.00,825.00,650.00,1300.00,United Healthcare,Choice Plus,790.00,dollar
+2.0,3,Chest X-ray,outpatient,facility,CPT,71046,325.00,175.00,120.00,275.00,Cigna Healthcare,,160.00,dollar
+2.0,4,Complete blood count,outpatient,facility,CPT,85025,95.00,55.00,40.00,80.00,Unknown Regional Plan,Silver,50.00,dollar
+2.0,5,Explicit zero example,outpatient,facility,LOCAL,ZERO1,100.00,0.00,,,Self Pay,,0.00,dollar
+2.0,6,Cash anomaly,outpatient,facility,CPT,71250,500.00,700.00,300.00,600.00,Aetna Health,Open Choice,450.00,dollar
+2.0,7,Range anomaly,outpatient,facility,CPT,76700,900.00,600.00,800.00,700.00,Harvard Pilgrim,Stride,580.00,dollar
+2.0,8,Negative rejected,outpatient,facility,CPT,80053,-10.00,5.00,,,Anthem,Pathway,4.00,dollar
+2.0,9,Large review value,inpatient,facility,MS-DRG,999,2500000.00,1200000.00,,,,,,

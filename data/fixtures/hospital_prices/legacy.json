@@ -1,0 +1,25 @@
+[
+  {
+    "id": "lj1",
+    "service_description": "Colonoscopy",
+    "billing_code_type": "CPT",
+    "billing_code": "45378",
+    "gross": "3200.00",
+    "cash_price": "1800.00",
+    "min_rate": "1400.00",
+    "max_rate": "2800.00",
+    "payer": "Cigna",
+    "plan": "PPO",
+    "negotiated_rate": "1700.00",
+    "setting": "outpatient"
+  },
+  {
+    "id": "lj2",
+    "service_description": "Ambiguous imaging service",
+    "billing_code_type": "LOCAL",
+    "billing_code": "IMG1",
+    "gross": "500.00",
+    "cash_price": "300.00",
+    "setting": "outpatient"
+  }
+]
