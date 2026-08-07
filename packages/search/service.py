@@ -12,6 +12,7 @@ from packages.database import (
     FacilityAlias,
     FacilityIdentifier,
     FacilityLocation,
+    FacilityProcedurePriceSummary,
     Procedure,
     ProcedureAlias,
     ProcedureCategory,
@@ -42,6 +43,17 @@ def rebuild_index(session: Session) -> int:
     for alias in session.scalars(select(FacilityAlias).where(FacilityAlias.active.is_(True))):
         aliases_by_facility.setdefault(alias.facility_id, []).append(alias.alias_name)
     identifiers_by_facility: dict[uuid.UUID, list[str]] = {}
+    priced_procedures_by_facility: dict[uuid.UUID, int] = {
+        facility_id: procedure_count
+        for facility_id, procedure_count in session.execute(
+            select(
+                FacilityProcedurePriceSummary.facility_id,
+                func.count(func.distinct(FacilityProcedurePriceSummary.procedure_id)),
+            )
+            .where(FacilityProcedurePriceSummary.publication_status == "publishable")
+            .group_by(FacilityProcedurePriceSummary.facility_id)
+        ).all()
+    }
     for identifier in session.scalars(
         select(FacilityIdentifier).where(FacilityIdentifier.active.is_(True))
     ):
@@ -84,6 +96,9 @@ def rebuild_index(session: Session) -> int:
                 metadata_json={
                     "facility_type": facility.facility_type,
                     "aliases": aliases_by_facility.get(facility.id, []),
+                    "publishable_procedure_count": priced_procedures_by_facility.get(
+                        facility.id, 0
+                    ),
                 },
             )
         )
@@ -96,6 +111,13 @@ def rebuild_index(session: Session) -> int:
             procedure_alias.alias_name
         )
     categories = {item.id: item for item in session.scalars(select(ProcedureCategory))}
+    priced_procedures = set(
+        session.scalars(
+            select(FacilityProcedurePriceSummary.procedure_id)
+            .where(FacilityProcedurePriceSummary.publication_status == "publishable")
+            .distinct()
+        )
+    )
     for procedure in session.scalars(select(Procedure).where(Procedure.active.is_(True))):
         category = categories[procedure.category_id]
         aliases = aliases_by_procedure.get(procedure.id, [])
@@ -121,6 +143,7 @@ def rebuild_index(session: Session) -> int:
                     "category": category.slug,
                     "service_setting": procedure.service_setting,
                     "aliases": aliases,
+                    "prices_available": procedure.id in priced_procedures,
                 },
             )
         )

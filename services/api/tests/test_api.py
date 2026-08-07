@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from collectors.hospital_prices.pipeline import run_fixture_pipeline
 from packages.data_health import evaluate_data_health
 from packages.database import (
     Base,
@@ -127,6 +128,8 @@ def setup_function() -> None:
         seed_catalog(session)
         rebuild_index(session)
         evaluate_data_health(session)
+    with TestingSession() as session:
+        run_fixture_pipeline(session)
 
 
 def teardown_module() -> None:
@@ -203,3 +206,34 @@ def test_phase_3_public_and_admin_endpoints() -> None:
         "/api/v1/admin/pipeline-status",
     ):
         assert client.get(path).status_code == 200
+
+
+def test_phase_4_pricing_endpoints_are_filtered_and_paginated() -> None:
+    coverage = client.get("/api/v1/pricing/coverage")
+    assert coverage.status_code == 200
+    assert coverage.json()["facilities_with_publishable_prices"] == 1
+    prices = client.get("/api/v1/procedures/mri-brain-without-contrast/prices?state=NH&page_size=5")
+    assert prices.status_code == 200
+    assert prices.json()["total"] >= 1
+    assert "raw_payload" not in prices.text
+    assert "final bill" in prices.json()["items"][0]["disclaimer"]
+    facility_prices = client.get("/api/v1/facilities/00000000-0000-0000-0000-000000000001/prices")
+    assert facility_prices.status_code == 200
+    assert client.get("/api/v1/pricing/payers").status_code == 200
+    assert client.get("/api/v1/pricing/plans").status_code == 200
+    for path in (
+        "/api/v1/admin/pricing/sources",
+        "/api/v1/admin/pricing/source-discovery-runs",
+        "/api/v1/admin/pricing/source-discovery-observations",
+        "/api/v1/admin/pricing/import-runs",
+        "/api/v1/admin/pricing/records",
+        "/api/v1/admin/pricing/rates",
+        "/api/v1/admin/pricing/unmatched",
+        "/api/v1/admin/pricing/anomalies",
+        "/api/v1/admin/pricing/procedure-candidates",
+        "/api/v1/admin/pricing/payers",
+        "/api/v1/admin/pricing/plans",
+        "/api/v1/admin/pricing/facility-procedure-summaries",
+    ):
+        response = client.get(path)
+        assert response.status_code == 200, (path, response.text)

@@ -311,3 +311,98 @@ class PipelineStatusResponse(BaseModel):
 
 class PipelineStatusPage(PageMetadata):
     items: list[PipelineStatusResponse]
+
+
+class PricingSourceResponse(BaseModel):
+    id: uuid.UUID
+    facility_id: uuid.UUID
+    facility_name: str
+    source_type: str
+    source_page_url: str | None
+    machine_readable_file_url: str
+    cms_hpt_txt_url: str | None
+    detected_format: str | None
+    detected_schema_version: str | None
+    discovery_method: str
+    last_seen_at: datetime
+    last_successful_download_at: datetime | None
+    source_file_id: uuid.UUID | None
+    checksum_sha256: str | None
+    file_size: int | None
+
+
+class PricingSourcePage(PageMetadata):
+    items: list[PricingSourceResponse]
+
+
+class PriceRecordResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: uuid.UUID
+    facility_id: uuid.UUID
+    source_file_id: uuid.UUID
+    import_run_id: uuid.UUID
+    source_record_identifier: str
+    raw_description: str
+    setting: str | None
+    billing_class: str | None
+    gross_charge: Decimal | None
+    discounted_cash_price: Decimal | None
+    deidentified_minimum_negotiated_rate: Decimal | None
+    deidentified_maximum_negotiated_rate: Decimal | None
+    currency: str
+    parser_name: str
+    parser_version: str
+    observed_at: datetime
+
+
+class PriceRecordPage(PageMetadata):
+    items: list[PriceRecordResponse]
+
+
+class PricingAdminItem(BaseModel):
+    id: uuid.UUID
+    data: dict[str, object]
+
+
+class PricingAdminPage(PageMetadata):
+    items: list[PricingAdminItem]
+
+
+class PublicPriceSummaryResponse(BaseModel):
+    id: uuid.UUID
+    facility_id: uuid.UUID
+    facility_name: str
+    city: str | None
+    procedure_slug: str
+    procedure_name: str
+    payer_slug: str | None
+    payer_name: str | None
+    plan_name: str | None
+    service_setting: str
+    cash_price_min: Decimal | None
+    cash_price_max: Decimal | None
+    negotiated_price_min: Decimal | None
+    negotiated_price_max: Decimal | None
+    record_count: int
+    source_url: str
+    source_checksum_sha256: str
+    last_updated: datetime
+    included_component_scope: str = "Source billing class; other charges may be separate"
+    disclaimer: str = (
+        "Public hospital transparency prices may not equal a patient's final bill or "
+        "out-of-pocket responsibility. Verify network status and benefits separately."
+    )
+
+
+class PublicPriceSummaryPage(PageMetadata):
+    items: list[PublicPriceSummaryResponse]
+
+
+class PricingCoverageResponse(BaseModel):
+    nh_facilities: int
+    facilities_with_sources: int
+    facilities_with_downloads: int
+    facilities_with_parsed_records: int
+    facilities_with_publishable_prices: int
+    publishable_procedures: int
+    last_updated: datetime | None

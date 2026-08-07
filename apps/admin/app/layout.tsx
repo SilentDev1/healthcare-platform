@@ -26,6 +26,7 @@ export default function Layout({
             <Link href="/data-health">Data health</Link>
             <Link href="/pipeline-status">Pipelines</Link>
             <Link href="/search-index">Search index</Link>
+            <Link href="/pricing">Pricing</Link>
           </nav>
         </header>
         {children}

@@ -110,6 +110,19 @@ export interface Pipeline {
   records_last_imported: number | null;
   error_summary: string | null;
 }
+export interface PricingCoverage {
+  nh_facilities: number;
+  facilities_with_sources: number;
+  facilities_with_downloads: number;
+  facilities_with_parsed_records: number;
+  facilities_with_publishable_prices: number;
+  publishable_procedures: number;
+  last_updated: string | null;
+}
+export interface PricingAdminItem {
+  id: string;
+  data: Record<string, unknown>;
+}
 
 export function formatDate(value: string | null): string {
   return value

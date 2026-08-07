@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { apiGet, type Facility, type QualityPage } from "../../../lib/api";
+import {
+  apiGet,
+  type Facility,
+  type PricePage,
+  type QualityPage,
+} from "../../../lib/api";
 
 export default async function FacilityPage({
   params,
@@ -8,9 +13,10 @@ export default async function FacilityPage({
 }) {
   const { id } = await params;
   try {
-    const [facility, quality] = await Promise.all([
+    const [facility, quality, prices] = await Promise.all([
       apiGet<Facility>(`/api/v1/facilities/${id}`),
       apiGet<QualityPage>(`/api/v1/facilities/${id}/quality?page_size=100`),
+      apiGet<PricePage>(`/api/v1/facilities/${id}/prices?page_size=10`),
     ]);
     const location = facility.locations[0];
     const rating = quality.items.find(
@@ -50,7 +56,30 @@ export default async function FacilityPage({
             ))}
           </ul>
         )}
-        <p>Pricing comparison is coming later.</p>
+        <h2>Published prices</h2>
+        {!prices?.items?.length ? (
+          <p>No reviewed, publishable prices are currently available.</p>
+        ) : (
+          <ul className="measures">
+            {prices.items.map((item) => (
+              <li key={item.id}>
+                <Link href={`/procedures/${item.procedure_slug}/prices`}>
+                  {item.procedure_name}
+                </Link>
+                <strong>
+                  {item.cash_price_min
+                    ? `$${Number(item.cash_price_min).toLocaleString()}`
+                    : "Negotiated rate available"}
+                </strong>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p>
+          Hospital transparency prices may not equal your final bill. Other
+          professional and ancillary charges may be separate; verify network
+          status and benefits.
+        </p>
         <p className="source">
           Source: Centers for Medicare &amp; Medicaid Services. Facility record
           last updated{" "}

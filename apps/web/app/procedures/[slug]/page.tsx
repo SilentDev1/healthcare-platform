@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { apiGet, Procedure } from "../../../lib/api";
 
 export default async function ProcedureDetail({
@@ -25,10 +26,10 @@ export default async function ProcedureDetail({
         <p>Typical setting: {item.service_setting.replaceAll("_", " ")}</p>
         <p>Related terms: {item.aliases.join(", ")}</p>
         <p>{item.billing_notice}</p>
-        <p>
-          This is general information, not individualized medical advice. No
-          price estimate is available yet.
-        </p>
+        <p>This is general information, not individualized medical advice.</p>
+        <Link href={`/procedures/${item.slug}/prices`}>
+          Compare published prices
+        </Link>
       </section>
     </main>
   );

@@ -65,3 +65,28 @@ export interface Procedure {
   category: { slug: string; name: string; description: string };
   billing_notice: string;
 }
+export interface PriceSummary {
+  id: string;
+  facility_id: string;
+  facility_name: string;
+  city: string | null;
+  procedure_slug: string;
+  procedure_name: string;
+  payer_name: string | null;
+  plan_name: string | null;
+  service_setting: string;
+  cash_price_min: string | null;
+  cash_price_max: string | null;
+  negotiated_price_min: string | null;
+  negotiated_price_max: string | null;
+  source_url: string;
+  last_updated: string;
+  included_component_scope: string;
+  disclaimer: string;
+}
+export interface PricePage {
+  items: PriceSummary[];
+  total: number;
+  page: number;
+  page_size: number;
+}

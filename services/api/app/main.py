@@ -1,7 +1,7 @@
 import time
 import uuid
 from collections.abc import Awaitable, Callable
-from typing import Annotated
+from typing import Annotated, Any
 
 import structlog
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response, status
@@ -17,10 +17,21 @@ from packages.database import (
     Facility,
     FacilityIdentityCandidate,
     FacilityLocation,
+    FacilityPriceSource,
+    FacilityProcedurePriceSummary,
     FacilityQualityMeasureObservation,
     FacilitySourceObservation,
+    HospitalPriceRateDetail,
+    HospitalPriceRecord,
     ImportRun,
+    InsurancePlanEntity,
+    PayerEntity,
     PipelineStatusSnapshot,
+    PriceRecordProcedureCandidate,
+    PriceSourceDiscoveryObservation,
+    PriceSourceDiscoveryRun,
+    PricingAnomaly,
+    PricingUnmatchedRecord,
     Procedure,
     ProcedureAlias,
     ProcedureCategory,
@@ -43,9 +54,14 @@ from services.api.app.schemas import (
     IdentityCandidatePage,
     ImportRunPage,
     PipelineStatusPage,
+    PriceRecordPage,
+    PricingAdminPage,
+    PricingCoverageResponse,
+    PricingSourcePage,
     ProcedureCategoryResponse,
     ProcedurePage,
     ProcedureResponse,
+    PublicPriceSummaryPage,
     QualityMeasurePage,
     SearchPage,
     SourceFilePage,
@@ -774,4 +790,467 @@ def pipeline_status(
         page=page,
         page_size=page_size,
         total=session.scalar(select(func.count(PipelineStatusSnapshot.id)).where(*filters)) or 0,
+    )
+
+
+@app.get("/api/v1/admin/pricing/sources", response_model=PricingSourcePage, tags=["admin-pricing"])
+def admin_pricing_sources(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    facility_id: uuid.UUID | None = None,
+    detected_format: Annotated[str | None, Query(max_length=30)] = None,
+) -> PricingSourcePage:
+    filters = []
+    if facility_id:
+        filters.append(FacilityPriceSource.facility_id == facility_id)
+    if detected_format:
+        filters.append(FacilityPriceSource.detected_format == detected_format)
+    rows = session.execute(
+        select(FacilityPriceSource, Facility, SourceFile)
+        .select_from(FacilityPriceSource)
+        .join(Facility, Facility.id == FacilityPriceSource.facility_id)
+        .outerjoin(SourceFile, SourceFile.id == FacilityPriceSource.source_file_id)
+        .where(*filters)
+        .order_by(Facility.display_name, FacilityPriceSource.id)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    items = [
+        {
+            "id": source.id,
+            "facility_id": facility.id,
+            "facility_name": facility.display_name,
+            "source_type": source.source_type,
+            "source_page_url": source.source_page_url,
+            "machine_readable_file_url": source.machine_readable_file_url,
+            "cms_hpt_txt_url": source.cms_hpt_txt_url,
+            "detected_format": source.detected_format,
+            "detected_schema_version": source.detected_schema_version,
+            "discovery_method": source.discovery_method,
+            "last_seen_at": source.last_seen_at,
+            "last_successful_download_at": source.last_successful_download_at,
+            "source_file_id": source.source_file_id,
+            "checksum_sha256": source_file.checksum_sha256 if source_file else None,
+            "file_size": source_file.file_size if source_file else None,
+        }
+        for source, facility, source_file in rows
+    ]
+    total = session.scalar(select(func.count(FacilityPriceSource.id)).where(*filters)) or 0
+    return PricingSourcePage(items=items, page=page, page_size=page_size, total=total)
+
+
+def _admin_page(
+    session: Session,
+    model: Any,
+    page: int,
+    page_size: int,
+    filters: list[ColumnElement[bool]] | None = None,
+) -> PricingAdminPage:
+    where = filters or []
+    model_id = model.id
+    rows = session.scalars(
+        select(model)
+        .where(*where)
+        .order_by(desc(model_id))
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    items = []
+    for row in rows:
+        data = {
+            column.name: getattr(row, column.key)
+            for column in row.__table__.columns
+            if column.name not in {"raw_payload", "source_payload", "bounded_sample"}
+        }
+        items.append({"id": row.id, "data": data})
+    return PricingAdminPage(
+        items=items,
+        page=page,
+        page_size=page_size,
+        total=session.scalar(select(func.count(model_id)).where(*where)) or 0,
+    )
+
+
+@app.get(
+    "/api/v1/admin/pricing/source-discovery-runs",
+    response_model=PricingAdminPage,
+    tags=["admin-pricing"],
+)
+def admin_discovery_runs(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+) -> PricingAdminPage:
+    return _admin_page(session, PriceSourceDiscoveryRun, page, page_size)
+
+
+@app.get(
+    "/api/v1/admin/pricing/source-discovery-observations",
+    response_model=PricingAdminPage,
+    tags=["admin-pricing"],
+)
+def admin_discovery_observations(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    facility_id: uuid.UUID | None = None,
+) -> PricingAdminPage:
+    filters = [PriceSourceDiscoveryObservation.facility_id == facility_id] if facility_id else []
+    return _admin_page(session, PriceSourceDiscoveryObservation, page, page_size, filters)
+
+
+@app.get("/api/v1/admin/pricing/import-runs", response_model=ImportRunPage, tags=["admin-pricing"])
+def admin_pricing_import_runs(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+) -> ImportRunPage:
+    return admin_import_runs(session, page, page_size, None, "started_at")
+
+
+@app.get("/api/v1/admin/pricing/records", response_model=PriceRecordPage, tags=["admin-pricing"])
+def admin_pricing_records(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    facility_id: uuid.UUID | None = None,
+    parser: Annotated[str | None, Query(max_length=100)] = None,
+    setting: Annotated[str | None, Query(max_length=40)] = None,
+) -> PriceRecordPage:
+    filters = []
+    if facility_id:
+        filters.append(HospitalPriceRecord.facility_id == facility_id)
+    if parser:
+        filters.append(HospitalPriceRecord.parser_name == parser)
+    if setting:
+        filters.append(HospitalPriceRecord.setting == setting)
+    items = session.scalars(
+        select(HospitalPriceRecord)
+        .where(*filters)
+        .order_by(desc(HospitalPriceRecord.observed_at), HospitalPriceRecord.id)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    return PriceRecordPage(
+        items=list(items),
+        page=page,
+        page_size=page_size,
+        total=session.scalar(select(func.count(HospitalPriceRecord.id)).where(*filters)) or 0,
+    )
+
+
+@app.get("/api/v1/admin/pricing/rates", response_model=PricingAdminPage, tags=["admin-pricing"])
+def admin_pricing_rates(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    payer_id: uuid.UUID | None = None,
+) -> PricingAdminPage:
+    return _admin_page(
+        session,
+        HospitalPriceRateDetail,
+        page,
+        page_size,
+        [HospitalPriceRateDetail.payer_entity_id == payer_id] if payer_id else [],
+    )
+
+
+@app.get("/api/v1/admin/pricing/unmatched", response_model=PricingAdminPage, tags=["admin-pricing"])
+def admin_pricing_unmatched(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    review_status: Annotated[str | None, Query(alias="status", max_length=30)] = None,
+) -> PricingAdminPage:
+    return _admin_page(
+        session,
+        PricingUnmatchedRecord,
+        page,
+        page_size,
+        [PricingUnmatchedRecord.review_status == review_status] if review_status else [],
+    )
+
+
+@app.get("/api/v1/admin/pricing/anomalies", response_model=PricingAdminPage, tags=["admin-pricing"])
+def admin_pricing_anomalies(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    severity: Annotated[str | None, Query(pattern="^(info|warning|error|critical)$")] = None,
+    anomaly_status: Annotated[str | None, Query(alias="status", max_length=30)] = None,
+) -> PricingAdminPage:
+    filters = []
+    if severity:
+        filters.append(PricingAnomaly.severity == severity)
+    if anomaly_status:
+        filters.append(PricingAnomaly.status == anomaly_status)
+    return _admin_page(session, PricingAnomaly, page, page_size, filters)
+
+
+@app.get(
+    "/api/v1/admin/pricing/procedure-candidates",
+    response_model=PricingAdminPage,
+    tags=["admin-pricing"],
+)
+def admin_pricing_candidates(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    candidate_status: Annotated[str | None, Query(alias="status", max_length=30)] = None,
+) -> PricingAdminPage:
+    return _admin_page(
+        session,
+        PriceRecordProcedureCandidate,
+        page,
+        page_size,
+        [PriceRecordProcedureCandidate.status == candidate_status] if candidate_status else [],
+    )
+
+
+@app.get("/api/v1/admin/pricing/payers", response_model=PricingAdminPage, tags=["admin-pricing"])
+def admin_pricing_payers(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+) -> PricingAdminPage:
+    return _admin_page(session, PayerEntity, page, page_size)
+
+
+@app.get("/api/v1/admin/pricing/plans", response_model=PricingAdminPage, tags=["admin-pricing"])
+def admin_pricing_plans(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    payer_id: uuid.UUID | None = None,
+) -> PricingAdminPage:
+    return _admin_page(
+        session,
+        InsurancePlanEntity,
+        page,
+        page_size,
+        [InsurancePlanEntity.payer_entity_id == payer_id] if payer_id else [],
+    )
+
+
+@app.get(
+    "/api/v1/admin/pricing/facility-procedure-summaries",
+    response_model=PricingAdminPage,
+    tags=["admin-pricing"],
+)
+def admin_pricing_summaries(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    publication_status: Annotated[str | None, Query(max_length=30)] = None,
+) -> PricingAdminPage:
+    return _admin_page(
+        session,
+        FacilityProcedurePriceSummary,
+        page,
+        page_size,
+        [FacilityProcedurePriceSummary.publication_status == publication_status]
+        if publication_status
+        else [],
+    )
+
+
+def _public_price_page(
+    session: Session, filters: list[ColumnElement[bool]], page: int, page_size: int
+) -> PublicPriceSummaryPage:
+    base = (
+        select(
+            FacilityProcedurePriceSummary,
+            Facility,
+            FacilityLocation,
+            Procedure,
+            PayerEntity,
+            InsurancePlanEntity,
+            SourceFile,
+        )
+        .join(Facility, Facility.id == FacilityProcedurePriceSummary.facility_id)
+        .outerjoin(FacilityLocation, FacilityLocation.facility_id == Facility.id)
+        .join(Procedure, Procedure.id == FacilityProcedurePriceSummary.procedure_id)
+        .outerjoin(PayerEntity, PayerEntity.id == FacilityProcedurePriceSummary.payer_entity_id)
+        .outerjoin(
+            InsurancePlanEntity,
+            InsurancePlanEntity.id == FacilityProcedurePriceSummary.insurance_plan_entity_id,
+        )
+        .join(SourceFile, SourceFile.id == FacilityProcedurePriceSummary.source_file_id)
+        .where(FacilityProcedurePriceSummary.publication_status == "publishable", *filters)
+    )
+    rows = session.execute(
+        base.order_by(
+            Facility.display_name,
+            FacilityProcedurePriceSummary.service_setting,
+            FacilityProcedurePriceSummary.id,
+        )
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    items = [
+        {
+            "id": item.id,
+            "facility_id": facility.id,
+            "facility_name": facility.display_name,
+            "city": location.city if location else None,
+            "procedure_slug": procedure.slug,
+            "procedure_name": procedure.consumer_name,
+            "payer_slug": payer.slug if payer else None,
+            "payer_name": payer.canonical_name if payer else None,
+            "plan_name": plan.canonical_name if plan else None,
+            "service_setting": item.service_setting,
+            "cash_price_min": item.cash_price_min,
+            "cash_price_max": item.cash_price_max,
+            "negotiated_price_min": item.negotiated_price_min,
+            "negotiated_price_max": item.negotiated_price_max,
+            "record_count": item.record_count,
+            "source_url": source.source_url,
+            "source_checksum_sha256": source.checksum_sha256,
+            "last_updated": item.calculated_at,
+        }
+        for item, facility, location, procedure, payer, plan, source in rows
+    ]
+    total = session.scalar(select(func.count()).select_from(base.subquery())) or 0
+    return PublicPriceSummaryPage(items=items, page=page, page_size=page_size, total=total)
+
+
+@app.get(
+    "/api/v1/procedures/{slug}/prices", response_model=PublicPriceSummaryPage, tags=["pricing"]
+)
+def procedure_prices(
+    slug: str,
+    session: Annotated[Session, Depends(get_session)],
+    state_code: Annotated[str, Query(alias="state", min_length=2, max_length=2)] = "NH",
+    city: Annotated[str | None, Query(max_length=100)] = None,
+    payer: Annotated[str | None, Query(max_length=150)] = None,
+    plan: Annotated[str | None, Query(max_length=500)] = None,
+    setting: Annotated[str | None, Query(max_length=40)] = None,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=50)] = 25,
+) -> PublicPriceSummaryPage:
+    procedure = session.scalar(
+        select(Procedure).where(Procedure.slug == slug, Procedure.active.is_(True))
+    )
+    if procedure is None:
+        raise HTTPException(status_code=404, detail="procedure not found")
+    filters: list[ColumnElement[bool]] = [
+        FacilityProcedurePriceSummary.procedure_id == procedure.id,
+        FacilityLocation.state == state_code.upper(),
+    ]
+    if city:
+        filters.append(FacilityLocation.city.ilike(city))
+    if payer:
+        filters.append(PayerEntity.slug == payer)
+    if plan:
+        filters.append(InsurancePlanEntity.normalized_name == plan.lower())
+    if setting:
+        filters.append(FacilityProcedurePriceSummary.service_setting == setting)
+    return _public_price_page(session, filters, page, page_size)
+
+
+@app.get(
+    "/api/v1/facilities/{facility_id}/prices",
+    response_model=PublicPriceSummaryPage,
+    tags=["pricing"],
+)
+def facility_prices(
+    facility_id: uuid.UUID,
+    session: Annotated[Session, Depends(get_session)],
+    procedure: Annotated[str | None, Query(max_length=150)] = None,
+    payer: Annotated[str | None, Query(max_length=150)] = None,
+    setting: Annotated[str | None, Query(max_length=40)] = None,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=50)] = 25,
+) -> PublicPriceSummaryPage:
+    filters: list[ColumnElement[bool]] = [FacilityProcedurePriceSummary.facility_id == facility_id]
+    if procedure:
+        filters.append(Procedure.slug == procedure)
+    if payer:
+        filters.append(PayerEntity.slug == payer)
+    if setting:
+        filters.append(FacilityProcedurePriceSummary.service_setting == setting)
+    return _public_price_page(session, filters, page, page_size)
+
+
+@app.get("/api/v1/pricing/payers", response_model=list[dict[str, object]], tags=["pricing"])
+def public_pricing_payers(
+    session: Annotated[Session, Depends(get_session)],
+) -> list[dict[str, object]]:
+    rows = session.execute(
+        select(PayerEntity, func.count(FacilityProcedurePriceSummary.id))
+        .join(
+            FacilityProcedurePriceSummary,
+            FacilityProcedurePriceSummary.payer_entity_id == PayerEntity.id,
+        )
+        .where(FacilityProcedurePriceSummary.publication_status == "publishable")
+        .group_by(PayerEntity.id)
+        .order_by(PayerEntity.canonical_name)
+    ).all()
+    return [
+        {"slug": payer.slug, "name": payer.canonical_name, "summary_count": count}
+        for payer, count in rows
+    ]
+
+
+@app.get("/api/v1/pricing/plans", response_model=list[dict[str, object]], tags=["pricing"])
+def public_pricing_plans(
+    session: Annotated[Session, Depends(get_session)],
+    payer: Annotated[str | None, Query(max_length=150)] = None,
+) -> list[dict[str, object]]:
+    query = (
+        select(InsurancePlanEntity, PayerEntity)
+        .join(PayerEntity)
+        .join(
+            FacilityProcedurePriceSummary,
+            FacilityProcedurePriceSummary.insurance_plan_entity_id == InsurancePlanEntity.id,
+        )
+        .where(FacilityProcedurePriceSummary.publication_status == "publishable")
+    )
+    if payer:
+        query = query.where(PayerEntity.slug == payer)
+    return [
+        {"id": plan.id, "name": plan.canonical_name, "payer_slug": payer_entity.slug}
+        for plan, payer_entity in session.execute(
+            query.distinct().order_by(InsurancePlanEntity.canonical_name)
+        ).all()
+    ]
+
+
+@app.get("/api/v1/pricing/coverage", response_model=PricingCoverageResponse, tags=["pricing"])
+def pricing_coverage(session: Annotated[Session, Depends(get_session)]) -> PricingCoverageResponse:
+    return PricingCoverageResponse(
+        nh_facilities=session.scalar(
+            select(func.count(Facility.id))
+            .join(FacilityLocation)
+            .where(FacilityLocation.state == "NH")
+        )
+        or 0,
+        facilities_with_sources=session.scalar(
+            select(func.count(func.distinct(FacilityPriceSource.facility_id)))
+        )
+        or 0,
+        facilities_with_downloads=session.scalar(
+            select(func.count(func.distinct(FacilityPriceSource.facility_id))).where(
+                FacilityPriceSource.source_file_id.is_not(None)
+            )
+        )
+        or 0,
+        facilities_with_parsed_records=session.scalar(
+            select(func.count(func.distinct(HospitalPriceRecord.facility_id)))
+        )
+        or 0,
+        facilities_with_publishable_prices=session.scalar(
+            select(func.count(func.distinct(FacilityProcedurePriceSummary.facility_id))).where(
+                FacilityProcedurePriceSummary.publication_status == "publishable"
+            )
+        )
+        or 0,
+        publishable_procedures=session.scalar(
+            select(func.count(func.distinct(FacilityProcedurePriceSummary.procedure_id))).where(
+                FacilityProcedurePriceSummary.publication_status == "publishable"
+            )
+        )
+        or 0,
+        last_updated=session.scalar(select(func.max(FacilityProcedurePriceSummary.calculated_at))),
     )
