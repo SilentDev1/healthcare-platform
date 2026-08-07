@@ -1,5 +1,7 @@
 # Admin dashboard
 
+The `/pricing` area is internal-only and links to source, discovery, import, normalized record, payer, plan, mapping, anomaly, summary, coverage, and parser-review queues. It uses live API data with explicit empty/error states and has no destructive raw-source editing.
+
 Phase 3 adds internal-only views for ranked search testing, the procedure catalog, facility
 identity governance, read-only identity candidates, data-health evaluations, pipeline status,
 and search-index operations. Pages fetch the FastAPI service and show explicit empty/error

@@ -1,5 +1,7 @@
 # Data provenance
 
+Hospital price records reference an immutable source file and import run and retain a source record identifier or line number, raw payload and hash, parser name/version, observation time, source URL, checksum, and facility source observation when applicable. Versions are retained; an unchanged checksum skips normalization instead of overwriting history.
+
 Phase 3 sources follow the existing chain: `source_files` records URL, archive path, checksum,
 size, parser version, and timestamps; `import_runs` records processing outcomes; immutable
 observations retain source records. Facility identifiers and aliases may additionally point to

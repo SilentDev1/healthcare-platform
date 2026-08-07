@@ -1,5 +1,7 @@
 # Local development
 
+For Phase 4, copy the `HOSPITAL_PRICE_*` settings from `.env.example`, migrate PostgreSQL, and run `make pricing-pipeline` for offline fixtures. Before a live download, run discovery and review source coverage and sizes. `make verify-phase-4` runs fixtures twice plus the complete validation suite.
+
 After `make db-up` and `make migrate`, initialize Phase 3 with:
 
 ```bash

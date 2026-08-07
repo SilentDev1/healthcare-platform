@@ -1,5 +1,7 @@
 # Architecture
 
+Phase 4 adds a hospital-pricing bounded context: source discovery and immutable archives feed a parser registry, normalized records, conservative identity mappings, deterministic anomalies, and a publication-gated comparison projection. Public APIs read projections only; pricing health remains separate from core facility and quality health.
+
 ## Phase 3 platform layer
 
 Facility identity is source-neutral: identifiers, aliases, relationships, candidates, and

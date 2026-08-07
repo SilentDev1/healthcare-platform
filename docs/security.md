@@ -1,5 +1,7 @@
 # Security
 
+Hospital pricing contains no PHI, claims, member identifiers, or individualized benefits. Downloads enforce scheme, redirect, timeout, content-type, byte, archive-entry, traversal, and expanded-size bounds. Unknown schemas quarantine. Numeric values are never AI-modified.
+
 CareCompare handles public facility information only. PHI, patient data, member identifiers,
 medical records, and free-form clinical information are prohibited. If such data is observed,
 stop ingestion and follow the incident process before retaining or processing it.

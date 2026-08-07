@@ -48,3 +48,7 @@ the offline reproducible workflow and complete check suite. No pricing data is i
 All imported data is tied to immutable source metadata and an import run. No PHI or patient
 data belongs in this system. See [local development](docs/local-development.md) and
 [data provenance](docs/data-provenance.md).
+
+## Hospital pricing (Phase 4)
+
+The platform supports bounded discovery, archival, deterministic parsing, conservative payer and procedure mapping, anomaly review, and publication-gated hospital price summaries. Start with [hospital price transparency](docs/hospital-price-transparency.md). `make pricing-pipeline` is fixture-only; live discovery and downloads remain separate reviewable commands.
