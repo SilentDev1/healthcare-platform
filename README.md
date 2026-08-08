@@ -52,3 +52,18 @@ data belongs in this system. See [local development](docs/local-development.md) 
 ## Hospital pricing (Phase 4)
 
 The platform supports bounded discovery, archival, deterministic parsing, conservative payer and procedure mapping, anomaly review, and publication-gated hospital price summaries. Start with [hospital price transparency](docs/hospital-price-transparency.md). `make pricing-pipeline` is fixture-only; live discovery and downloads remain separate reviewable commands.
+
+## Statewide coverage (Phase 4.2)
+
+Phase 4.2 extends the pricing pipeline to all 28 NH acute-care hospitals with production-ready tooling:
+
+- **51 procedure code mappings** (CPT/HCPCS/DRG) covering labs, imaging, cardiac, surgery, maternity, ED, and office visits
+- **Statewide pipeline** — `make pipeline-full-nh` runs discover → download → import → postprocess
+- **Quality system** — auto-triage rules for common anomalies, freshness scoring, historical price tracking
+- **Statewide scorecard** — composite readiness score targeting 90%+ (`make statewide-scorecard`)
+- **Search synonyms** — 40+ consumer-friendly term mappings (e.g., "knee replacement" → "total knee arthroplasty")
+- **Interactive map** — Leaflet-based NH hospital map with pricing status indicators
+- **Admin dashboard** — statewide readiness gauge, component scores, per-facility quality table
+- **API enhancements** — scorecard, freshness, facility scores, map data, and pricing health endpoints
+
+Run `make verify-phase-4-2` for the complete verification suite. See [pipeline operations](docs/phase-4-2-operations.md), [API endpoints](docs/api-pricing-endpoints.md), and [coverage methodology](docs/statewide-coverage.md).

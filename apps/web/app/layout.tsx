@@ -17,6 +17,7 @@ export default function Layout({
             <Link href="/search?q=hospital">Search</Link>
             <Link href="/facilities">Facilities</Link>
             <Link href="/procedures">Procedures</Link>
+            <Link href="/map">Map</Link>
           </nav>
         </header>
         {children}

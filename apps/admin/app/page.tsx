@@ -1,4 +1,5 @@
-import { apiGet, formatDate } from "../lib/api";
+import Link from "next/link";
+import { apiGet, formatDate, type StatewideScorecard } from "../lib/api";
 
 interface Dashboard {
   total_facilities: number;
@@ -14,7 +15,17 @@ interface Dashboard {
 export default async function AdminHome() {
   try {
     const data = await apiGet<Dashboard>("/api/v1/admin/dashboard");
-    const metrics = [
+
+    let scorecard: StatewideScorecard | null = null;
+    try {
+      scorecard = await apiGet<StatewideScorecard>(
+        "/api/v1/pricing/scorecard",
+      );
+    } catch {
+      // Scorecard may not be available yet
+    }
+
+    const metrics: [string, string | number][] = [
       ["Total facilities", data.total_facilities],
       ["NH facilities", data.nh_facilities],
       ["Latest import", data.latest_import_status ?? "None"],
@@ -30,6 +41,58 @@ export default async function AdminHome() {
           Latest source downloaded{" "}
           {formatDate(data.latest_source_downloaded_at)}
         </p>
+
+        {/* Statewide readiness score */}
+        {scorecard && (
+          <section className="panel" style={{ marginBottom: "1.5rem" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>Statewide readiness</h2>
+              <span
+                style={{
+                  background: scorecard.meets_target ? "#087f5b" : "#e67700",
+                  color: "white",
+                  padding: "0.3rem 0.8rem",
+                  borderRadius: "0.3rem",
+                  fontWeight: 700,
+                  fontSize: "1.2rem",
+                }}
+              >
+                {scorecard.overall_readiness}%
+              </span>
+            </div>
+            <div
+              className="metrics"
+              style={{ marginTop: "1rem" }}
+              aria-label="Component scores"
+            >
+              {Object.entries(scorecard.component_scores).map(
+                ([name, score]) => (
+                  <article className="metric" key={name}>
+                    <span style={{ textTransform: "capitalize" }}>{name}</span>
+                    <strong>{score}%</strong>
+                  </article>
+                ),
+              )}
+            </div>
+            <Link
+              href="/scorecard"
+              style={{
+                display: "inline-block",
+                marginTop: "0.75rem",
+                fontSize: "0.9rem",
+              }}
+            >
+              View full scorecard →
+            </Link>
+          </section>
+        )}
+
         <section className="metrics" aria-label="Operational metrics">
           {metrics.map(([label, value]) => (
             <article className="metric" key={label}>

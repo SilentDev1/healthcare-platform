@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -7,8 +8,10 @@ from sqlalchemy.orm import Session
 from collectors.hospital_prices.downloader import register_local_file
 from collectors.hospital_prices.importer import PriceImportSummary, import_price_source
 from collectors.hospital_prices.projections import evaluate_pricing_health, rebuild_price_summaries
-from packages.database import Facility, FacilityPriceSource
+from packages.database import Facility, FacilityLocation, FacilityPriceSource
 from scripts.seed_price_mappings import seed_price_mappings
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -84,3 +87,65 @@ def run_fixture_pipeline(
     summary.summaries = projection["summaries"]
     evaluate_pricing_health(session)
     return summary
+
+
+@dataclass
+class StatewidePipelineResult:
+    sources_processed: int = 0
+    imported: int = 0
+    skipped: int = 0
+    failed: int = 0
+    total_rows: int = 0
+    total_records: int = 0
+    observations: int = 0
+    summaries: int = 0
+    average_health: float = 0.0
+
+
+def run_statewide_pipeline(session: Session, state_code: str = "NH") -> StatewidePipelineResult:
+    """Discover → download → import → rebuild → evaluate for all facilities in a state."""
+    seed_price_mappings(session)
+    session.commit()
+    result = StatewidePipelineResult()
+
+    facility_ids = set(
+        session.scalars(
+            select(Facility.id)
+            .join(FacilityLocation)
+            .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
+        )
+    )
+
+    sources = session.scalars(
+        select(FacilityPriceSource).where(
+            FacilityPriceSource.active.is_(True),
+            FacilityPriceSource.source_file_id.is_not(None),
+            FacilityPriceSource.facility_id.in_(facility_ids),
+        )
+    ).all()
+    result.sources_processed = len(sources)
+
+    for source in sources:
+        try:
+            summary = import_price_source(session, source)
+            if summary.skipped_unchanged:
+                result.skipped += 1
+            else:
+                result.imported += 1
+                result.total_rows += summary.rows_examined
+                result.total_records += summary.records_normalized
+        except Exception as exc:
+            result.failed += 1
+            logger.warning(
+                "statewide_import_failed",
+                extra={"facility_id": str(source.facility_id), "error": str(exc)},
+            )
+
+    projection = rebuild_price_summaries(session)
+    result.observations = projection["observations"]
+    result.summaries = projection["summaries"]
+
+    health = evaluate_pricing_health(session)
+    result.average_health = health["average_pricing_health"]
+
+    return result

@@ -19,6 +19,10 @@ class HospitalPriceSettings(BaseSettings):
         "CareCompare-HPT-Research/1.0 (public hospital transparency client)"
     )
     hospital_price_raw_dir: Path = Path("data/raw/hospital_prices/nh")
+    hospital_price_profiling_enabled: bool = False
+    hospital_price_profiling_milestone_rows: int = Field(1000, ge=100, le=50000)
+    hospital_price_checkpoint_enabled: bool = True
+    hospital_price_checkpoint_interval: int = Field(1, ge=1, le=100)
 
 
 hospital_price_settings = HospitalPriceSettings()

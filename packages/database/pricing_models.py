@@ -22,6 +22,25 @@ from sqlalchemy.orm import Mapped, mapped_column
 from packages.database.models import Base, TimestampMixin
 
 
+class ImportCheckpoint(Base):
+    __tablename__ = "import_checkpoints"
+    __table_args__ = (Index("ix_checkpoint_run_status", "import_run_id", "status"),)
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    import_run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("import_runs.id"), index=True)
+    source_file_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("source_files.id"), index=True)
+    parser_version: Mapped[str] = mapped_column(String(50))
+    source_checksum: Mapped[str] = mapped_column(String(64))
+    last_completed_line: Mapped[int] = mapped_column(BigInteger)
+    normalized_records_committed: Mapped[int] = mapped_column(BigInteger)
+    rate_details_committed: Mapped[int] = mapped_column(BigInteger)
+    batch_number: Mapped[int] = mapped_column(default=0)
+    checkpoint_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    resume_token: Mapped[dict[str, object] | None] = mapped_column(JSON, nullable=True)
+    status: Mapped[str] = mapped_column(String(30), default="active", index=True)
+
+
 class FacilityPriceSource(TimestampMixin, Base):
     __tablename__ = "facility_price_sources"
     __table_args__ = (
@@ -496,3 +515,37 @@ class PricingReviewAudit(Base):
     before_state: Mapped[dict[str, object]] = mapped_column(JSON)
     after_state: Mapped[dict[str, object]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class PriceChangeSnapshot(Base):
+    __tablename__ = "price_change_snapshots"
+    __table_args__ = (
+        Index(
+            "ix_price_change_facility_procedure",
+            "facility_id",
+            "procedure_id",
+            "snapshot_at",
+        ),
+    )
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    procedure_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("procedures.id"), index=True)
+    payer_entity_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("payer_entities.id"), nullable=True
+    )
+    service_setting: Mapped[str] = mapped_column(String(50))
+    previous_cash_median: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
+    current_cash_median: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
+    cash_change_pct: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
+    previous_negotiated_median: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
+    current_negotiated_median: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
+    negotiated_change_pct: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
+    previous_import_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("import_runs.id"), nullable=True
+    )
+    current_import_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("import_runs.id"), nullable=True
+    )
+    snapshot_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )

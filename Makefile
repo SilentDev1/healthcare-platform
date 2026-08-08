@@ -1,4 +1,4 @@
-.PHONY: setup dev db-up db-down migrate test lint typecheck import-cms-hospitals import-cms-quality import-nppes-organizations seed-facility-identity seed-procedure-catalog rebuild-search-index evaluate-data-health discover-hospital-price-sources download-hospital-price-files import-hospital-prices normalize-hospital-prices map-price-procedures evaluate-pricing-health rebuild-price-summaries pricing-pipeline api admin web build verify-phase-2 verify-phase-3 verify-phase-4
+.PHONY: setup dev db-up db-down migrate test lint typecheck import-cms-hospitals import-cms-quality import-nppes-organizations seed-facility-identity seed-procedure-catalog rebuild-search-index evaluate-data-health discover-hospital-price-sources download-hospital-price-files import-hospital-prices normalize-hospital-prices map-price-procedures evaluate-pricing-health rebuild-price-summaries pricing-pipeline api admin web build verify-phase-2 verify-phase-3 verify-phase-4 benchmark-pricing-import generate-large-pricing-fixture resume-price-import restart-price-import verify-phase-4-1 pipeline-discover-nh pipeline-download-nh pipeline-import-nh pipeline-postprocess-nh pipeline-full-nh audit-nh-hospitals statewide-scorecard procedure-coverage geocode-nh verify-phase-4-2
 
 setup:
 	command -v uv >/dev/null || (echo "Install uv: https://docs.astral.sh/uv/" && exit 1)
@@ -108,6 +108,68 @@ verify-phase-4: migrate
 	uv run python -m collectors.hospital_prices --fixtures-dir data/fixtures/hospital_prices
 	uv run python -m collectors.hospital_prices --fixtures-dir data/fixtures/hospital_prices
 	uv run python -m scripts.rebuild_search_index
+	uv run pytest --cov=services --cov=collectors --cov=packages --cov=scripts --cov-report=term-missing
+	$(MAKE) lint
+	$(MAKE) typecheck
+	$(MAKE) build
+	npm audit --audit-level=high
+
+benchmark-pricing-import:
+	uv run python -m scripts.benchmark_pricing_import
+
+generate-large-pricing-fixture:
+	uv run python -m scripts.generate_large_pricing_fixture
+
+resume-price-import:
+	uv run python -m scripts.resume_price_import --import-run-id $(IMPORT_RUN_ID)
+
+restart-price-import:
+	uv run python -m scripts.restart_price_import --source-file-id $(SOURCE_FILE_ID)
+
+pipeline-discover-nh:
+	uv run python -m scripts.pipeline_discover --state NH
+
+pipeline-download-nh:
+	uv run python -m scripts.pipeline_download --state NH
+
+pipeline-import-nh:
+	uv run python -m scripts.pipeline_import --state NH
+
+pipeline-postprocess-nh:
+	uv run python -m scripts.pipeline_postprocess --state NH
+
+pipeline-full-nh:
+	uv run python -m scripts.pipeline_full --state NH
+
+audit-nh-hospitals:
+	uv run python -m scripts.audit_nh_hospitals
+
+statewide-scorecard:
+	uv run python -m scripts.statewide_scorecard
+
+procedure-coverage:
+	uv run python -m scripts.report_procedure_coverage
+
+geocode-nh:
+	uv run python -m scripts.geocode_facilities
+
+verify-phase-4-2: migrate
+	uv run python -m collectors.hospital_prices --fixtures-dir data/fixtures/hospital_prices
+	uv run python -m collectors.hospital_prices --fixtures-dir data/fixtures/hospital_prices
+	uv run python -m scripts.rebuild_search_index
+	uv run python -m scripts.benchmark_pricing_import
+	uv run python -m scripts.phase_4_2_final_report
+	uv run pytest --cov=services --cov=collectors --cov=packages --cov=scripts --cov-report=term-missing
+	$(MAKE) lint
+	$(MAKE) typecheck
+	$(MAKE) build
+	npm audit --audit-level=high
+
+verify-phase-4-1: migrate
+	uv run python -m collectors.hospital_prices --fixtures-dir data/fixtures/hospital_prices
+	uv run python -m collectors.hospital_prices --fixtures-dir data/fixtures/hospital_prices
+	uv run python -m scripts.rebuild_search_index
+	uv run python -m scripts.benchmark_pricing_import
 	uv run pytest --cov=services --cov=collectors --cov=packages --cov=scripts --cov-report=term-missing
 	$(MAKE) lint
 	$(MAKE) typecheck

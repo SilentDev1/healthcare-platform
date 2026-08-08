@@ -406,3 +406,72 @@ class PricingCoverageResponse(BaseModel):
     facilities_with_publishable_prices: int
     publishable_procedures: int
     last_updated: datetime | None
+
+
+class FreshnessEntry(BaseModel):
+    facility_id: uuid.UUID
+    facility_name: str
+    last_download_at: datetime | None
+    freshness_score: float
+    days_since_download: int | None
+
+
+class FreshnessResponse(BaseModel):
+    items: list[FreshnessEntry]
+    average_freshness: float
+
+
+class StatewideScorecard(BaseModel):
+    state: str
+    total_facilities: int
+    component_scores: dict[str, float]
+    overall_readiness: float
+    target: float
+    meets_target: bool
+    details: dict[str, object]
+
+
+class FacilityScoreResponse(BaseModel):
+    facility_id: uuid.UUID
+    facility_name: str
+    city: str | None
+    overall_score: float
+    source_discovery_score: float
+    download_score: float
+    parse_score: float
+    mapping_score: float
+    payer_normalization_score: float
+    anomaly_score: float
+    freshness_score: float
+    price_coverage_score: float
+    calculated_at: datetime
+
+
+class FacilityScorePage(PageMetadata):
+    items: list[FacilityScoreResponse]
+
+
+class PricingHealthResponse(BaseModel):
+    facility_id: uuid.UUID
+    overall_score: float
+    source_discovery_score: float
+    download_score: float
+    parse_score: float
+    mapping_score: float
+    payer_normalization_score: float
+    anomaly_score: float
+    freshness_score: float
+    price_coverage_score: float
+    details: dict[str, object]
+    calculated_at: datetime
+
+
+class MapFacility(BaseModel):
+    type: str = "Feature"
+    geometry: dict[str, object]
+    properties: dict[str, object]
+
+
+class MapDataResponse(BaseModel):
+    type: str = "FeatureCollection"
+    features: list[MapFacility]

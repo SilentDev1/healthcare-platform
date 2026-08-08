@@ -3,8 +3,65 @@ import {
   apiGet,
   type Facility,
   type PricePage,
+  type PricingHealth,
   type QualityPage,
 } from "../../../lib/api";
+
+function ScoreBadge({ score }: { score: number }) {
+  const color =
+    score >= 80 ? "#087f5b" : score >= 50 ? "#e67700" : "#c92a2a";
+  return (
+    <span
+      style={{
+        background: color,
+        color: "white",
+        padding: "0.25rem 0.6rem",
+        borderRadius: "0.3rem",
+        fontWeight: 700,
+        fontSize: "0.9rem",
+      }}
+    >
+      {Math.round(score)}%
+    </span>
+  );
+}
+
+function ScoreBar({ label, value }: { label: string; value: number }) {
+  const color =
+    value >= 80 ? "#087f5b" : value >= 50 ? "#e67700" : "#c92a2a";
+  return (
+    <div style={{ marginBottom: "0.4rem" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: "0.85rem",
+          color: "#526862",
+        }}
+      >
+        <span>{label}</span>
+        <span>{Math.round(value)}%</span>
+      </div>
+      <div
+        style={{
+          background: "#e8efed",
+          borderRadius: "0.25rem",
+          height: "0.5rem",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            background: color,
+            width: `${Math.max(2, value)}%`,
+            height: "100%",
+            borderRadius: "0.25rem",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default async function FacilityPage({
   params,
@@ -18,6 +75,16 @@ export default async function FacilityPage({
       apiGet<QualityPage>(`/api/v1/facilities/${id}/quality?page_size=100`),
       apiGet<PricePage>(`/api/v1/facilities/${id}/prices?page_size=10`),
     ]);
+
+    let pricingHealth: PricingHealth | null = null;
+    try {
+      pricingHealth = await apiGet<PricingHealth>(
+        `/api/v1/facilities/${id}/pricing-health`,
+      );
+    } catch {
+      // Pricing health may not be available for all facilities
+    }
+
     const location = facility.locations[0];
     const rating = quality.items.find(
       (item) => item.cms_measure_id === "OVERALL_RATING",
@@ -33,6 +100,55 @@ export default async function FacilityPage({
             {location.postal_code}
           </p>
         )}
+
+        {pricingHealth && (
+          <section className="card" style={{ marginBottom: "1.5rem" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1rem",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>Pricing data health</h2>
+              <ScoreBadge score={pricingHealth.overall_score} />
+            </div>
+            <ScoreBar
+              label="Source discovery"
+              value={pricingHealth.source_discovery_score}
+            />
+            <ScoreBar label="Download" value={pricingHealth.download_score} />
+            <ScoreBar label="Parse" value={pricingHealth.parse_score} />
+            <ScoreBar label="Mapping" value={pricingHealth.mapping_score} />
+            <ScoreBar
+              label="Payer normalization"
+              value={pricingHealth.payer_normalization_score}
+            />
+            <ScoreBar label="Anomaly" value={pricingHealth.anomaly_score} />
+            <ScoreBar
+              label="Freshness"
+              value={pricingHealth.freshness_score}
+            />
+            <ScoreBar
+              label="Price coverage"
+              value={pricingHealth.price_coverage_score}
+            />
+            <p
+              style={{
+                fontSize: "0.8rem",
+                color: "#526862",
+                margin: "0.5rem 0 0",
+              }}
+            >
+              Last evaluated{" "}
+              {new Date(pricingHealth.calculated_at).toLocaleDateString(
+                "en-US",
+              )}
+            </p>
+          </section>
+        )}
+
         <section className="rating" aria-label="Overall CMS rating">
           <h2>Overall CMS rating</h2>
           <strong>

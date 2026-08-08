@@ -22,6 +22,50 @@ from packages.identity import normalize_name
 
 logger = structlog.get_logger()
 
+# Consumer-friendly search synonyms for procedure matching
+SYNONYMS: dict[str, list[str]] = {
+    "knee replacement": ["total knee arthroplasty", "knee arthroplasty"],
+    "hip replacement": ["total hip arthroplasty", "hip arthroplasty"],
+    "c-section": ["cesarean delivery", "cesarean section", "c section"],
+    "childbirth": ["vaginal delivery", "natural delivery"],
+    "heart ultrasound": ["echocardiogram", "echo"],
+    "ekg": ["electrocardiogram", "ecg"],
+    "ecg": ["electrocardiogram", "ekg"],
+    "mri": ["magnetic resonance imaging"],
+    "ct scan": ["computed tomography", "cat scan"],
+    "cat scan": ["computed tomography", "ct scan"],
+    "x-ray": ["radiograph", "x ray", "xray"],
+    "dexa": ["bone density scan", "bone density"],
+    "cbc": ["complete blood count"],
+    "cmp": ["comprehensive metabolic panel"],
+    "bmp": ["basic metabolic panel"],
+    "tsh": ["thyroid stimulating hormone", "thyroid test"],
+    "a1c": ["hemoglobin a1c", "hba1c", "diabetes blood test"],
+    "pap smear": ["cervical cancer screening", "pap test"],
+    "strep test": ["strep throat test", "rapid strep"],
+    "flu shot": ["flu vaccination", "influenza vaccine", "flu vaccine"],
+    "colonoscopy": ["colon exam", "colon screening"],
+    "cholesterol test": ["lipid panel", "cholesterol panel"],
+    "sleep study": ["polysomnography", "sleep test"],
+    "pt evaluation": ["physical therapy evaluation", "physical therapy"],
+    "er visit": ["emergency department visit", "emergency room visit", "ed visit"],
+    "gallbladder surgery": ["cholecystectomy", "gallbladder removal"],
+    "hernia surgery": ["hernia repair"],
+    "cataract removal": ["cataract surgery"],
+    "shoulder surgery": ["rotator cuff repair"],
+    "carpal tunnel": ["carpal tunnel release", "carpal tunnel surgery"],
+    "dialysis": ["dialysis session", "kidney dialysis", "dialysis treatment"],
+    "allergy test": ["allergy testing"],
+    "mammogram": ["screening mammogram", "diagnostic mammogram", "breast screening"],
+    "ultrasound": ["sonogram", "ultrasonography"],
+    "urine test": ["urinalysis"],
+    "pregnancy test": ["hcg test"],
+    "covid test": ["covid-19 test", "coronavirus test", "covid 19 test"],
+    "annual physical": ["annual wellness visit", "preventive checkup", "yearly physical"],
+    "stress test": ["cardiac stress test", "heart stress test"],
+    "heart cath": ["cardiac catheterization", "heart catheterization"],
+}
+
 
 @dataclass(frozen=True)
 class SearchResult:
@@ -238,6 +282,45 @@ def search(
                     document.metadata_json,
                 )
             )
+    # Synonym expansion: check if query matches a synonym and add results for expanded terms
+    query_lower = query.lower().strip()
+    synonym_targets = SYNONYMS.get(query_lower, [])
+    if not synonym_targets:
+        # Check if any synonym key partially matches
+        for syn_key, syn_values in SYNONYMS.items():
+            if query_lower in syn_key or syn_key in query_lower:
+                synonym_targets = syn_values
+                break
+    if synonym_targets:
+        seen_ids = {(r.entity_type, r.entity_id) for r in results}
+        for synonym_term in synonym_targets:
+            syn_normalized = normalize_name(synonym_term)
+            for document in documents:
+                key = (document.entity_type, document.entity_id)
+                if key in seen_ids:
+                    continue
+                if syn_normalized in document.normalized_text:
+                    seen_ids.add(key)
+                    location = (
+                        " · ".join(
+                            filter(None, [document.city, document.state, document.postal_code])
+                        )
+                        or None
+                    )
+                    results.append(
+                        SearchResult(
+                            document.entity_type,
+                            document.entity_id,
+                            document.primary_text,
+                            document.secondary_text,
+                            location,
+                            85.0,
+                            "synonym_expansion",
+                            query,
+                            document.metadata_json,
+                        )
+                    )
+
     results.sort(key=lambda item: (-item.score, item.title.lower(), str(item.entity_id)))
     logger.info(
         "search_completed",

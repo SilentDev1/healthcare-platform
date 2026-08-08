@@ -90,3 +90,42 @@ export interface PricePage {
   page: number;
   page_size: number;
 }
+
+export interface PricingHealth {
+  facility_id: string;
+  overall_score: number;
+  source_discovery_score: number;
+  download_score: number;
+  parse_score: number;
+  mapping_score: number;
+  payer_normalization_score: number;
+  anomaly_score: number;
+  freshness_score: number;
+  price_coverage_score: number;
+  details: Record<string, unknown>;
+  calculated_at: string;
+}
+
+export interface MapFeature {
+  type: string;
+  geometry: { type: string; coordinates: [number, number] };
+  properties: {
+    id: string;
+    name: string;
+    city: string;
+    pricing_status: string;
+    procedure_count: number;
+  };
+}
+
+export interface MapData {
+  type: string;
+  features: MapFeature[];
+}
+
+export interface SearchSuggestion {
+  entity_type: string;
+  entity_id: string;
+  title: string;
+  match_reason: string;
+}

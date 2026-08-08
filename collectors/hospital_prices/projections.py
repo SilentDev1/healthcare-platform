@@ -13,15 +13,63 @@ from packages.database import (
     FacilityProcedurePriceSummary,
     HospitalPriceRateDetail,
     HospitalPriceRecord,
+    PriceChangeSnapshot,
     PriceRecordProcedureMapping,
     PricingAnomaly,
     PricingHealthScore,
 )
 
 
+def freshness_score(last_download: datetime | None) -> float:
+    """Calculate freshness score based on days since last download."""
+    if last_download is None:
+        return 0.0
+    now = datetime.now(UTC)
+    # Handle timezone-naive datetimes (e.g., from SQLite)
+    if last_download.tzinfo is None:
+        last_download = last_download.replace(tzinfo=UTC)
+    days = (now - last_download).days
+    if days <= 30:
+        return 100.0
+    if days <= 60:
+        return 80.0
+    if days <= 90:
+        return 50.0
+    if days <= 180:
+        return 20.0
+    return 0.0
+
+
 def rebuild_price_summaries(session: Session) -> dict[str, int]:
+    # Snapshot current summaries before deleting (for historical price tracking)
+    existing_summaries = session.scalars(
+        select(FacilityProcedurePriceSummary).where(
+            FacilityProcedurePriceSummary.publication_status == "publishable"
+        )
+    ).all()
+    previous_prices: dict[
+        tuple[object, object, object, str], tuple[Decimal | None, Decimal | None]
+    ] = {}
+    for s in existing_summaries:
+        key = (s.facility_id, s.procedure_id, s.payer_entity_id, s.service_setting)
+        previous_prices[key] = (s.cash_price_median, s.negotiated_price_median)
+
     session.execute(delete(FacilityProcedurePriceSummary))
     session.execute(delete(FacilityProcedurePriceObservation))
+
+    # Pre-load blocked record IDs in one query (O(1) set lookup per record)
+    blocked_ids: set[object] = set(
+        session.scalars(
+            select(PricingAnomaly.hospital_price_record_id)
+            .where(
+                PricingAnomaly.status == "open",
+                PricingAnomaly.severity.in_(["error", "critical"]),
+                PricingAnomaly.hospital_price_record_id.is_not(None),
+            )
+            .distinct()
+        )
+    )
+
     records = session.execute(
         select(HospitalPriceRecord, PriceRecordProcedureMapping)
         .join(
@@ -30,21 +78,24 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
         )
         .where(PriceRecordProcedureMapping.reviewed.is_(True))
     ).all()
+
+    # Pre-load all rate details for matched records in one query
+    matched_record_ids = [record.id for record, _mapping in records]
+    rate_details_by_record: dict[object, list[HospitalPriceRateDetail]] = defaultdict(list)
+    if matched_record_ids:
+        for rate in session.scalars(
+            select(HospitalPriceRateDetail).where(
+                HospitalPriceRateDetail.hospital_price_record_id.in_(matched_record_ids)
+            )
+        ):
+            rate_details_by_record[rate.hospital_price_record_id].append(rate)
+
     observation_count = 0
     for record, mapping in records:
-        blocked = (
-            session.scalar(
-                select(func.count(PricingAnomaly.id)).where(
-                    PricingAnomaly.hospital_price_record_id == record.id,
-                    PricingAnomaly.status == "open",
-                    PricingAnomaly.severity.in_(["error", "critical"]),
-                )
-            )
-            or 0
-        )
+        is_blocked = record.id in blocked_ids
         status = (
             "suppressed"
-            if blocked
+            if is_blocked
             else "publishable"
             if record.parser_name.startswith("cms_hpt")
             else "review_required"
@@ -74,11 +125,8 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
                     )
                 )
                 observation_count += 1
-        for rate in session.scalars(
-            select(HospitalPriceRateDetail).where(
-                HospitalPriceRateDetail.hospital_price_record_id == record.id
-            )
-        ):
+        # Use pre-loaded rate details instead of per-record query
+        for rate in rate_details_by_record.get(record.id, []):
             if rate.negotiated_rate is not None:
                 session.add(
                     FacilityProcedurePriceObservation(
@@ -147,6 +195,51 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
             )
         )
     session.flush()
+
+    # Create change snapshots for any prices that changed
+    if previous_prices:
+        for new_summary in session.scalars(
+            select(FacilityProcedurePriceSummary).where(
+                FacilityProcedurePriceSummary.publication_status == "publishable"
+            )
+        ):
+            key = (
+                new_summary.facility_id,
+                new_summary.procedure_id,
+                new_summary.payer_entity_id,
+                new_summary.service_setting,
+            )
+            prev = previous_prices.get(key)
+            if prev is None:
+                continue
+            prev_cash, prev_neg = prev
+            curr_cash = new_summary.cash_price_median
+            curr_neg = new_summary.negotiated_price_median
+            if prev_cash == curr_cash and prev_neg == curr_neg:
+                continue
+
+            def _pct(old: Decimal | None, new: Decimal | None) -> Decimal | None:
+                if old and new and old != 0:
+                    return Decimal(str(round(float((new - old) / old * 100), 4)))
+                return None
+
+            session.add(
+                PriceChangeSnapshot(
+                    facility_id=new_summary.facility_id,
+                    procedure_id=new_summary.procedure_id,
+                    payer_entity_id=new_summary.payer_entity_id,
+                    service_setting=new_summary.service_setting,
+                    previous_cash_median=prev_cash,
+                    current_cash_median=curr_cash,
+                    cash_change_pct=_pct(prev_cash, curr_cash),
+                    previous_negotiated_median=prev_neg,
+                    current_negotiated_median=curr_neg,
+                    negotiated_change_pct=_pct(prev_neg, curr_neg),
+                    snapshot_at=datetime.now(UTC),
+                )
+            )
+        session.flush()
+
     summary_count = session.scalar(select(func.count(FacilityProcedurePriceSummary.id))) or 0
     session.commit()
     return {"observations": observation_count, "summaries": summary_count}
@@ -154,73 +247,101 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
 
 def evaluate_pricing_health(session: Session) -> dict[str, int | float]:
     session.execute(delete(PricingHealthScore))
-    scores: list[float] = []
-    for facility in session.scalars(select(Facility)):
-        sources = session.scalars(
-            select(FacilityPriceSource).where(
-                FacilityPriceSource.facility_id == facility.id, FacilityPriceSource.active.is_(True)
+
+    # Pre-load all counts in batch queries instead of per-facility N+1
+    facility_ids = list(session.scalars(select(Facility.id)))
+
+    # Per-facility record counts
+    record_counts: dict[object, int] = {
+        row[0]: row[1]
+        for row in session.execute(
+            select(HospitalPriceRecord.facility_id, func.count(HospitalPriceRecord.id)).group_by(
+                HospitalPriceRecord.facility_id
             )
         ).all()
-        source_files = [item.source_file_id for item in sources if item.source_file_id]
+    }
+
+    # Per-facility reviewed mapping counts
+    mapping_counts: dict[object, int] = {
+        row[0]: row[1]
+        for row in session.execute(
+            select(HospitalPriceRecord.facility_id, func.count(PriceRecordProcedureMapping.id))
+            .join(HospitalPriceRecord)
+            .where(PriceRecordProcedureMapping.reviewed.is_(True))
+            .group_by(HospitalPriceRecord.facility_id)
+        ).all()
+    }
+
+    # Per-facility total rate counts
+    rate_counts: dict[object, int] = {
+        row[0]: row[1]
+        for row in session.execute(
+            select(HospitalPriceRecord.facility_id, func.count(HospitalPriceRateDetail.id))
+            .join(HospitalPriceRecord)
+            .group_by(HospitalPriceRecord.facility_id)
+        ).all()
+    }
+
+    # Per-facility normalized rate counts (payer matched)
+    normalized_rate_counts: dict[object, int] = {
+        row[0]: row[1]
+        for row in session.execute(
+            select(HospitalPriceRecord.facility_id, func.count(HospitalPriceRateDetail.id))
+            .join(HospitalPriceRecord)
+            .where(HospitalPriceRateDetail.payer_entity_id.is_not(None))
+            .group_by(HospitalPriceRecord.facility_id)
+        ).all()
+    }
+
+    # Per-facility open high-severity anomaly counts
+    anomaly_counts: dict[object, int] = {
+        row[0]: row[1]
+        for row in session.execute(
+            select(HospitalPriceRecord.facility_id, func.count(PricingAnomaly.id))
+            .join(HospitalPriceRecord)
+            .where(
+                PricingAnomaly.status == "open",
+                PricingAnomaly.severity.in_(["error", "critical"]),
+            )
+            .group_by(HospitalPriceRecord.facility_id)
+        ).all()
+    }
+
+    # Per-facility publishable summary counts
+    summary_counts: dict[object, int] = {
+        row[0]: row[1]
+        for row in session.execute(
+            select(
+                FacilityProcedurePriceSummary.facility_id,
+                func.count(FacilityProcedurePriceSummary.id),
+            )
+            .where(FacilityProcedurePriceSummary.publication_status == "publishable")
+            .group_by(FacilityProcedurePriceSummary.facility_id)
+        ).all()
+    }
+
+    # Per-facility source info
+    facility_sources: dict[object, list[FacilityPriceSource]] = defaultdict(list)
+    for source in session.scalars(
+        select(FacilityPriceSource).where(FacilityPriceSource.active.is_(True))
+    ):
+        facility_sources[source.facility_id].append(source)
+
+    scores: list[float] = []
+    for facility_id in facility_ids:
+        sources = facility_sources.get(facility_id, [])
+        source_files = [s.source_file_id for s in sources if s.source_file_id]
         downloaded = bool(source_files)
-        parsed = (
-            session.scalar(
-                select(func.count(HospitalPriceRecord.id)).where(
-                    HospitalPriceRecord.facility_id == facility.id
-                )
-            )
-            or 0
-        )
-        mapped = (
-            session.scalar(
-                select(func.count(PriceRecordProcedureMapping.id))
-                .join(HospitalPriceRecord)
-                .where(
-                    HospitalPriceRecord.facility_id == facility.id,
-                    PriceRecordProcedureMapping.reviewed.is_(True),
-                )
-            )
-            or 0
-        )
-        rates = (
-            session.scalar(
-                select(func.count(HospitalPriceRateDetail.id))
-                .join(HospitalPriceRecord)
-                .where(HospitalPriceRecord.facility_id == facility.id)
-            )
-            or 0
-        )
-        normalized_rates = (
-            session.scalar(
-                select(func.count(HospitalPriceRateDetail.id))
-                .join(HospitalPriceRecord)
-                .where(
-                    HospitalPriceRecord.facility_id == facility.id,
-                    HospitalPriceRateDetail.payer_entity_id.is_not(None),
-                )
-            )
-            or 0
-        )
-        anomalies = (
-            session.scalar(
-                select(func.count(PricingAnomaly.id))
-                .join(HospitalPriceRecord)
-                .where(
-                    HospitalPriceRecord.facility_id == facility.id,
-                    PricingAnomaly.status == "open",
-                    PricingAnomaly.severity.in_(["error", "critical"]),
-                )
-            )
-            or 0
-        )
-        summaries = (
-            session.scalar(
-                select(func.count(FacilityProcedurePriceSummary.id)).where(
-                    FacilityProcedurePriceSummary.facility_id == facility.id,
-                    FacilityProcedurePriceSummary.publication_status == "publishable",
-                )
-            )
-            or 0
+        parsed = record_counts.get(facility_id, 0)
+        mapped = mapping_counts.get(facility_id, 0)
+        rates = rate_counts.get(facility_id, 0)
+        normalized_rates = normalized_rate_counts.get(facility_id, 0)
+        anomalies = anomaly_counts.get(facility_id, 0)
+        summaries = summary_counts.get(facility_id, 0)
+        # Calculate actual freshness from most recent download
+        latest_download = max(
+            (s.last_successful_download_at for s in sources if s.last_successful_download_at),
+            default=None,
         )
         components = [
             100 if sources else 0,
@@ -229,14 +350,14 @@ def evaluate_pricing_health(session: Session) -> dict[str, int | float]:
             round(mapped / parsed * 100, 2) if parsed else 0,
             round(normalized_rates / rates * 100, 2) if rates else (100 if parsed else 0),
             100 if anomalies == 0 else max(0, 100 - anomalies * 20),
-            100 if downloaded else 0,
+            freshness_score(latest_download),
             min(100, summaries * 10),
         ]
         overall = round(sum(components) / len(components), 2)
         scores.append(overall)
         session.add(
             PricingHealthScore(
-                facility_id=facility.id,
+                facility_id=facility_id,
                 source_discovery_score=components[0],
                 download_score=components[1],
                 parse_score=components[2],

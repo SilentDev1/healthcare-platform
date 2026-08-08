@@ -34,10 +34,19 @@ class SourceStatus(str, enum.Enum):
 
 
 class ImportStatus(str, enum.Enum):
-    RUNNING = "running"
+    QUEUED = "queued"
+    DOWNLOADING = "downloading"
+    PARSING = "parsing"
+    NORMALIZING = "normalizing"
+    PERSISTING = "persisting"
+    POST_PROCESSING = "post_processing"
     COMPLETED = "completed"
     COMPLETED_WITH_ERRORS = "completed_with_errors"
     FAILED = "failed"
+    INTERRUPTED = "interrupted"
+    RESUMABLE = "resumable"
+    CANCELLED = "cancelled"
+    RUNNING = "running"  # backwards compat
 
 
 class TimestampMixin:
@@ -123,6 +132,19 @@ class ImportRun(Base):
     rows_rejected: Mapped[int] = mapped_column(BigInteger, default=0)
     error_summary: Mapped[str | None] = mapped_column(Text)
     source_file_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("source_files.id"), index=True)
+    # Phase 4.1 performance tracking columns
+    stage: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    stage_started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    batches_committed: Mapped[int] = mapped_column(BigInteger, default=0)
+    bytes_processed: Mapped[int] = mapped_column(BigInteger, default=0)
+    throughput_rows_per_sec: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
+    parser_version_used: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    source_checksum_used: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    last_checkpoint_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
 
 class QualityMeasureDefinition(TimestampMixin, Base):

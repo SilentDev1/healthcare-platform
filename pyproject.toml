@@ -40,6 +40,6 @@ plugins = ["pydantic.mypy"]
 exclude = ["alembic/versions"]
 
 [tool.pytest.ini_options]
-testpaths = ["services/api/tests", "collectors/cms_hospitals/tests", "collectors/cms_quality/tests", "collectors/hospital_prices/tests", "packages/database/tests"]
+testpaths = ["services/api/tests", "collectors/cms_hospitals/tests", "collectors/cms_quality/tests", "collectors/hospital_prices/tests", "packages/database/tests", "packages/search/tests"]
 addopts = "--strict-markers --disable-warnings"
 pythonpath = ["."]

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from packages.database import Procedure, ProcedureCodeMapping, ProcedureCodeSystem, session_factory
 
 MAPPINGS = (
+    # --- Imaging (original 10) ---
     ("mri-brain-without-contrast", "CPT", "70551"),
     ("mri-knee-without-contrast", "CPT", "73721"),
     ("mri-lumbar-spine-without-contrast", "CPT", "72148"),
@@ -14,10 +15,53 @@ MAPPINGS = (
     ("diagnostic-mammogram", "CPT", "77066"),
     ("abdominal-ultrasound", "CPT", "76700"),
     ("pelvic-ultrasound", "CPT", "76856"),
+    ("bone-density-scan", "CPT", "77080"),
+    # --- Gastroenterology (original 2) ---
     ("colonoscopy", "CPT", "45378"),
     ("upper-endoscopy", "CPT", "43235"),
+    # --- Labs (original 2 + new) ---
     ("complete-blood-count", "CPT", "85025"),
     ("comprehensive-metabolic-panel", "CPT", "80053"),
+    ("basic-metabolic-panel", "CPT", "80048"),
+    ("lipid-panel", "CPT", "80061"),
+    ("a1c-test", "CPT", "83036"),
+    ("thyroid-test", "CPT", "84443"),
+    ("urinalysis", "CPT", "81001"),
+    ("pregnancy-test", "CPT", "81025"),
+    ("strep-test", "CPT", "87880"),
+    ("covid-test", "CPT", "87635"),
+    ("surgical-pathology", "CPT", "88305"),
+    ("pap-test", "CPT", "88175"),
+    # --- Cardiology ---
+    ("echocardiogram", "CPT", "93306"),
+    ("cardiac-stress-test", "CPT", "93015"),
+    ("electrocardiogram", "CPT", "93000"),
+    ("cardiac-catheterization", "CPT", "93458"),
+    # --- Surgery ---
+    ("cataract-surgery", "CPT", "66984"),
+    ("hernia-repair", "CPT", "49505"),
+    ("gallbladder-removal", "CPT", "47562"),
+    ("knee-replacement", "CPT", "27447"),
+    ("hip-replacement", "CPT", "27130"),
+    ("carpal-tunnel-release", "CPT", "64721"),
+    ("rotator-cuff-repair", "CPT", "29827"),
+    # --- Maternity (MS-DRG) ---
+    ("vaginal-delivery", "MS_DRG", "775"),
+    ("cesarean-delivery", "MS_DRG", "766"),
+    # --- Emergency department ---
+    ("ed-visit-level-1", "CPT", "99281"),
+    ("ed-visit-level-2", "CPT", "99282"),
+    ("ed-visit-level-3", "CPT", "99283"),
+    ("ed-visit-level-4", "CPT", "99284"),
+    ("ed-visit-level-5", "CPT", "99285"),
+    # --- Office / other ---
+    ("urgent-care-visit", "CPT", "99213"),
+    ("physical-therapy-evaluation", "CPT", "97161"),
+    ("sleep-study", "CPT", "95810"),
+    ("allergy-testing", "CPT", "95004"),
+    ("flu-vaccine", "CPT", "90686"),
+    ("annual-wellness-visit", "HCPCS", "G0438"),
+    ("dialysis-session", "CPT", "90935"),
 )
 
 

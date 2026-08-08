@@ -124,6 +124,32 @@ export interface PricingAdminItem {
   data: Record<string, unknown>;
 }
 
+export interface StatewideScorecard {
+  state: string;
+  total_facilities: number;
+  component_scores: Record<string, number>;
+  overall_readiness: number;
+  target: number;
+  meets_target: boolean;
+  details: Record<string, unknown>;
+}
+
+export interface FacilityScore {
+  facility_id: string;
+  facility_name: string;
+  city: string | null;
+  overall_score: number;
+  source_discovery_score: number;
+  download_score: number;
+  parse_score: number;
+  mapping_score: number;
+  payer_normalization_score: number;
+  anomaly_score: number;
+  freshness_score: number;
+  price_coverage_score: number;
+  calculated_at: string;
+}
+
 export function formatDate(value: string | null): string {
   return value
     ? new Intl.DateTimeFormat("en-US", {

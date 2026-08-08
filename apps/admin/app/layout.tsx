@@ -27,6 +27,7 @@ export default function Layout({
             <Link href="/pipeline-status">Pipelines</Link>
             <Link href="/search-index">Search index</Link>
             <Link href="/pricing">Pricing</Link>
+            <Link href="/scorecard">Scorecard</Link>
           </nav>
         </header>
         {children}

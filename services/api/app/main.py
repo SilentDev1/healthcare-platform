@@ -31,6 +31,7 @@ from packages.database import (
     PriceSourceDiscoveryObservation,
     PriceSourceDiscoveryRun,
     PricingAnomaly,
+    PricingHealthScore,
     PricingUnmatchedRecord,
     Procedure,
     ProcedureAlias,
@@ -51,12 +52,16 @@ from services.api.app.schemas import (
     FacilityPage,
     FacilityQualityPage,
     FacilityResponse,
+    FacilityScorePage,
+    FreshnessResponse,
     IdentityCandidatePage,
     ImportRunPage,
+    MapDataResponse,
     PipelineStatusPage,
     PriceRecordPage,
     PricingAdminPage,
     PricingCoverageResponse,
+    PricingHealthResponse,
     PricingSourcePage,
     ProcedureCategoryResponse,
     ProcedurePage,
@@ -65,6 +70,7 @@ from services.api.app.schemas import (
     QualityMeasurePage,
     SearchPage,
     SourceFilePage,
+    StatewideScorecard,
     StatusResponse,
     UnmatchedRecordPage,
 )
@@ -140,6 +146,75 @@ def list_facilities(
     ).all()
     total = session.scalar(count_query.where(*filters)) or 0
     return FacilityPage(items=list(items), page=page, page_size=page_size, total=total)
+
+
+@app.get("/api/v1/facilities/map-data", response_model=MapDataResponse, tags=["facilities"])
+def facilities_map_data(
+    session: Annotated[Session, Depends(get_session)],
+    pricing_status: Annotated[str | None, Query(max_length=30)] = None,
+) -> MapDataResponse:
+    rows = session.execute(
+        select(Facility, FacilityLocation)
+        .join(FacilityLocation)
+        .where(
+            Facility.active.is_(True),
+            FacilityLocation.state == "NH",
+            FacilityLocation.latitude.is_not(None),
+            FacilityLocation.longitude.is_not(None),
+        )
+        .order_by(Facility.display_name)
+    ).all()
+
+    publishable_facilities = set(
+        session.scalars(
+            select(func.distinct(FacilityProcedurePriceSummary.facility_id)).where(
+                FacilityProcedurePriceSummary.publication_status == "publishable"
+            )
+        )
+    )
+    partial_facilities = set(
+        session.scalars(select(func.distinct(HospitalPriceRecord.facility_id)))
+    )
+
+    features = []
+    for facility, location in rows:
+        if facility.id in publishable_facilities:
+            fac_status = "publishable"
+        elif facility.id in partial_facilities:
+            fac_status = "partial"
+        else:
+            fac_status = "no_data"
+
+        if pricing_status and fac_status != pricing_status:
+            continue
+
+        procedure_count = (
+            session.scalar(
+                select(func.count(func.distinct(FacilityProcedurePriceSummary.procedure_id))).where(
+                    FacilityProcedurePriceSummary.facility_id == facility.id,
+                    FacilityProcedurePriceSummary.publication_status == "publishable",
+                )
+            )
+            or 0
+        )
+
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [float(location.longitude), float(location.latitude)],
+                },
+                "properties": {
+                    "id": str(facility.id),
+                    "name": facility.display_name,
+                    "city": location.city,
+                    "pricing_status": fac_status,
+                    "procedure_count": procedure_count,
+                },
+            }
+        )
+    return MapDataResponse(features=features)
 
 
 @app.get("/api/v1/facilities/{facility_id}", response_model=FacilityResponse, tags=["facilities"])
@@ -339,6 +414,20 @@ def admin_import_runs(
             "error_summary": run.error_summary,
             "source_file_id": run.source_file_id,
             "source_name": source.source_name,
+            "stage": run.stage,
+            "stage_started_at": run.stage_started_at,
+            "batches_committed": run.batches_committed,
+            "bytes_processed": run.bytes_processed,
+            "throughput_rows_per_sec": float(run.throughput_rows_per_sec)
+            if run.throughput_rows_per_sec is not None
+            else None,
+            "last_checkpoint_at": run.last_checkpoint_at,
+            "parser_version_used": run.parser_version_used,
+            "source_checksum_used": run.source_checksum_used,
+            "resumable": run.status.value in ("interrupted", "failed"),
+            "elapsed_seconds": round((run.finished_at - run.started_at).total_seconds(), 2)
+            if run.finished_at and run.started_at
+            else None,
         }
         for run, source in rows
     ]
@@ -1215,6 +1304,130 @@ def public_pricing_plans(
             query.distinct().order_by(InsurancePlanEntity.canonical_name)
         ).all()
     ]
+
+
+@app.get("/api/v1/pricing/freshness", response_model=FreshnessResponse, tags=["pricing"])
+def pricing_freshness(
+    session: Annotated[Session, Depends(get_session)],
+) -> FreshnessResponse:
+    from datetime import UTC
+    from datetime import datetime as dt
+
+    from collectors.hospital_prices.projections import freshness_score as calc_freshness
+
+    rows = session.execute(
+        select(Facility, FacilityPriceSource)
+        .join(FacilityPriceSource, FacilityPriceSource.facility_id == Facility.id)
+        .where(FacilityPriceSource.active.is_(True))
+        .order_by(Facility.display_name)
+    ).all()
+
+    items = []
+    for facility, source in rows:
+        last_dl = source.last_successful_download_at
+        if last_dl and last_dl.tzinfo is None:
+            last_dl = last_dl.replace(tzinfo=UTC)
+        days = (dt.now(UTC) - last_dl).days if last_dl else None
+        score = calc_freshness(last_dl)
+        items.append(
+            {
+                "facility_id": facility.id,
+                "facility_name": facility.display_name,
+                "last_download_at": last_dl,
+                "freshness_score": score,
+                "days_since_download": days,
+            }
+        )
+    avg = round(sum(i["freshness_score"] for i in items) / len(items), 1) if items else 0
+    return FreshnessResponse(items=items, average_freshness=avg)
+
+
+@app.get("/api/v1/pricing/scorecard", response_model=StatewideScorecard, tags=["pricing"])
+def pricing_scorecard(
+    session: Annotated[Session, Depends(get_session)],
+) -> StatewideScorecard:
+    from scripts.statewide_scorecard import calculate_scorecard
+
+    return StatewideScorecard(**calculate_scorecard(session))
+
+
+@app.get("/api/v1/pricing/facility-scores", response_model=FacilityScorePage, tags=["pricing"])
+def facility_scores(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 25,
+    sort: Annotated[str, Query(pattern="^(overall_score|facility_name)$")] = "overall_score",
+    min_score: Annotated[float | None, Query(ge=0, le=100)] = None,
+) -> FacilityScorePage:
+    rows = session.execute(
+        select(PricingHealthScore, Facility, FacilityLocation)
+        .join(Facility, Facility.id == PricingHealthScore.facility_id)
+        .outerjoin(FacilityLocation, FacilityLocation.facility_id == Facility.id)
+        .where(*([PricingHealthScore.overall_score >= min_score] if min_score is not None else []))
+        .order_by(
+            PricingHealthScore.overall_score if sort == "overall_score" else Facility.display_name,
+            PricingHealthScore.facility_id,
+        )
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    items = [
+        {
+            "facility_id": score.facility_id,
+            "facility_name": facility.display_name,
+            "city": location.city if location else None,
+            "overall_score": float(score.overall_score),
+            "source_discovery_score": float(score.source_discovery_score),
+            "download_score": float(score.download_score),
+            "parse_score": float(score.parse_score),
+            "mapping_score": float(score.mapping_score),
+            "payer_normalization_score": float(score.payer_normalization_score),
+            "anomaly_score": float(score.anomaly_score),
+            "freshness_score": float(score.freshness_score),
+            "price_coverage_score": float(score.price_coverage_score),
+            "calculated_at": score.calculated_at,
+        }
+        for score, facility, location in rows
+    ]
+    total = (
+        session.scalar(
+            select(func.count(PricingHealthScore.id)).where(
+                *([PricingHealthScore.overall_score >= min_score] if min_score is not None else [])
+            )
+        )
+        or 0
+    )
+    return FacilityScorePage(items=items, page=page, page_size=page_size, total=total)
+
+
+@app.get(
+    "/api/v1/facilities/{facility_id}/pricing-health",
+    response_model=PricingHealthResponse,
+    tags=["pricing"],
+)
+def facility_pricing_health(
+    facility_id: uuid.UUID,
+    session: Annotated[Session, Depends(get_session)],
+) -> PricingHealthResponse:
+    score = session.scalar(
+        select(PricingHealthScore).where(PricingHealthScore.facility_id == facility_id)
+    )
+    if score is None:
+        raise HTTPException(status_code=404, detail="pricing health not available")
+    return PricingHealthResponse(
+        facility_id=score.facility_id,
+        overall_score=float(score.overall_score),
+        source_discovery_score=float(score.source_discovery_score),
+        download_score=float(score.download_score),
+        parse_score=float(score.parse_score),
+        mapping_score=float(score.mapping_score),
+        payer_normalization_score=float(score.payer_normalization_score),
+        anomaly_score=float(score.anomaly_score),
+        freshness_score=float(score.freshness_score),
+        price_coverage_score=float(score.price_coverage_score),
+        details=score.details,
+        calculated_at=score.calculated_at,
+    )
 
 
 @app.get("/api/v1/pricing/coverage", response_model=PricingCoverageResponse, tags=["pricing"])

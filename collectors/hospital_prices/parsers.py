@@ -16,8 +16,24 @@ class ParserMatch:
     detected_format: str
 
 
-CSV_DESCRIPTION = ("description", "general_description", "service_description", "item_description")
-CSV_CODES = ("code", "billing_code", "billing/accounting_code", "cpt_hcpcs")
+CSV_DESCRIPTION = (
+    "description",
+    "general_description",
+    "service_description",
+    "item_description",
+    "item/service",
+    "item_service",
+    "procedure",
+)
+CSV_CODES = (
+    "code",
+    "billing_code",
+    "billing/accounting_code",
+    "cpt_hcpcs",
+    "procedure_code",
+    "hcpcs_code",
+    "cpt_code",
+)
 CMS_FIELDS = {"description", "setting", "code", "gross_charge", "discounted_cash_price"}
 
 
@@ -63,7 +79,15 @@ def inspect_format(path: Path) -> tuple[ParserMatch | None, list[str], list[obje
         return None, headers, sample
     lines = text.splitlines()
     header_index = next(
-        (index for index, line in enumerate(lines) if line.lower().startswith("description,")), 0
+        (
+            index
+            for index, line in enumerate(lines)
+            if any(
+                line.lower().startswith(token)
+                for token in ("description,", "item/service,", "item_service,", "procedure,")
+            )
+        ),
+        0,
     )
     csv_text = "\n".join(lines[header_index:])
     delimiter = csv.Sniffer().sniff(csv_text[:8192], delimiters=",|\t;").delimiter
@@ -143,7 +167,14 @@ def iter_rows(path: Path, match: ParserMatch) -> Iterator[dict[str, Any]]:
                 lowered = line.lower()
                 if any(
                     token in lowered
-                    for token in ("description,", "item_description,", "service_description,")
+                    for token in (
+                        "description,",
+                        "item_description,",
+                        "service_description,",
+                        "item/service,",
+                        "item_service,",
+                        "procedure,",
+                    )
                 ):
                     break
                 if len(metadata_lines) >= 10:

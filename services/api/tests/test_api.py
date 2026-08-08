@@ -237,3 +237,83 @@ def test_phase_4_pricing_endpoints_are_filtered_and_paginated() -> None:
     ):
         response = client.get(path)
         assert response.status_code == 200, (path, response.text)
+
+
+def test_phase_4_2_scorecard_endpoint() -> None:
+    scorecard = client.get("/api/v1/pricing/scorecard")
+    assert scorecard.status_code == 200
+    data = scorecard.json()
+    assert "overall_readiness" in data
+    assert "component_scores" in data
+    components = data["component_scores"]
+    assert set(components.keys()) == {
+        "discovery",
+        "parsing",
+        "mapping",
+        "quality",
+        "freshness",
+        "coverage",
+    }
+
+
+def test_phase_4_2_freshness_endpoint() -> None:
+    freshness = client.get("/api/v1/pricing/freshness")
+    assert freshness.status_code == 200
+    data = freshness.json()
+    assert "items" in data
+
+
+def test_phase_4_2_facility_scores_endpoint() -> None:
+    scores = client.get("/api/v1/pricing/facility-scores?page=1&page_size=10")
+    assert scores.status_code == 200
+    data = scores.json()
+    assert "items" in data
+    assert "total" in data
+    assert "page" in data
+
+
+def test_phase_4_2_facility_scores_sorting() -> None:
+    by_score = client.get("/api/v1/pricing/facility-scores?sort=overall_score")
+    assert by_score.status_code == 200
+    by_name = client.get("/api/v1/pricing/facility-scores?sort=facility_name")
+    assert by_name.status_code == 200
+
+
+def test_phase_4_2_facility_pricing_health() -> None:
+    fid = "00000000-0000-0000-0000-000000000001"
+    health = client.get(f"/api/v1/facilities/{fid}/pricing-health")
+    assert health.status_code == 200
+    data = health.json()
+    assert "overall_score" in data
+
+
+def test_phase_4_2_facility_pricing_health_not_found() -> None:
+    fid = "00000000-0000-0000-0000-000000000099"
+    health = client.get(f"/api/v1/facilities/{fid}/pricing-health")
+    assert health.status_code == 404
+
+
+def test_phase_4_2_map_data_endpoint() -> None:
+    map_data = client.get("/api/v1/facilities/map-data")
+    assert map_data.status_code == 200
+    data = map_data.json()
+    assert data["type"] == "FeatureCollection"
+    assert "features" in data
+
+
+def test_phase_4_2_map_data_with_filter() -> None:
+    filtered = client.get("/api/v1/facilities/map-data?pricing_status=publishable")
+    assert filtered.status_code == 200
+    data = filtered.json()
+    assert data["type"] == "FeatureCollection"
+
+
+def test_phase_4_2_price_filtering() -> None:
+    prices = client.get(
+        "/api/v1/procedures/mri-brain-without-contrast/prices?state=NH&service_setting=outpatient"
+    )
+    assert prices.status_code == 200
+    prices_class = client.get(
+        "/api/v1/procedures/mri-brain-without-contrast/prices?state=NH&billing_class=facility"
+    )
+    assert prices_class.status_code == 200
