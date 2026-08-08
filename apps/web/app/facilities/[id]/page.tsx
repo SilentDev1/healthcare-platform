@@ -8,8 +8,7 @@ import {
 } from "../../../lib/api";
 
 function ScoreBadge({ score }: { score: number }) {
-  const color =
-    score >= 80 ? "#087f5b" : score >= 50 ? "#e67700" : "#c92a2a";
+  const color = score >= 80 ? "#087f5b" : score >= 50 ? "#e67700" : "#c92a2a";
   return (
     <span
       style={{
@@ -27,8 +26,7 @@ function ScoreBadge({ score }: { score: number }) {
 }
 
 function ScoreBar({ label, value }: { label: string; value: number }) {
-  const color =
-    value >= 80 ? "#087f5b" : value >= 50 ? "#e67700" : "#c92a2a";
+  const color = value >= 80 ? "#087f5b" : value >= 50 ? "#e67700" : "#c92a2a";
   return (
     <div style={{ marginBottom: "0.4rem" }}>
       <div
@@ -126,10 +124,7 @@ export default async function FacilityPage({
               value={pricingHealth.payer_normalization_score}
             />
             <ScoreBar label="Anomaly" value={pricingHealth.anomaly_score} />
-            <ScoreBar
-              label="Freshness"
-              value={pricingHealth.freshness_score}
-            />
+            <ScoreBar label="Freshness" value={pricingHealth.freshness_score} />
             <ScoreBar
               label="Price coverage"
               value={pricingHealth.price_coverage_score}

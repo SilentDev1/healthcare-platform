@@ -6,8 +6,7 @@ import {
 } from "../../lib/api";
 
 function ScoreBar({ label, value }: { label: string; value: number }) {
-  const color =
-    value >= 80 ? "#087f5b" : value >= 50 ? "#e67700" : "#c92a2a";
+  const color = value >= 80 ? "#087f5b" : value >= 50 ? "#e67700" : "#c92a2a";
   return (
     <div style={{ marginBottom: "0.5rem" }}>
       <div

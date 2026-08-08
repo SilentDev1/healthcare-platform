@@ -38,13 +38,13 @@ Average `anomaly_score` across facilities. Penalizes facilities with open high-s
 
 Average `freshness_score` across facilities. Based on days since last successful download:
 
-| Recency | Score |
-|---------|-------|
-| ≤ 30 days | 100 |
-| ≤ 60 days | 80 |
-| ≤ 90 days | 50 |
-| ≤ 180 days | 20 |
-| > 180 days | 0 |
+| Recency    | Score |
+| ---------- | ----- |
+| ≤ 30 days  | 100   |
+| ≤ 60 days  | 80    |
+| ≤ 90 days  | 50    |
+| ≤ 180 days | 20    |
+| > 180 days | 0     |
 
 ### 6. Coverage (weight: 1/6)
 

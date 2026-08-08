@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 from decimal import Decimal
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import Engine, create_engine, select
 from sqlalchemy.orm import Session
 
 from collectors.hospital_prices.quality import (
@@ -24,7 +24,7 @@ from packages.database import (
 from packages.database.models import ImportStatus, SourceStatus
 
 
-def _engine():
+def _engine() -> Engine:
     engine = create_engine("sqlite://")
     Base.metadata.create_all(engine)
     return engine
@@ -76,12 +76,14 @@ def _seed_record(
     facility: Facility,
     setting: str = "inpatient",
     gross_charge: Decimal | None = Decimal("1000"),
-    raw_payload: dict | None = None,
+    raw_payload: dict[str, object] | None = None,
 ) -> HospitalPriceRecord:
     global _record_counter
     _record_counter += 1
     source = session.scalar(select(SourceFile).limit(1))
     run = session.scalar(select(ImportRun).limit(1))
+    assert source is not None
+    assert run is not None
     record = HospitalPriceRecord(
         facility_id=facility.id,
         source_file_id=source.id,
@@ -125,8 +127,9 @@ def test_suspicious_zero_on_lab_auto_suppressed() -> None:
         assert result["kept_open"] == 0
 
         updated = session.get(PricingAnomaly, anomaly.id)
+        assert updated is not None
         assert updated.status == "auto_suppressed"
-        assert "lab item" in updated.resolution_notes
+        assert updated.resolution_notes is not None and "lab item" in updated.resolution_notes
     engine.dispose()
 
 
@@ -177,7 +180,9 @@ def test_blank_payer_with_gross_charge_downgraded() -> None:
         assert result["kept_open"] == 0
 
         updated = session.get(PricingAnomaly, anomaly.id)
+        assert updated is not None
         assert updated.severity == "warning"
+        assert updated.resolution_notes is not None
         assert "valid gross charge" in updated.resolution_notes
     engine.dispose()
 
@@ -209,8 +214,9 @@ def test_extremely_large_price_high_cost_drg_suppressed() -> None:
         assert result["suppressed"] == 1
 
         updated = session.get(PricingAnomaly, anomaly.id)
+        assert updated is not None
         assert updated.status == "auto_suppressed"
-        assert "DRG 001" in updated.resolution_notes
+        assert updated.resolution_notes is not None and "DRG 001" in updated.resolution_notes
     engine.dispose()
 
 

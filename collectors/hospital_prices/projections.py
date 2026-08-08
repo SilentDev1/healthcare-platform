@@ -164,7 +164,7 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
                 observation.service_setting,
             )
         ].append(observation)
-    for key, observations in groups.items():
+    for group_key, observations in groups.items():
         cash = [item.amount for item in observations if item.price_type == "discounted_cash"]
         negotiated = [item.amount for item in observations if item.price_type == "payer_negotiated"]
         record = session.get(HospitalPriceRecord, observations[0].hospital_price_record_id)
@@ -172,11 +172,11 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
             continue
         session.add(
             FacilityProcedurePriceSummary(
-                facility_id=key[0],
-                procedure_id=key[1],
-                payer_entity_id=key[2],
-                insurance_plan_entity_id=key[3],
-                service_setting=str(key[4]),
+                facility_id=group_key[0],
+                procedure_id=group_key[1],
+                payer_entity_id=group_key[2],
+                insurance_plan_entity_id=group_key[3],
+                service_setting=str(group_key[4]),
                 cash_price_min=min(cash) if cash else None,
                 cash_price_max=max(cash) if cash else None,
                 cash_price_median=Decimal(median(cash)) if cash else None,
@@ -203,13 +203,13 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
                 FacilityProcedurePriceSummary.publication_status == "publishable"
             )
         ):
-            key = (
+            snap_key = (
                 new_summary.facility_id,
                 new_summary.procedure_id,
                 new_summary.payer_entity_id,
                 new_summary.service_setting,
             )
-            prev = previous_prices.get(key)
+            prev = previous_prices.get(snap_key)
             if prev is None:
                 continue
             prev_cash, prev_neg = prev

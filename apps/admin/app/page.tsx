@@ -18,9 +18,7 @@ export default async function AdminHome() {
 
     let scorecard: StatewideScorecard | null = null;
     try {
-      scorecard = await apiGet<StatewideScorecard>(
-        "/api/v1/pricing/scorecard",
-      );
+      scorecard = await apiGet<StatewideScorecard>("/api/v1/pricing/scorecard");
     } catch {
       // Scorecard may not be available yet
     }

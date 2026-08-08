@@ -18,7 +18,9 @@ export default function SearchPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [error, setError] = useState("");
   const [searched, setSearched] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const inputRef = useRef<HTMLInputElement>(null);
 
   const doSearch = useCallback(async (q: string) => {
@@ -44,13 +46,17 @@ export default function SearchPage() {
 
   // Run search on initial load if q is set
   useEffect(() => {
-    if (initialQ.length >= 2) doSearch(initialQ);
+    if (initialQ.length >= 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- initial load fetch
+      doSearch(initialQ);
+    }
   }, [initialQ, doSearch]);
 
   // Debounced suggestions
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (query.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clear on short query
       setSuggestions([]);
       return;
     }

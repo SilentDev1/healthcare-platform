@@ -103,12 +103,12 @@ The quality module (`collectors/hospital_prices/quality.py`) applies three autom
 Source freshness is scored based on days since last successful download:
 
 | Days Since Download | Score |
-|-------------------|-------|
-| ≤ 30 | 100 |
-| ≤ 60 | 80 |
-| ≤ 90 | 50 |
-| ≤ 180 | 20 |
-| > 180 | 0 |
+| ------------------- | ----- |
+| ≤ 30                | 100   |
+| ≤ 60                | 80    |
+| ≤ 90                | 50    |
+| ≤ 180               | 20    |
+| > 180               | 0     |
 
 ### Health Score Components
 

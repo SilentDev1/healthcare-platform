@@ -36,7 +36,12 @@ NH_COORDINATES: dict[str, tuple[float, float]] = {
     "301311": (43.5960, -71.2540),  # Huggins Hospital
     "301312": (44.3930, -71.1710),  # Androscoggin Valley Hospital
     "304000": (43.2150, -71.5350),  # New Hampshire Hospital
-    "304007": (42.8740, -71.1820),  # Hampstead Hospital
+    "304007": (42.8740, -71.1820),  # Hampstead Hospital (alt CCN)
+    # Corrected CCNs for facilities whose CCN differs from initial lookup
+    "301301": (44.1550, -72.0400),  # Cottage Hospital (Woodsville)
+    "301300": (44.8941, -71.4973),  # Upper Connecticut Valley Hospital (Colebrook)
+    "304001": (42.8740, -71.1820),  # Hampstead Hospital
+    "301308": (43.3768, -72.3468),  # Valley Regional Hospital (Claremont)
 }
 
 
@@ -59,8 +64,8 @@ def geocode_facilities(session: Session) -> dict[str, int]:
             continue
 
         if location.latitude != lat or location.longitude != lng:
-            location.latitude = Decimal(str(lat))  # type: ignore[assignment]
-            location.longitude = Decimal(str(lng))  # type: ignore[assignment]
+            location.latitude = Decimal(str(lat))
+            location.longitude = Decimal(str(lng))
             updated += 1
 
     session.commit()

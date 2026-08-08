@@ -38,7 +38,7 @@ def main() -> None:
             .order_by(Facility.display_name)
         ).all()
 
-        facility_details: list[dict[str, str | int | float]] = []
+        facility_details: list[dict[str, object]] = []
         for f in nh_facilities:
             source_count = (
                 session.scalar(
@@ -128,10 +128,10 @@ def main() -> None:
         "scorecard": scorecard,
         "facility_coverage": {
             "total_nh_facilities": len(facility_details),
-            "with_sources": sum(1 for f in facility_details if f["sources"] > 0),
-            "with_records": sum(1 for f in facility_details if f["records"] > 0),
+            "with_sources": sum(1 for f in facility_details if int(str(f["sources"])) > 0),
+            "with_records": sum(1 for f in facility_details if int(str(f["records"])) > 0),
             "with_publishable_prices": sum(
-                1 for f in facility_details if f["publishable_summaries"] > 0
+                1 for f in facility_details if int(str(f["publishable_summaries"])) > 0
             ),
             "facilities": facility_details,
         },
@@ -171,9 +171,9 @@ def main() -> None:
     print(f"  Target: {scorecard['target']}%")
     print(f"  Meets target: {'YES' if scorecard['meets_target'] else 'NO'}")
     print(f"  NH facilities: {len(facility_details)}")
-    print(f"  With sources: {sum(1 for f in facility_details if f['sources'] > 0)}")
-    print(f"  With records: {sum(1 for f in facility_details if f['records'] > 0)}")
-    pub_count = sum(1 for f in facility_details if f["publishable_summaries"] > 0)
+    print(f"  With sources: {sum(1 for f in facility_details if int(str(f['sources'])) > 0)}")
+    print(f"  With records: {sum(1 for f in facility_details if int(str(f['records'])) > 0)}")
+    pub_count = sum(1 for f in facility_details if int(str(f["publishable_summaries"])) > 0)
     print(f"  With publishable prices: {pub_count}")
     print(f"  Procedure coverage: {priced_procedures}/{total_procedures}")
     print(f"  Open anomalies: {open_anomalies}")

@@ -7,6 +7,7 @@
 Returns per-facility source freshness data.
 
 **Response:**
+
 ```json
 {
   "items": [
@@ -26,6 +27,7 @@ Returns per-facility source freshness data.
 Returns statewide readiness scorecard.
 
 **Response:**
+
 ```json
 {
   "state": "NH",
@@ -50,12 +52,14 @@ Returns statewide readiness scorecard.
 Paginated facility pricing health scores.
 
 **Query Parameters:**
+
 - `page` (int, default 1)
 - `page_size` (int, default 20)
 - `sort` ("overall_score" | "facility_name", default "overall_score")
 - `min_score` (float, optional) — filter facilities below this score
 
 **Response:**
+
 ```json
 {
   "items": [
@@ -84,6 +88,7 @@ Paginated facility pricing health scores.
 Single facility pricing health breakdown.
 
 **Response:**
+
 ```json
 {
   "facility_id": "uuid",
@@ -107,9 +112,11 @@ Returns 404 if facility has no pricing health score.
 GeoJSON FeatureCollection for the facility map.
 
 **Query Parameters:**
+
 - `pricing_status` (optional) — filter by "publishable", "partial", or "no_data"
 
 **Response:**
+
 ```json
 {
   "type": "FeatureCollection",
@@ -138,6 +145,7 @@ GeoJSON FeatureCollection for the facility map.
 ### GET /api/v1/procedures/{slug}/prices
 
 **Additional Query Parameters (Phase 4.2):**
+
 - `service_setting` (optional) — filter by "inpatient", "outpatient", etc.
 - `billing_class` (optional) — filter by "facility", "professional", etc.
 - `payer` (optional) — filter by payer name
@@ -148,6 +156,7 @@ GeoJSON FeatureCollection for the facility map.
 ### GET /api/v1/admin/dashboard
 
 Enhanced with pricing metrics:
+
 - `statewide_scorecard` — composite readiness data
 - `recent_imports` — latest import runs
 - `stale_sources` — sources needing refresh

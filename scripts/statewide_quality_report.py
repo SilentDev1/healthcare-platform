@@ -15,12 +15,12 @@ def main() -> None:
     print(f"  Anomaly triage: {json.dumps(triage)}")
     print(f"  Facilities scored: {len(scores)}")
     if scores:
-        avg = sum(float(s["overall_score"]) for s in scores) / len(scores)
+        avg = sum(float(str(s["overall_score"])) for s in scores) / len(scores)
         print(f"  Average quality score: {avg:.1f}")
-        worst = sorted(scores, key=lambda s: float(s["overall_score"]))[:5]
+        worst = sorted(scores, key=lambda s: float(str(s["overall_score"])))[:5]
         print("  Lowest 5:")
         for s in worst:
-            print(f"    {s['facility_name']}: {s['overall_score']:.1f}")
+            print(f"    {s['facility_name']}: {float(str(s['overall_score'])):.1f}")
     print("\n  Full report:")
     print(json.dumps(scores, indent=2, default=str))
 

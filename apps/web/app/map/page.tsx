@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { MapData, MapFeature } from "../../lib/api";
 
-const API_URL = process.env.NEXT_PUBLIC_CARECOMPARE_API_URL ?? "http://127.0.0.1:8000";
+const API_URL =
+  process.env.NEXT_PUBLIC_CARECOMPARE_API_URL ?? "http://127.0.0.1:8000";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -19,10 +20,9 @@ const CircleMarker = dynamic(
   () => import("react-leaflet").then((mod) => mod.CircleMarker),
   { ssr: false },
 );
-const Popup = dynamic(
-  () => import("react-leaflet").then((mod) => mod.Popup),
-  { ssr: false },
-);
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
+  ssr: false,
+});
 
 const STATUS_COLORS: Record<string, string> = {
   publishable: "#087f5b",
@@ -80,7 +80,9 @@ export default function MapPage() {
           <option value="partial">Partial data</option>
           <option value="no_data">No pricing data</option>
         </select>
-        <span style={{ fontSize: "0.85rem", color: "#526862", alignSelf: "center" }}>
+        <span
+          style={{ fontSize: "0.85rem", color: "#526862", alignSelf: "center" }}
+        >
           <span style={{ color: "#087f5b" }}>●</span> Published{" "}
           <span style={{ color: "#e67700" }}>●</span> Partial{" "}
           <span style={{ color: "#868e96" }}>●</span> No data
@@ -88,7 +90,14 @@ export default function MapPage() {
       </div>
       {error && <p className="error">{error}</p>}
       {loaded && (
-        <div style={{ height: "600px", borderRadius: "0.5rem", overflow: "hidden", border: "1px solid #d7e1de" }}>
+        <div
+          style={{
+            height: "600px",
+            borderRadius: "0.5rem",
+            overflow: "hidden",
+            border: "1px solid #d7e1de",
+          }}
+        >
           <MapContainer
             center={[43.45, -71.56]}
             zoom={8}
@@ -107,8 +116,12 @@ export default function MapPage() {
                 ]}
                 radius={8}
                 pathOptions={{
-                  color: STATUS_COLORS[feature.properties.pricing_status] ?? "#868e96",
-                  fillColor: STATUS_COLORS[feature.properties.pricing_status] ?? "#868e96",
+                  color:
+                    STATUS_COLORS[feature.properties.pricing_status] ??
+                    "#868e96",
+                  fillColor:
+                    STATUS_COLORS[feature.properties.pricing_status] ??
+                    "#868e96",
                   fillOpacity: 0.7,
                 }}
               >

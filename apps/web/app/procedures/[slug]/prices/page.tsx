@@ -166,9 +166,7 @@ export default async function ProcedurePrices({
                         </Link>
                       </td>
                       <td>{item.city ?? "—"}</td>
-                      <td>
-                        {range(item.cash_price_min, item.cash_price_max)}
-                      </td>
+                      <td>{range(item.cash_price_min, item.cash_price_max)}</td>
                       <td>
                         <div
                           style={{
