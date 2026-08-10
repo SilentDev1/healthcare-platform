@@ -93,13 +93,14 @@ resource "google_sql_database_instance" "postgres" {
   deletion_protection = true
 
   settings {
-    edition           = "ENTERPRISE"
-    tier              = "db-custom-1-3840"
-    availability_type = "ZONAL"
-    disk_type         = "PD_SSD"
-    disk_size         = 30
-    disk_autoresize   = true
-    user_labels       = local.labels
+    edition                     = "ENTERPRISE"
+    tier                        = "db-custom-1-3840"
+    availability_type           = "ZONAL"
+    disk_type                   = "PD_SSD"
+    disk_size                   = 30
+    disk_autoresize             = true
+    deletion_protection_enabled = true
+    user_labels                 = local.labels
 
     backup_configuration {
       enabled                        = true
