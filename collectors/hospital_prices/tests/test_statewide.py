@@ -291,7 +291,9 @@ def test_scorecard_components() -> None:
         assert isinstance(components, dict)
         assert set(components.keys()) == {
             "discovery",
+            "download",
             "parsing",
+            "publishable",
             "mapping",
             "quality",
             "freshness",
@@ -320,4 +322,94 @@ def test_price_change_snapshot_created_on_rebuild() -> None:
         snapshots = session.scalar(select(func.count(PriceChangeSnapshot.id))) or 0
         # After first run, no previous prices existed, so no snapshots
         assert snapshots == 0
+    engine.dispose()
+
+
+def _seed_multi_state_facilities(session: Session) -> list[Facility]:
+    """Seed facilities across NH, MA, and ME to test state-agnostic behavior."""
+    source = SourceFile(
+        source_name="CMS",
+        source_url="https://data.cms.gov/facilities.csv",
+        source_type="cms_hospitals_csv",
+        storage_path="fixture.csv",
+        checksum_sha256="b" * 64,
+        file_size=1,
+        parser_version="test",
+        status=SourceStatus.COMPLETED,
+    )
+    session.add(source)
+    session.flush()
+    state_facilities = [
+        ("MASS GENERAL HOSPITAL", "220071", "MA", "Boston", "02114"),
+        ("BRIGHAM AND WOMENS HOSPITAL", "220110", "MA", "Boston", "02115"),
+        ("MAINE MEDICAL CENTER", "200009", "ME", "Portland", "04102"),
+        ("CONCORD HOSPITAL", "301309", "NH", "Concord", "03301"),
+    ]
+    facilities = []
+    for name, ccn, state, city, zipcode in state_facilities:
+        facility = Facility(
+            id=uuid.uuid4(),
+            cms_certification_number=ccn,
+            legal_name=name,
+            display_name=name.title(),
+            source_file_id=source.id,
+        )
+        facility.locations.append(
+            FacilityLocation(
+                address_line_1=f"{ccn} Main St",
+                city=city,
+                state=state,
+                postal_code=zipcode,
+            )
+        )
+        session.add(facility)
+        facilities.append(facility)
+    session.flush()
+    return facilities
+
+
+def test_scorecard_filters_by_state() -> None:
+    """Scorecard only counts facilities for the requested state."""
+    engine = _engine()
+    with Session(engine) as session:
+        _seed_multi_state_facilities(session)
+        seed_catalog(session)
+        session.commit()
+
+        ma_result = calculate_scorecard(session, "MA")
+        me_result = calculate_scorecard(session, "ME")
+        nh_result = calculate_scorecard(session, "NH")
+
+        assert ma_result["total_facilities"] == 2
+        assert me_result["total_facilities"] == 1
+        assert nh_result["total_facilities"] == 1
+        assert ma_result["state"] == "MA"
+        assert me_result["state"] == "ME"
+        assert nh_result["state"] == "NH"
+    engine.dispose()
+
+
+def test_scorecard_components_identical_across_states() -> None:
+    """All states produce the same set of component scores."""
+    engine = _engine()
+    with Session(engine) as session:
+        _seed_multi_state_facilities(session)
+        seed_catalog(session)
+        session.commit()
+
+        expected_keys = {
+            "discovery",
+            "download",
+            "parsing",
+            "publishable",
+            "mapping",
+            "quality",
+            "freshness",
+            "coverage",
+        }
+        for state in ("NH", "MA", "ME"):
+            result = calculate_scorecard(session, state)
+            components = result["component_scores"]
+            assert isinstance(components, dict)
+            assert set(components.keys()) == expected_keys, f"State {state} missing components"
     engine.dispose()

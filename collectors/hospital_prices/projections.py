@@ -90,16 +90,33 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
         ):
             rate_details_by_record[rate.hospital_price_record_id].append(rate)
 
+    # Publishable parser names: CMS-format parsers are always publishable;
+    # other parsers are publishable when they produce reviewed approved-code mappings
+    _ALWAYS_PUBLISHABLE = ("cms_hpt_csv", "cms_hpt_json")
+    _CONDITIONALLY_PUBLISHABLE = (
+        "legacy_hospital_csv",
+        "legacy_hospital_json",
+        "chargemaster_wide_csv",
+        "xml_standard_charges",
+    )
+
     observation_count = 0
     for record, mapping in records:
         is_blocked = record.id in blocked_ids
-        status = (
-            "suppressed"
-            if is_blocked
-            else "publishable"
-            if record.parser_name.startswith("cms_hpt")
-            else "review_required"
-        )
+        if is_blocked:
+            status = "suppressed"
+        elif record.parser_name in _ALWAYS_PUBLISHABLE:
+            status = "publishable"
+        elif (
+            record.parser_name in _CONDITIONALLY_PUBLISHABLE
+            and mapping.mapping_method == "exact_approved_code"
+            and mapping.reviewed
+        ):
+            # Legacy/chargemaster parsers are publishable when the procedure
+            # mapping was established through an approved code match
+            status = "publishable"
+        else:
+            status = "review_required"
         values = (
             ("gross", record.gross_charge),
             ("discounted_cash", record.discounted_cash_price),

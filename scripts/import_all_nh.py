@@ -1,5 +1,9 @@
-"""Import all supported NH hospital price sources."""
+"""Import all supported hospital price sources.
 
+Accepts a state_code parameter for geographic scope (defaults to NH).
+"""
+
+import argparse
 import json
 
 from sqlalchemy import select
@@ -11,16 +15,16 @@ from packages.database import Facility, FacilityLocation, FacilityPriceSource, s
 from scripts.seed_price_mappings import seed_price_mappings
 
 
-def import_all_nh(session: Session) -> dict[str, object]:
-    """Import all NH sources, rebuild summaries, evaluate health."""
+def import_all_sources(session: Session, state_code: str = "NH") -> dict[str, object]:
+    """Import all sources in state, rebuild summaries, evaluate health."""
     seed_price_mappings(session)
     session.commit()
 
-    nh_facility_ids = set(
+    facility_ids = set(
         session.scalars(
             select(Facility.id)
             .join(FacilityLocation)
-            .where(FacilityLocation.state == "NH", Facility.active.is_(True))
+            .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
         )
     )
 
@@ -28,7 +32,7 @@ def import_all_nh(session: Session) -> dict[str, object]:
         select(FacilityPriceSource).where(
             FacilityPriceSource.active.is_(True),
             FacilityPriceSource.source_file_id.is_not(None),
-            FacilityPriceSource.facility_id.in_(nh_facility_ids),
+            FacilityPriceSource.facility_id.in_(facility_ids),
         )
     ).all()
 
@@ -86,10 +90,18 @@ def import_all_nh(session: Session) -> dict[str, object]:
     }
 
 
+def import_all_nh(session: Session) -> dict[str, object]:
+    """Backward-compatible alias."""
+    return import_all_sources(session, "NH")
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Import all price sources")
+    parser.add_argument("--state", default="NH")
+    args = parser.parse_args()
     with session_factory() as session:
-        result = import_all_nh(session)
-    print("\n=== Statewide Import Results ===")
+        result = import_all_sources(session, args.state)
+    print(f"\n=== Statewide Import Results ({args.state}) ===")
     print(json.dumps(result, indent=2, default=str))
 
 

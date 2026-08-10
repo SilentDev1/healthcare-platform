@@ -1,4 +1,7 @@
-"""Quality metrics and anomaly auto-triage for hospital pricing data."""
+"""Quality metrics and anomaly auto-triage for hospital pricing data.
+
+All quality rules are facility/state-agnostic and work nationally.
+"""
 
 from datetime import UTC, datetime
 
@@ -78,6 +81,30 @@ def review_open_anomalies(session: Session) -> dict[str, int]:
                 anomaly.reviewed_at = datetime.now(UTC)
                 suppressed += 1
                 continue
+
+        # Rule 4: all_zero_prices → flag as placeholder data
+        if anomaly.rule_key == "all_zero_prices":
+            anomaly.status = "auto_suppressed"
+            anomaly.resolution_notes = "Auto-suppressed: placeholder data with all-zero prices"
+            anomaly.reviewed_at = datetime.now(UTC)
+            suppressed += 1
+            continue
+
+        # Rule 5: identical_prices_all_rows → flag as template data
+        if anomaly.rule_key == "identical_prices_all_rows":
+            anomaly.status = "auto_suppressed"
+            anomaly.resolution_notes = "Auto-suppressed: template data with identical prices"
+            anomaly.reviewed_at = datetime.now(UTC)
+            suppressed += 1
+            continue
+
+        # Rule 6: encoding_issues → flag non-UTF8 content
+        if anomaly.rule_key == "encoding_issues":
+            anomaly.severity = "warning"
+            anomaly.resolution_notes = "Downgraded: encoding issue does not affect price data"
+            anomaly.reviewed_at = datetime.now(UTC)
+            downgraded += 1
+            continue
 
         kept += 1
 

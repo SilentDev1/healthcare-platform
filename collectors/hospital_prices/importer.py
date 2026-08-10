@@ -11,6 +11,7 @@ from sqlalchemy import insert, select
 from sqlalchemy.orm import Session
 
 from collectors.hospital_prices.caches import ImportCaches
+from collectors.hospital_prices.cdm_crosswalk import apply_cdm_crosswalk
 from collectors.hospital_prices.checkpoint import CheckpointManager
 from collectors.hospital_prices.config import HospitalPriceSettings, hospital_price_settings
 from collectors.hospital_prices.downloader import safe_extract
@@ -110,6 +111,10 @@ def _code_system(raw: object) -> str:
         "REVENUECODE": "REV_CODE",
         "REV": "REV_CODE",
         "ICD10PCS": "ICD10PCS",
+        "CDM": "CDM",
+        "CHARGEMASTER": "CDM",
+        "LOCAL": "CDM",
+        "FACILITY": "CDM",
     }.get(normalized, "UNKNOWN")
 
 
@@ -326,11 +331,18 @@ def import_price_source(
                     profiler.record_insert()
 
                     system = _code_system(row["code_type"])
+                    resolved_code = code
+                    # CDM crosswalk: attempt to resolve CDM/UNKNOWN codes
+                    if system in ("CDM", "UNKNOWN"):
+                        crosswalk_result = apply_cdm_crosswalk(code, system, description)
+                        if crosswalk_result:
+                            resolved_code, system, _cdm_conf = crosswalk_result
+
                     batch.codes.append(
                         PriceServiceCode(
                             hospital_price_record_id=rec_uuid,
                             code_system=system,
-                            code=code,
+                            code=resolved_code,
                             modifier=str(row["modifier"]) if row["modifier"] else None,
                             raw_code_type=str(row["code_type"]),
                             raw_code=code,
@@ -339,7 +351,7 @@ def import_price_source(
                     summary.codes += 1
 
                     # Procedure mapping via in-memory cache
-                    mapping = caches.lookup_code(system, code)
+                    mapping = caches.lookup_code(system, resolved_code)
                     if mapping:
                         procedure_id, mapping_id = mapping
                         batch.mappings.append(

@@ -1,0 +1,384 @@
+{
+  "version": "1.0.0",
+  "description": "Verified deterministic CDM-to-CPT/HCPCS crosswalk for common hospital charge description master codes. Only includes mappings with high confidence based on standard billing practice.",
+  "mappings": [
+    {
+      "cdm_pattern": "CBC",
+      "description_pattern": "complete blood count",
+      "target_code": "85025",
+      "target_system": "CPT",
+      "confidence": 0.95
+    },
+    {
+      "cdm_pattern": "CMP",
+      "description_pattern": "comprehensive metabolic panel",
+      "target_code": "80053",
+      "target_system": "CPT",
+      "confidence": 0.95
+    },
+    {
+      "cdm_pattern": "BMP",
+      "description_pattern": "basic metabolic panel",
+      "target_code": "80048",
+      "target_system": "CPT",
+      "confidence": 0.95
+    },
+    {
+      "cdm_pattern": "LIPID",
+      "description_pattern": "lipid panel",
+      "target_code": "80061",
+      "target_system": "CPT",
+      "confidence": 0.95
+    },
+    {
+      "cdm_pattern": "A1C",
+      "description_pattern": "hemoglobin a1c",
+      "target_code": "83036",
+      "target_system": "CPT",
+      "confidence": 0.95
+    },
+    {
+      "cdm_pattern": "TSH",
+      "description_pattern": "thyroid stimulating hormone",
+      "target_code": "84443",
+      "target_system": "CPT",
+      "confidence": 0.95
+    },
+    {
+      "cdm_pattern": "UA",
+      "description_pattern": "urinalysis",
+      "target_code": "81001",
+      "target_system": "CPT",
+      "confidence": 0.9
+    },
+    {
+      "cdm_pattern": "HCG",
+      "description_pattern": "pregnancy test",
+      "target_code": "81025",
+      "target_system": "CPT",
+      "confidence": 0.9
+    },
+    {
+      "cdm_pattern": "STREP",
+      "description_pattern": "strep rapid",
+      "target_code": "87880",
+      "target_system": "CPT",
+      "confidence": 0.9
+    },
+    {
+      "cdm_pattern": "COVID",
+      "description_pattern": "covid.?19.?test",
+      "target_code": "87635",
+      "target_system": "CPT",
+      "confidence": 0.9
+    },
+    {
+      "cdm_pattern": "EKG",
+      "description_pattern": "electrocardiogram|ekg|ecg",
+      "target_code": "93000",
+      "target_system": "CPT",
+      "confidence": 0.9
+    },
+    {
+      "cdm_pattern": "ECHO",
+      "description_pattern": "echocardiogram|echo.?transthoracic",
+      "target_code": "93306",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "STRESS",
+      "description_pattern": "cardiac stress test|stress test",
+      "target_code": "93015",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "MRI BRAIN",
+      "description_pattern": "mri.?brain.?w/?o",
+      "target_code": "70551",
+      "target_system": "CPT",
+      "confidence": 0.9
+    },
+    {
+      "cdm_pattern": "MRI KNEE",
+      "description_pattern": "mri.?knee.?w/?o",
+      "target_code": "73721",
+      "target_system": "CPT",
+      "confidence": 0.9
+    },
+    {
+      "cdm_pattern": "MRI LUMBAR",
+      "description_pattern": "mri.?lumbar.?w/?o",
+      "target_code": "72148",
+      "target_system": "CPT",
+      "confidence": 0.9
+    },
+    {
+      "cdm_pattern": "CT ABD",
+      "description_pattern": "ct.?abd.?pelv.?w/?o",
+      "target_code": "74176",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "CT CHEST",
+      "description_pattern": "ct.?chest.?w/?o",
+      "target_code": "71250",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "CXR",
+      "description_pattern": "chest.?x.?ray|cxr|chest.?2.?view",
+      "target_code": "71046",
+      "target_system": "CPT",
+      "confidence": 0.9
+    },
+    {
+      "cdm_pattern": "MAMMO",
+      "description_pattern": "screening.?mammog",
+      "target_code": "77067",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "US ABD",
+      "description_pattern": "ultrasound.?abd|us.?abd",
+      "target_code": "76700",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "COLON",
+      "description_pattern": "colonoscopy.?diag|colonoscopy.?w/?o.?biopsy",
+      "target_code": "45378",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "EGD",
+      "description_pattern": "upper.?endoscop|egd|esophago",
+      "target_code": "43235",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "PT EVAL",
+      "description_pattern": "physical therapy.?eval",
+      "target_code": "97161",
+      "target_system": "CPT",
+      "confidence": 0.9
+    },
+    {
+      "cdm_pattern": "FLU",
+      "description_pattern": "flu.?vacc|influenza.?vacc",
+      "target_code": "90686",
+      "target_system": "CPT",
+      "confidence": 0.9
+    },
+    {
+      "cdm_pattern": "PATH",
+      "description_pattern": "surgical.?pathology|surg.?path",
+      "target_code": "88305",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "PAP",
+      "description_pattern": "pap.?smear|pap.?test|thin.?prep",
+      "target_code": "88175",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "DXA",
+      "description_pattern": "bone.?density|dexa|dxa",
+      "target_code": "77080",
+      "target_system": "CPT",
+      "confidence": 0.9
+    },
+    {
+      "cdm_pattern": "CATH",
+      "description_pattern": "cardiac.?cath",
+      "target_code": "93458",
+      "target_system": "CPT",
+      "confidence": 0.8
+    },
+    {
+      "cdm_pattern": "CATARACT",
+      "description_pattern": "cataract.?surg",
+      "target_code": "66984",
+      "target_system": "CPT",
+      "confidence": 0.8
+    },
+    {
+      "cdm_pattern": "APPY",
+      "description_pattern": "appendect",
+      "target_code": "44970",
+      "target_system": "CPT",
+      "confidence": 0.8
+    },
+    {
+      "cdm_pattern": "CHOLE",
+      "description_pattern": "cholecystect|gallbladder.?remov",
+      "target_code": "47562",
+      "target_system": "CPT",
+      "confidence": 0.8
+    },
+    {
+      "cdm_pattern": "TKR",
+      "description_pattern": "total.?knee.?replac|knee.?arthroplast",
+      "target_code": "27447",
+      "target_system": "CPT",
+      "confidence": 0.8
+    },
+    {
+      "cdm_pattern": "THR",
+      "description_pattern": "total.?hip.?replac|hip.?arthroplast",
+      "target_code": "27130",
+      "target_system": "CPT",
+      "confidence": 0.8
+    },
+    {
+      "cdm_pattern": "HERNIA",
+      "description_pattern": "inguinal.?hernia.?repair",
+      "target_code": "49505",
+      "target_system": "CPT",
+      "confidence": 0.8
+    },
+    {
+      "cdm_pattern": "SLEEP",
+      "description_pattern": "sleep.?study|polysomnogr",
+      "target_code": "95810",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "DIALYSIS",
+      "description_pattern": "hemodialysis|dialysis.?session",
+      "target_code": "90935",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "ED VISIT 1",
+      "description_pattern": "emergency.?(room|dept|department).?visit.?level.?1|er.?visit.?level.?1|ed.?visit.?1|emerg.?lev.?1",
+      "target_code": "99281",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "ED VISIT 2",
+      "description_pattern": "emergency.?(room|dept|department).?visit.?level.?2|er.?visit.?level.?2|ed.?visit.?2|emerg.?lev.?2",
+      "target_code": "99282",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "ED VISIT 3",
+      "description_pattern": "emergency.?(room|dept|department).?visit.?level.?3|er.?visit.?level.?3|ed.?visit.?3|emerg.?lev.?3",
+      "target_code": "99283",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "ED VISIT 4",
+      "description_pattern": "emergency.?(room|dept|department).?visit.?level.?4|er.?visit.?level.?4|ed.?visit.?4|emerg.?lev.?4",
+      "target_code": "99284",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "ED VISIT 5",
+      "description_pattern": "emergency.?(room|dept|department).?visit.?level.?5|er.?visit.?level.?5|ed.?visit.?5|emerg.?lev.?5",
+      "target_code": "99285",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "VAGINAL DELIVERY",
+      "description_pattern": "vaginal.?deliver|normal.?deliver|spontaneous.?deliver",
+      "target_code": "59400",
+      "target_system": "CPT",
+      "confidence": 0.8
+    },
+    {
+      "cdm_pattern": "CESAREAN",
+      "description_pattern": "cesarean|c.?section|csection",
+      "target_code": "59510",
+      "target_system": "CPT",
+      "confidence": 0.8
+    },
+    {
+      "cdm_pattern": "URGENT CARE",
+      "description_pattern": "urgent.?care.?visit|walk.?in.?clinic.?visit",
+      "target_code": "99213",
+      "target_system": "CPT",
+      "confidence": 0.8
+    },
+    {
+      "cdm_pattern": "ALLERGY TEST",
+      "description_pattern": "allergy.?test|allergy.?skin.?test|skin.?prick",
+      "target_code": "95004",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "WELLNESS VISIT",
+      "description_pattern": "annual.?wellness|preventive.?visit|wellness.?exam",
+      "target_code": "G0438",
+      "target_system": "HCPCS",
+      "confidence": 0.8
+    },
+    {
+      "cdm_pattern": "PT TREAT",
+      "description_pattern": "physical therapy.?treat|pt.?therapeutic.?exercise",
+      "target_code": "97110",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "CARPAL",
+      "description_pattern": "carpal.?tunnel.?rel",
+      "target_code": "64721",
+      "target_system": "CPT",
+      "confidence": 0.8
+    },
+    {
+      "cdm_pattern": "ROTATOR",
+      "description_pattern": "rotator.?cuff.?rep",
+      "target_code": "29827",
+      "target_system": "CPT",
+      "confidence": 0.8
+    },
+    {
+      "cdm_pattern": "PELVIC US",
+      "description_pattern": "pelvic.?ultrasound|us.?pelv|ultrasound.?pelv",
+      "target_code": "76856",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "DIAG MAMMO",
+      "description_pattern": "diagnostic.?mammog",
+      "target_code": "77066",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "CT HEAD",
+      "description_pattern": "ct.?head.?w/?o|ct.?brain.?w/?o",
+      "target_code": "70450",
+      "target_system": "CPT",
+      "confidence": 0.85
+    },
+    {
+      "cdm_pattern": "MRI SHOULDER",
+      "description_pattern": "mri.?shoulder.?w/?o",
+      "target_code": "73221",
+      "target_system": "CPT",
+      "confidence": 0.9
+    }
+  ]
+}

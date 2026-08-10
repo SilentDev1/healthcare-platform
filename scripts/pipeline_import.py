@@ -1,11 +1,11 @@
-"""Pipeline step: import all NH price sources."""
+"""Pipeline step: import all price sources for a state."""
 
 import argparse
 import json
 import time
 
 from packages.database import session_factory
-from scripts.import_all_nh import import_all_nh
+from scripts.import_all_nh import import_all_sources
 
 
 def main() -> None:
@@ -15,7 +15,7 @@ def main() -> None:
 
     started = time.perf_counter()
     with session_factory() as session:
-        result = import_all_nh(session)
+        result = import_all_sources(session, args.state)
         session.commit()
     elapsed = round(time.perf_counter() - started, 2)
 

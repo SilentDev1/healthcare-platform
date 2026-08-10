@@ -1,4 +1,4 @@
-.PHONY: setup dev db-up db-down migrate test lint typecheck import-cms-hospitals import-cms-quality import-nppes-organizations seed-facility-identity seed-procedure-catalog rebuild-search-index evaluate-data-health discover-hospital-price-sources download-hospital-price-files import-hospital-prices normalize-hospital-prices map-price-procedures evaluate-pricing-health rebuild-price-summaries pricing-pipeline api admin web build verify-phase-2 verify-phase-3 verify-phase-4 benchmark-pricing-import generate-large-pricing-fixture resume-price-import restart-price-import verify-phase-4-1 pipeline-discover-nh pipeline-download-nh pipeline-import-nh pipeline-postprocess-nh pipeline-full-nh audit-nh-hospitals statewide-scorecard procedure-coverage geocode-nh verify-phase-4-2
+.PHONY: setup dev db-up db-down migrate test lint typecheck import-cms-hospitals import-cms-quality import-nppes-organizations seed-facility-identity seed-procedure-catalog rebuild-search-index evaluate-data-health discover-hospital-price-sources download-hospital-price-files import-hospital-prices normalize-hospital-prices map-price-procedures evaluate-pricing-health rebuild-price-summaries pricing-pipeline api admin web build verify-phase-2 verify-phase-3 verify-phase-4 benchmark-pricing-import generate-large-pricing-fixture resume-price-import restart-price-import verify-phase-4-1 pipeline-discover-nh pipeline-download-nh pipeline-import-nh pipeline-postprocess-nh pipeline-full-nh audit-nh-hospitals statewide-scorecard procedure-coverage geocode-nh verify-phase-4-2 enhanced-scorecard benchmark-coverage final-classification discover-pricing import-pricing verify-coverage
 
 setup:
 	command -v uv >/dev/null || (echo "Install uv: https://docs.astral.sh/uv/" && exit 1)
@@ -164,6 +164,27 @@ verify-phase-4-2: migrate
 	$(MAKE) typecheck
 	$(MAKE) build
 	npm audit --audit-level=high
+
+# --- Phase 4.2.1 targets (generic, accept STATE=XX) ---
+
+enhanced-scorecard:
+	uv run python -m scripts.statewide_scorecard --state $${STATE:-NH}
+
+benchmark-coverage:
+	uv run python -m scripts.benchmark_coverage --state $${STATE:-NH}
+
+final-classification:
+	uv run python -m scripts.final_classification --state $${STATE:-NH}
+
+# Generic discovery/import targets (accept STATE=XX for multi-state)
+discover-pricing:
+	uv run python -m scripts.pipeline_discover --state $${STATE:-NH}
+
+import-pricing:
+	uv run python -m scripts.pipeline_import --state $${STATE:-NH}
+
+verify-coverage:
+	uv run python -m scripts.statewide_scorecard --state $${STATE:-NH}
 
 verify-phase-4-1: migrate
 	uv run python -m collectors.hospital_prices --fixtures-dir data/fixtures/hospital_prices

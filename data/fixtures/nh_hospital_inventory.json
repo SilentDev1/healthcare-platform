@@ -1,0 +1,620 @@
+{
+  "version": "1.1.0",
+  "state": "NH",
+  "generated_at": "2026-08-09",
+  "notes": "Verified via live web research. Health system affiliations updated. URLs verified from official hospital websites, PayerPrice, Turquoise Health, and direct web inspection.",
+  "hospitals": [
+    {
+      "legal_name": "ALICE PECK DAY MEMORIAL HOSPITAL",
+      "cms_ccn": "301305",
+      "npi": "1174563253",
+      "health_system": "Dartmouth Health",
+      "health_system_domain": "dartmouth-health.org",
+      "official_website": "https://www.alicepeckday.org",
+      "transparency_page_candidates": [
+        "https://alicepeckday.org/patients/financial_services",
+        "https://www.alicepeckday.org/patients/billing-financial-assistance"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Alice Peck Day", "APD"],
+      "parent_org": "Dartmouth Health",
+      "facility_type": "critical_access",
+      "latitude": 43.6453,
+      "longitude": -72.251,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "ANDROSCOGGIN VALLEY HOSPITAL",
+      "cms_ccn": "301310",
+      "npi": "1366486050",
+      "health_system": "North Country Healthcare",
+      "health_system_domain": null,
+      "official_website": "https://www.avhnh.org",
+      "transparency_page_candidates": [
+        "https://avhnh.org/patients-visitors/financial-information/"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["AVH", "Androscoggin Valley"],
+      "parent_org": "North Country Healthcare",
+      "facility_type": "critical_access",
+      "latitude": 44.4686,
+      "longitude": -71.1854,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "CATHOLIC MEDICAL CENTER",
+      "cms_ccn": "300034",
+      "npi": "1043218667",
+      "health_system": "HCA Healthcare",
+      "health_system_domain": "hcahealthcare.com",
+      "official_website": "https://www.catholicmc.com",
+      "transparency_page_candidates": [
+        "https://www.catholicmc.com/patient-resources/patient-financial-resources/pricing-transparency-cms-required-file-of-standard-charges",
+        "https://www.catholicmedicalcenter.org/patients-visitors/costs-insurance-and-billing/price-transparency"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["CMC", "Catholic Medical", "Catholic Medical Center"],
+      "parent_org": "HCA Healthcare",
+      "facility_type": "acute_care",
+      "latitude": 42.9956,
+      "longitude": -71.4548,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "CHESHIRE MEDICAL CENTER",
+      "cms_ccn": "300019",
+      "npi": "1477597896",
+      "health_system": "Dartmouth Health",
+      "health_system_domain": "dartmouth-health.org",
+      "official_website": "https://www.cheshiremed.org",
+      "transparency_page_candidates": [
+        "https://www.cheshiremed.org/patients-visitors/charges-for-services"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Cheshire Medical", "Cheshire"],
+      "parent_org": "Dartmouth Health",
+      "facility_type": "acute_care",
+      "latitude": 42.9564,
+      "longitude": -72.2755,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "CONCORD HOSPITAL",
+      "cms_ccn": "300001",
+      "npi": "1316947370",
+      "health_system": "Concord Hospital",
+      "health_system_domain": "concordhospital.org",
+      "official_website": "https://www.concordhospital.org",
+      "transparency_page_candidates": [
+        "https://www.concordhospital.org/patients-visitors/cost-of-care-estimates/"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Concord Hospital - Concord"],
+      "parent_org": "Concord Hospital",
+      "facility_type": "acute_care",
+      "latitude": 43.2081,
+      "longitude": -71.5376,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "CONCORD HOSPITAL- FRANKLIN",
+      "cms_ccn": "301306",
+      "npi": "1952396497",
+      "health_system": "Concord Hospital",
+      "health_system_domain": "concordhospital.org",
+      "official_website": "https://www.concordhospital.org",
+      "transparency_page_candidates": [
+        "https://www.concordhospital.org/patients-visitors/cost-of-care-estimates/"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": [
+        "Concord Hospital Franklin",
+        "Franklin Regional Hospital"
+      ],
+      "parent_org": "Concord Hospital",
+      "facility_type": "critical_access",
+      "latitude": 43.4439,
+      "longitude": -71.6478,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "CONCORD HOSPITAL- LACONIA",
+      "cms_ccn": "300005",
+      "npi": "1114970231",
+      "health_system": "Concord Hospital",
+      "health_system_domain": "concordhospital.org",
+      "official_website": "https://www.concordhospital.org",
+      "transparency_page_candidates": [
+        "https://concordhospital-laconia.org/pricing-transparency/",
+        "https://www.concordhospital.org/patients-visitors/cost-of-care-estimates/"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": [
+        "Concord Hospital Laconia",
+        "Lakes Region General Hospital",
+        "LRGHealthcare"
+      ],
+      "parent_org": "Concord Hospital",
+      "facility_type": "acute_care",
+      "latitude": 43.5278,
+      "longitude": -71.4704,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "COTTAGE HOSPITAL",
+      "cms_ccn": "301301",
+      "npi": "1679582180",
+      "health_system": null,
+      "health_system_domain": null,
+      "official_website": "https://www.cottagehospital.org",
+      "transparency_page_candidates": [
+        "https://www.cottagehospital.org/standard-charges",
+        "https://www.cottagehospital.org/price-transparency-",
+        "https://www.cottagehospital.org/patient-info/standard-charges/"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Cottage Hospital Woodsville"],
+      "parent_org": null,
+      "facility_type": "critical_access",
+      "latitude": 44.1513,
+      "longitude": -72.036,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "ELLIOT HOSPITAL",
+      "cms_ccn": "300012",
+      "npi": "1306849370",
+      "health_system": "SolutionHealth",
+      "health_system_domain": "solutionhealth.org",
+      "official_website": "https://www.elliothospital.org",
+      "transparency_page_candidates": [
+        "https://www.elliothospital.org/patients-and-visitors/patient-information/estimates"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Elliot", "Elliot Health System"],
+      "parent_org": "SolutionHealth",
+      "facility_type": "acute_care",
+      "latitude": 42.973,
+      "longitude": -71.438,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "EXETER HOSPITAL INC",
+      "cms_ccn": "300023",
+      "npi": "1316942397",
+      "health_system": "Beth Israel Lahey Health",
+      "health_system_domain": "bilh.org",
+      "official_website": "https://www.exeterhospital.com",
+      "transparency_page_candidates": [
+        "https://exeterhospital.org/patients-visitors/billing-financial-services/price-transparency",
+        "https://bilh.org/billing-financial-services/price-transparency"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Exeter Hospital", "Exeter Health Resources"],
+      "parent_org": "Beth Israel Lahey Health",
+      "facility_type": "acute_care",
+      "latitude": 42.9817,
+      "longitude": -70.9509,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "FRISBIE MEMORIAL HOSPITAL",
+      "cms_ccn": "300014",
+      "npi": "1174563089",
+      "health_system": "HCA Healthcare",
+      "health_system_domain": "hcahealthcare.com",
+      "official_website": "https://frisbiehospital.com",
+      "transparency_page_candidates": [
+        "https://www.frisbiehospital.com/patient-resources/patient-financial-resources/pricing-transparency-cms-required-file-of-standard-charges"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Frisbie Memorial", "Frisbie"],
+      "parent_org": "HCA Healthcare",
+      "facility_type": "acute_care",
+      "latitude": 43.3049,
+      "longitude": -70.9755,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "HAMPSTEAD HOSPITAL & RESIDENTIAL TREATMENT FACILIT",
+      "cms_ccn": "304001",
+      "npi": "1366480004",
+      "health_system": null,
+      "health_system_domain": null,
+      "official_website": "https://www.dhhs.nh.gov",
+      "transparency_page_candidates": [],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Hampstead Hospital"],
+      "parent_org": "NH DHHS",
+      "facility_type": "psychiatric",
+      "latitude": 42.8814,
+      "longitude": -71.1754,
+      "status": "excluded_psychiatric",
+      "exclusion_reason": "State psychiatric facility; does not publish standard hospital pricing data"
+    },
+    {
+      "legal_name": "HUGGINS HOSPITAL",
+      "cms_ccn": "301312",
+      "npi": "1487695946",
+      "health_system": null,
+      "health_system_domain": null,
+      "official_website": "https://www.hugginshospital.org",
+      "transparency_page_candidates": [
+        "https://www.hugginshospital.org/resources/financial-assistance-and-billing"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Huggins"],
+      "parent_org": null,
+      "facility_type": "critical_access",
+      "latitude": 43.5765,
+      "longitude": -71.2075,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "LITTLETON REGIONAL HEALTHCARE",
+      "cms_ccn": "301302",
+      "npi": "1407869618",
+      "health_system": null,
+      "health_system_domain": null,
+      "official_website": "https://littletonhealthcare.org",
+      "transparency_page_candidates": [
+        "https://littletonhealthcare.org/patients-and-visitors/chargemaster/"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Littleton Regional", "Littleton Hospital"],
+      "parent_org": null,
+      "facility_type": "critical_access",
+      "latitude": 44.3064,
+      "longitude": -71.7697,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "MARY HITCHCOCK MEMORIAL HOSPITAL",
+      "cms_ccn": "300003",
+      "npi": "1366443002",
+      "health_system": "Dartmouth Health",
+      "health_system_domain": "dartmouth-health.org",
+      "official_website": "https://www.dartmouth-hitchcock.org",
+      "transparency_page_candidates": [
+        "https://www.dartmouth-hitchcock.org/patients-visitors/charges-services"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": [
+        "Dartmouth-Hitchcock Medical Center",
+        "DHMC",
+        "D-H",
+        "Dartmouth Hitchcock",
+        "Mary Hitchcock"
+      ],
+      "parent_org": "Dartmouth Health",
+      "facility_type": "acute_care",
+      "latitude": 43.6353,
+      "longitude": -72.2576,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "MEMORIAL HOSPITAL, THE",
+      "cms_ccn": "301307",
+      "npi": "1396758723",
+      "health_system": "MaineHealth",
+      "health_system_domain": "mainehealth.org",
+      "official_website": "https://www.mainehealth.org/memorial-hospital",
+      "transparency_page_candidates": [
+        "https://www.mainehealth.org/patients-visitors/billing-and-financial-services",
+        "https://www.mainehealth.org/mainehealth-memorial-hospital/patients-visitors-mainehealth-memorial-hospital/billing-mainehealth-memorial-hospital"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Memorial Hospital North Conway", "Memorial Hospital"],
+      "parent_org": "MaineHealth",
+      "facility_type": "critical_access",
+      "latitude": 44.0501,
+      "longitude": -71.13,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "MONADNOCK COMMUNITY HOSPITAL",
+      "cms_ccn": "301309",
+      "npi": "1700869449",
+      "health_system": null,
+      "health_system_domain": null,
+      "official_website": "https://www.monadnockcommunityhospital.com",
+      "transparency_page_candidates": [
+        "https://monadnockcommunityhospital.com/financial-services/price-transparency-information/"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["MCH", "Monadnock Community"],
+      "parent_org": null,
+      "facility_type": "critical_access",
+      "latitude": 42.8743,
+      "longitude": -71.952,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "NEW HAMPSHIRE HOSPITAL",
+      "cms_ccn": "304000",
+      "npi": "1639168006",
+      "health_system": null,
+      "health_system_domain": null,
+      "official_website": "https://www.dhhs.nh.gov",
+      "transparency_page_candidates": [],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["NH Hospital", "New Hampshire State Hospital"],
+      "parent_org": "NH DHHS",
+      "facility_type": "psychiatric",
+      "latitude": 43.2081,
+      "longitude": -71.5376,
+      "status": "excluded_psychiatric",
+      "exclusion_reason": "State psychiatric facility; does not publish standard hospital pricing data"
+    },
+    {
+      "legal_name": "NEW LONDON HOSPITAL",
+      "cms_ccn": "301304",
+      "npi": "1508863091",
+      "health_system": "Dartmouth Health",
+      "health_system_domain": "dartmouth-health.org",
+      "official_website": "https://www.newlondonhospital.org",
+      "transparency_page_candidates": [
+        "https://www.newlondonhospital.org/patients-visitors/charges-services"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["New London"],
+      "parent_org": "Dartmouth Health",
+      "facility_type": "critical_access",
+      "latitude": 43.4138,
+      "longitude": -71.9856,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "PARKLAND MEDICAL CENTER",
+      "cms_ccn": "300017",
+      "npi": "1417969614",
+      "health_system": "HCA Healthcare",
+      "health_system_domain": "hcahealthcare.com",
+      "official_website": "https://parklandmedicalcenter.com",
+      "transparency_page_candidates": [
+        "https://www.parklandmedicalcenter.com/patient-resources/patient-financial-resources/pricing-transparency-cms-required-file-of-standard-charges"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Parkland Medical"],
+      "parent_org": "HCA Healthcare",
+      "facility_type": "acute_care",
+      "latitude": 42.8901,
+      "longitude": -71.3035,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "PORTSMOUTH REGIONAL HOSPITAL",
+      "cms_ccn": "300029",
+      "npi": "1568460009",
+      "health_system": "HCA Healthcare",
+      "health_system_domain": "hcahealthcare.com",
+      "official_website": "https://portsmouthhospital.com",
+      "transparency_page_candidates": [
+        "https://www.portsmouthhospital.com/patient-resources/patient-financial-resources/pricing-transparency-cms-required-file-of-standard-charges"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Portsmouth Regional", "PRH"],
+      "parent_org": "HCA Healthcare",
+      "facility_type": "acute_care",
+      "latitude": 43.063,
+      "longitude": -70.7858,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "SOUTHERN NH MEDICAL CENTER",
+      "cms_ccn": "300020",
+      "npi": "1639162009",
+      "health_system": "SolutionHealth",
+      "health_system_domain": "solutionhealth.org",
+      "official_website": "https://www.snhhealth.org",
+      "transparency_page_candidates": [
+        "https://www.snhhealth.org/pricing-transparency",
+        "https://www.snhhealth.org/patients-and-visitors/patient-information/estimates"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": [
+        "SNHMC",
+        "Southern NH",
+        "Southern New Hampshire Medical Center"
+      ],
+      "parent_org": "SolutionHealth",
+      "facility_type": "acute_care",
+      "latitude": 42.7654,
+      "longitude": -71.4641,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "SPEARE MEMORIAL HOSPITAL",
+      "cms_ccn": "301311",
+      "npi": "1710963505",
+      "health_system": null,
+      "health_system_domain": null,
+      "official_website": "https://spearehospital.com",
+      "transparency_page_candidates": [
+        "https://spearehospital.com/patients-visitors/cost-estimates-and-charges/"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Speare Memorial", "Speare"],
+      "parent_org": null,
+      "facility_type": "critical_access",
+      "latitude": 43.757,
+      "longitude": -71.688,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "ST JOSEPH HOSPITAL",
+      "cms_ccn": "300011",
+      "npi": "1316940003",
+      "health_system": "Covenant Health",
+      "health_system_domain": "covenanthealth.net",
+      "official_website": "https://stjosephhospital.com",
+      "transparency_page_candidates": ["https://stjosephhospital.com/pricing/"],
+      "cms_hpt_txt_url": null,
+      "known_aliases": [
+        "St. Joseph Hospital",
+        "Saint Joseph Hospital",
+        "St Joseph"
+      ],
+      "parent_org": "Covenant Health",
+      "facility_type": "acute_care",
+      "latitude": 42.7598,
+      "longitude": -71.4624,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "UPPER CONNECTICUT VALLEY HOSPITAL",
+      "cms_ccn": "301300",
+      "npi": "1821098757",
+      "health_system": "North Country Healthcare",
+      "health_system_domain": null,
+      "official_website": "https://www.ucvh.org",
+      "transparency_page_candidates": [
+        "https://www.ucvh.org/patients-visitors/financial-information/"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["UCVH", "Upper Connecticut Valley"],
+      "parent_org": "North Country Healthcare",
+      "facility_type": "critical_access",
+      "latitude": 44.9942,
+      "longitude": -71.4959,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "VALLEY REGIONAL HOSPITAL",
+      "cms_ccn": "301308",
+      "npi": "1932192891",
+      "health_system": null,
+      "health_system_domain": null,
+      "official_website": "https://vrh.org",
+      "transparency_page_candidates": [
+        "https://vrh.org/price-transparency-information/"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["VRH", "Valley Regional"],
+      "parent_org": null,
+      "facility_type": "critical_access",
+      "latitude": 43.379,
+      "longitude": -72.3426,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "WEEKS MEDICAL CENTER",
+      "cms_ccn": "301303",
+      "npi": "1174563261",
+      "health_system": "North Country Healthcare",
+      "health_system_domain": null,
+      "official_website": "https://weeksmedical.org",
+      "transparency_page_candidates": [
+        "https://weeksmedical.org/patients-visitors/financial-information/"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Weeks Medical", "Weeks Hospital"],
+      "parent_org": "North Country Healthcare",
+      "facility_type": "critical_access",
+      "latitude": 44.4889,
+      "longitude": -71.5692,
+      "status": "active",
+      "exclusion_reason": null
+    },
+    {
+      "legal_name": "WENTWORTH-DOUGLASS HOSPITAL",
+      "cms_ccn": "300018",
+      "npi": "1891798754",
+      "health_system": "Mass General Brigham",
+      "health_system_domain": "massgeneralbrigham.org",
+      "official_website": "https://www.wdhospital.org",
+      "transparency_page_candidates": [
+        "https://www.wdhospital.org/wdh/patients-and-visitors/billing-and-insurance/cms-required-hospital-charge-data",
+        "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data"
+      ],
+      "cms_hpt_txt_url": null,
+      "known_aliases": ["Wentworth-Douglass", "W-D", "WDH"],
+      "parent_org": "Mass General Brigham",
+      "facility_type": "acute_care",
+      "latitude": 43.1859,
+      "longitude": -70.8805,
+      "status": "active",
+      "exclusion_reason": null
+    }
+  ],
+  "health_systems": {
+    "Dartmouth Health": {
+      "domain": "dartmouth-health.org",
+      "members": [
+        "ALICE PECK DAY MEMORIAL HOSPITAL",
+        "CHESHIRE MEDICAL CENTER",
+        "MARY HITCHCOCK MEMORIAL HOSPITAL",
+        "NEW LONDON HOSPITAL"
+      ]
+    },
+    "Concord Hospital": {
+      "domain": "concordhospital.org",
+      "members": [
+        "CONCORD HOSPITAL",
+        "CONCORD HOSPITAL- FRANKLIN",
+        "CONCORD HOSPITAL- LACONIA"
+      ]
+    },
+    "SolutionHealth": {
+      "domain": "solutionhealth.org",
+      "members": ["ELLIOT HOSPITAL", "SOUTHERN NH MEDICAL CENTER"]
+    },
+    "HCA Healthcare": {
+      "domain": "hcahealthcare.com",
+      "members": [
+        "PARKLAND MEDICAL CENTER",
+        "PORTSMOUTH REGIONAL HOSPITAL",
+        "FRISBIE MEMORIAL HOSPITAL",
+        "CATHOLIC MEDICAL CENTER"
+      ]
+    },
+    "MaineHealth": {
+      "domain": "mainehealth.org",
+      "members": ["MEMORIAL HOSPITAL, THE"]
+    },
+    "North Country Healthcare": {
+      "domain": null,
+      "members": [
+        "ANDROSCOGGIN VALLEY HOSPITAL",
+        "UPPER CONNECTICUT VALLEY HOSPITAL",
+        "WEEKS MEDICAL CENTER"
+      ]
+    },
+    "Beth Israel Lahey Health": {
+      "domain": "bilh.org",
+      "members": ["EXETER HOSPITAL INC"]
+    },
+    "Mass General Brigham": {
+      "domain": "massgeneralbrigham.org",
+      "members": ["WENTWORTH-DOUGLASS HOSPITAL"]
+    },
+    "Covenant Health": {
+      "domain": "covenanthealth.net",
+      "members": ["ST JOSEPH HOSPITAL"]
+    }
+  }
+}

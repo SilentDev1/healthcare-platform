@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from collectors.hospital_prices.discovery import OFFICIAL_DOMAINS
+from collectors.hospital_prices.inventory import get_official_domains
 from packages.database import (
     Facility,
     FacilityIdentifier,
@@ -120,7 +120,7 @@ def audit_nh_hospitals(session: Session) -> list[HospitalAuditEntry]:
                 or 0
             )
 
-        domain = OFFICIAL_DOMAINS.get(legal_name)
+        domain = get_official_domains().get(legal_name)
         entries.append(
             HospitalAuditEntry(
                 facility_name=legal_name,

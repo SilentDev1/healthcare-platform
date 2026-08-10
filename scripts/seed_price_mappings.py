@@ -4,20 +4,25 @@ from sqlalchemy.orm import Session
 from packages.database import Procedure, ProcedureCodeMapping, ProcedureCodeSystem, session_factory
 
 MAPPINGS = (
-    # --- Imaging (original 10) ---
+    # --- Imaging (original 10 + alternatives) ---
     ("mri-brain-without-contrast", "CPT", "70551"),
     ("mri-knee-without-contrast", "CPT", "73721"),
     ("mri-lumbar-spine-without-contrast", "CPT", "72148"),
     ("ct-abdomen-pelvis", "CPT", "74176"),
+    ("ct-abdomen-pelvis", "CPT", "74177"),  # with contrast
+    ("ct-abdomen-pelvis", "CPT", "74178"),  # without then with contrast
     ("ct-chest", "CPT", "71250"),
     ("chest-x-ray", "CPT", "71046"),
+    ("chest-x-ray", "CPT", "71045"),  # single view
     ("screening-mammogram", "CPT", "77067"),
     ("diagnostic-mammogram", "CPT", "77066"),
     ("abdominal-ultrasound", "CPT", "76700"),
     ("pelvic-ultrasound", "CPT", "76856"),
     ("bone-density-scan", "CPT", "77080"),
-    # --- Gastroenterology (original 2) ---
+    # --- Gastroenterology (original 2 + alternatives) ---
     ("colonoscopy", "CPT", "45378"),
+    ("colonoscopy", "CPT", "45380"),  # with biopsy
+    ("colonoscopy", "CPT", "45385"),  # with polyp removal
     ("upper-endoscopy", "CPT", "43235"),
     # --- Labs (original 2 + new) ---
     ("complete-blood-count", "CPT", "85025"),
@@ -32,10 +37,16 @@ MAPPINGS = (
     ("covid-test", "CPT", "87635"),
     ("surgical-pathology", "CPT", "88305"),
     ("pap-test", "CPT", "88175"),
-    # --- Cardiology ---
+    # --- Cardiology (+ alternatives) ---
     ("echocardiogram", "CPT", "93306"),
+    ("echocardiogram", "CPT", "93303"),  # transthoracic limited
+    ("echocardiogram", "CPT", "93307"),  # 2D only
     ("cardiac-stress-test", "CPT", "93015"),
+    ("cardiac-stress-test", "CPT", "93017"),  # tracing only
+    ("cardiac-stress-test", "CPT", "93018"),  # interpretation only
     ("electrocardiogram", "CPT", "93000"),
+    ("electrocardiogram", "CPT", "93005"),  # tracing only
+    ("electrocardiogram", "CPT", "93010"),  # interpretation only
     ("cardiac-catheterization", "CPT", "93458"),
     # --- Surgery ---
     ("cataract-surgery", "CPT", "66984"),
@@ -45,9 +56,20 @@ MAPPINGS = (
     ("hip-replacement", "CPT", "27130"),
     ("carpal-tunnel-release", "CPT", "64721"),
     ("rotator-cuff-repair", "CPT", "29827"),
-    # --- Maternity (MS-DRG) ---
+    # --- Maternity (MS-DRG + alternatives) ---
     ("vaginal-delivery", "MS_DRG", "775"),
+    ("vaginal-delivery", "MS_DRG", "774"),  # with complications
     ("cesarean-delivery", "MS_DRG", "766"),
+    ("cesarean-delivery", "MS_DRG", "765"),  # with CC
+    ("cesarean-delivery", "MS_DRG", "767"),  # with MCC
+    # --- Joint replacement DRGs ---
+    ("knee-replacement", "MS_DRG", "470"),  # without MCC
+    ("knee-replacement", "MS_DRG", "469"),  # with MCC
+    ("hip-replacement", "MS_DRG", "470"),  # without MCC
+    ("hip-replacement", "MS_DRG", "469"),  # with MCC
+    # --- Revenue codes ---
+    ("chest-x-ray", "REV_CODE", "0324"),  # diagnostic radiology
+    ("complete-blood-count", "REV_CODE", "0300"),  # laboratory
     # --- Emergency department ---
     ("ed-visit-level-1", "CPT", "99281"),
     ("ed-visit-level-2", "CPT", "99282"),

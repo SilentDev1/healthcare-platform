@@ -1,13 +1,17 @@
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from collectors.hospital_prices.downloader import register_local_file
+from collectors.hospital_prices.downloader import (
+    download_price_source,
+    register_local_file,
+)
 from collectors.hospital_prices.importer import PriceImportSummary, import_price_source
 from collectors.hospital_prices.projections import evaluate_pricing_health, rebuild_price_summaries
+from collectors.hospital_prices.self_healing import check_source_health
 from packages.database import Facility, FacilityLocation, FacilityPriceSource
 from scripts.seed_price_mappings import seed_price_mappings
 
@@ -147,5 +151,87 @@ def run_statewide_pipeline(session: Session, state_code: str = "NH") -> Statewid
 
     health = evaluate_pricing_health(session)
     result.average_health = health["average_pricing_health"]
+
+    return result
+
+
+@dataclass
+class DownloadRetryResult:
+    attempted: int = 0
+    succeeded: int = 0
+    failed: int = 0
+    skipped_ok: int = 0
+    errors: list[str] = field(default_factory=list)
+
+
+def run_download_retry(
+    session: Session, state_code: str = "NH"
+) -> DownloadRetryResult:
+    """Re-attempt downloads for sources with previous failures.
+
+    Pre-checks source health via HEAD request, follows redirects,
+    then re-downloads with raised limits.
+    """
+    import httpx
+
+    result = DownloadRetryResult()
+    facility_ids = set(
+        session.scalars(
+            select(Facility.id)
+            .join(FacilityLocation)
+            .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
+        )
+    )
+
+    sources = session.scalars(
+        select(FacilityPriceSource).where(
+            FacilityPriceSource.active.is_(True),
+            FacilityPriceSource.facility_id.in_(facility_ids),
+            FacilityPriceSource.last_failed_download_at.is_not(None),
+        )
+    ).all()
+
+    http = httpx.Client(
+        timeout=15,
+        follow_redirects=False,
+        headers={"User-Agent": "CareCompare-HPT-Research/1.0"},
+    )
+    try:
+        for source in sources:
+            result.attempted += 1
+            # Pre-check health and follow redirects
+            status = check_source_health(session, source, http)
+            if status == "broken":
+                result.failed += 1
+                result.errors.append(
+                    f"{source.facility_id}: broken URL {source.machine_readable_file_url}"
+                )
+                continue
+
+            try:
+                downloaded = download_price_source(session, source)
+                if downloaded.skipped_unchanged:
+                    result.skipped_ok += 1
+                else:
+                    result.succeeded += 1
+                    logger.info(
+                        "download_retry_success",
+                        extra={
+                            "facility_id": str(source.facility_id),
+                            "size": downloaded.size,
+                        },
+                    )
+            except Exception as exc:
+                result.failed += 1
+                result.errors.append(f"{source.facility_id}: {exc}")
+                logger.warning(
+                    "download_retry_failed",
+                    extra={
+                        "facility_id": str(source.facility_id),
+                        "error": str(exc),
+                    },
+                )
+    finally:
+        http.close()
 
     return result

@@ -455,13 +455,13 @@ def test_fixture_pipeline_still_passes() -> None:
         assert first.records_normalized == 14
         assert first.records_rejected == 2
         assert first.procedure_mappings == 10
-        assert first.summaries == 12
+        assert first.summaries == 16
         assert second.files_skipped_unchanged == 6
         assert second.records_normalized == 0
         assert session.scalar(select(func.count(HospitalPriceRecord.id))) == 14
         assert session.scalar(select(func.count(PricingUnmatchedRecord.id))) == 2
         assert session.scalar(select(func.count(PricingAnomaly.id))) == 5
-        assert session.scalar(select(func.count(FacilityProcedurePriceSummary.id))) == 12
+        assert session.scalar(select(func.count(FacilityProcedurePriceSummary.id))) == 16
         assert (
             session.scalar(
                 select(func.count(HospitalPriceRecord.id)).where(

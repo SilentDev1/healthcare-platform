@@ -137,7 +137,21 @@ class ImportCaches:
     def flush_pending(self, session: Session) -> None:
         """Batch-persist new payer aliases and plans, then reload affected caches."""
         if self.pending_plans:
-            session.add_all(self.pending_plans)
+            for plan in self.pending_plans:
+                # Check if plan already exists (may have been created by concurrent import)
+                existing = session.scalar(
+                    select(InsurancePlanEntity.id).where(
+                        InsurancePlanEntity.payer_entity_id == plan.payer_entity_id,
+                        InsurancePlanEntity.normalized_name == plan.normalized_name,
+                    )
+                )
+                if existing:
+                    # Update cache to point to existing plan
+                    self.plan_cache[
+                        (plan.payer_entity_id, plan.normalized_name)
+                    ] = existing
+                else:
+                    session.add(plan)
             self.pending_plans.clear()
         if self.pending_payer_aliases:
             session.add_all(self.pending_payer_aliases)

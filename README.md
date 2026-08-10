@@ -5,23 +5,26 @@ public hospital machine-readable files, maps them to a consumer procedure catalo
 publication safety gates, and serves reviewed pricing through a Next.js public site, admin
 dashboard, and FastAPI backend — all backed by PostgreSQL 17 and Alembic migrations.
 
-## Current status (Phase 4.2)
+## Current status (Phase 4.2.2)
 
-| Metric                                 | Value          |
-| -------------------------------------- | -------------- |
-| NH facilities in database              | 28             |
-| Facilities with discovered MRF sources | 13 (46%)       |
-| Facilities with publishable pricing    | 2 (7%)         |
-| Consumer procedures in catalog         | 50             |
-| Procedures with publishable prices     | 6 (12%)        |
-| Import throughput                      | 1,305 rows/sec |
-| Statewide readiness score              | 34.4%          |
-| Safety invariants                      | All clear      |
+| Metric                                 | Value            |
+| -------------------------------------- | ---------------- |
+| NH facilities in database              | 28               |
+| Facilities with discovered MRF sources | 22 (79%)         |
+| Facilities with downloaded files       | 13 (46%)         |
+| Facilities with parsed records         | 13 (46%)         |
+| Facilities with publishable pricing    | 12 (43%)         |
+| Consumer procedures in catalog         | 50               |
+| Total price records                    | 1,197,796        |
+| Publishable summaries                  | 4,173            |
+| Average pricing health score           | 49.07            |
+| Safety invariants                      | All clear        |
 
-The engineering infrastructure — pipeline, API, UI, quality system, and operational tooling —
-is complete and fully verified. The primary gap is data coverage: 15 facilities lack
-discovered sources, and most raw hospital data uses internal charge codes that require
-crosswalk mapping to standard CPT/HCPCS/DRG codes.
+Phase 4.2.2 achieved a major coverage recovery: from 6 publishable facilities (21%) to
+12 (43%), with total records growing from 361K to 1.2M. Key unlocks included CMS HPT JSON
+3.0 parsing for large files (246–437 MB), streaming downloads with .part atomic rename and
+HTTP Range resume, expanded CDM crosswalk (54 patterns), and a conditional publication
+pathway for legacy parsers with approved-code mappings.
 
 ## Quick start
 
@@ -70,7 +73,7 @@ apps/web/          Next.js public interface (facilities, procedures, prices, map
 apps/admin/        Next.js admin dashboard (scorecard, pipeline status, quality review)
 services/api/      FastAPI backend (28 endpoints, publication-gated pricing)
 collectors/        Hospital price discovery, download, parsing, normalization
-packages/database/ SQLAlchemy models, Alembic migrations (0001–0006)
+packages/database/ SQLAlchemy models, Alembic migrations (0001–0007)
 packages/search/   Search index with 40+ consumer synonym mappings
 packages/identity/ Deterministic facility identity resolution
 scripts/           Pipeline CLI, benchmarks, reports, verification
@@ -86,8 +89,9 @@ The pipeline follows a strict sequence: discover → download → parse → norm
 review → publish. Each stage has safety gates:
 
 - **Discovery**: Bounded to official hospital domains via `robots.txt`-compliant crawling
-- **Parsing**: Deterministic CMS HPT CSV/JSON parsers with header-alias extensions
-- **Mapping**: Code-based procedure mapping (51 CPT/HCPCS/DRG mappings) — no fuzzy matching
+- **Parsing**: Deterministic CMS HPT CSV/JSON parsers (including 3.0 nested format), chargemaster
+  wide CSV, XML standard charges — with header-alias extensions (24 description synonyms, 27 code synonyms)
+- **Mapping**: Code-based procedure mapping (87 CPT/HCPCS/DRG mappings, 54 CDM crosswalk patterns) — no fuzzy matching
 - **Quality**: Auto-triage rules suppress known false positives; unresolved critical/error
   anomalies block publication
 - **Publication**: Only `publishable` summaries with reviewed mappings and acceptable
@@ -108,31 +112,33 @@ Phase 4.2 extends the pricing pipeline to all 28 NH acute-care hospitals:
 - **Admin dashboard** — readiness gauge, component score bars, per-facility quality table
 - **API endpoints** — scorecard, freshness, facility scores, map data, pricing health, price filtering
 
+### Phase 4.2.2 — Coverage recovery
+
+- **Large file streaming** — 750 MB download ceiling, .part atomic rename, HTTP Range resume, streaming SHA-256
+- **CMS HPT JSON 3.0** — nested `code_information` and `standard_charges`/`payers_information` extraction
+- **Expanded parsers** — 24 description synonyms, 27 code synonyms, space-variant header detection, chargemaster wide CSV preamble skip
+- **CDM crosswalk** — 54 deterministic patterns (ED visits, deliveries, imaging, urgent care, labs)
+- **Health system propagation** — Dartmouth Health, SolutionHealth, North Country Healthcare sibling source sharing
+- **Publication pathway** — legacy parsers publishable when records have exact approved-code mappings
+- **Diagnostics** — `scripts/publication_blockers.py`, `scripts/analyze_unmapped_codes.py`, `scripts/final_classification.py`
+
 ### Verified status
 
-All checks pass as of the final Phase 4.2 commit:
+All checks pass as of the latest commit:
 
-| Check                  | Result                  |
-| ---------------------- | ----------------------- |
-| mypy (strict)          | 0 errors, 99 files      |
-| pytest                 | 64 passed, 71% coverage |
-| Ruff format + lint     | Clean                   |
-| ESLint                 | 0 errors                |
-| Prettier               | Clean                   |
-| TypeScript             | 0 errors                |
-| Vitest                 | 3 passed                |
-| Web production build   | Success                 |
-| Admin production build | Success                 |
-| npm audit              | 0 vulnerabilities       |
-| Phase 4.2 verification | 7/7 checks passed       |
+| Check              | Result                   |
+| ------------------ | ------------------------ |
+| mypy (strict)      | 0 errors, 109 files      |
+| pytest             | 78 passed                |
+| Ruff format + lint | Clean                    |
+| Safety invariants  | 0 AI / 0 fuzzy / 0 PHI   |
 
-### Top remaining gaps
+### Remaining gaps
 
-1. 15 NH facilities have no discovered MRF source (including Dartmouth-Hitchcock, Elliot, Southern NH)
-2. Concord Hospital-Franklin has 97,817 records using CDM codes — needs CPT crosswalk
-3. 26 discovered source URLs have not been downloaded
-4. 44 of 50 procedures have zero publishable prices
-5. 34 procedures lack CPT/HCPCS code mappings
+1. 9 facilities have discovered sources but download failed (stale URLs, 404s, HTML error pages)
+2. 6 facilities have no discovered MRF source (Cottage, Exeter, Hampstead, Monadnock, NH Hospital, Valley Regional)
+3. Littleton Regional parsed (20K records) but not publishable — CDM codes unresolved, legacy parser
+4. 2 excluded facilities (Hampstead psychiatric, NH Hospital state-run)
 
 See [pipeline operations](docs/phase-4-2-operations.md), [API endpoints](docs/api-pricing-endpoints.md),
 and [coverage methodology](docs/statewide-coverage.md).

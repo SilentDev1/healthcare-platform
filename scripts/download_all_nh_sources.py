@@ -1,5 +1,9 @@
-"""Download from all active NH price sources that lack a source_file_id."""
+"""Download from all active price sources that lack a source_file_id.
 
+Accepts a state_code parameter for geographic scope (defaults to NH).
+"""
+
+import argparse
 import json
 
 from sqlalchemy import select
@@ -9,13 +13,13 @@ from collectors.hospital_prices.downloader import download_price_source
 from packages.database import Facility, FacilityLocation, FacilityPriceSource, session_factory
 
 
-def download_all_nh_sources(session: Session) -> dict[str, int]:
-    """Download all sources missing source_file_id for NH facilities."""
-    nh_facility_ids = set(
+def download_all_sources(session: Session, state_code: str = "NH") -> dict[str, int]:
+    """Download all sources missing source_file_id for facilities in state."""
+    facility_ids = set(
         session.scalars(
             select(Facility.id)
             .join(FacilityLocation)
-            .where(FacilityLocation.state == "NH", Facility.active.is_(True))
+            .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
         )
     )
 
@@ -23,7 +27,7 @@ def download_all_nh_sources(session: Session) -> dict[str, int]:
         select(FacilityPriceSource).where(
             FacilityPriceSource.active.is_(True),
             FacilityPriceSource.source_file_id.is_(None),
-            FacilityPriceSource.facility_id.in_(nh_facility_ids),
+            FacilityPriceSource.facility_id.in_(facility_ids),
         )
     ).all()
 
@@ -49,10 +53,18 @@ def download_all_nh_sources(session: Session) -> dict[str, int]:
     return {"downloaded": downloaded, "skipped": skipped, "failed": failed, "total": len(sources)}
 
 
+def download_all_nh_sources(session: Session) -> dict[str, int]:
+    """Backward-compatible alias."""
+    return download_all_sources(session, "NH")
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Download all price sources")
+    parser.add_argument("--state", default="NH")
+    args = parser.parse_args()
     with session_factory() as session:
-        result = download_all_nh_sources(session)
-    print("\n=== Download All NH Sources ===")
+        result = download_all_sources(session, args.state)
+    print(f"\n=== Download All {args.state} Sources ===")
     print(json.dumps(result, indent=2))
 
 

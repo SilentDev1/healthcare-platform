@@ -248,7 +248,9 @@ def test_phase_4_2_scorecard_endpoint() -> None:
     components = data["component_scores"]
     assert set(components.keys()) == {
         "discovery",
+        "download",
         "parsing",
+        "publishable",
         "mapping",
         "quality",
         "freshness",

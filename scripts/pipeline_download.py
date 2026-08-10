@@ -1,11 +1,11 @@
-"""Pipeline step: download all NH price sources."""
+"""Pipeline step: download all price sources for a state."""
 
 import argparse
 import json
 import time
 
 from packages.database import session_factory
-from scripts.download_all_nh_sources import download_all_nh_sources
+from scripts.download_all_nh_sources import download_all_sources
 
 
 def main() -> None:
@@ -15,7 +15,7 @@ def main() -> None:
 
     started = time.perf_counter()
     with session_factory() as session:
-        result = download_all_nh_sources(session)
+        result = download_all_sources(session, args.state)
         session.commit()
     elapsed = round(time.perf_counter() - started, 2)
 

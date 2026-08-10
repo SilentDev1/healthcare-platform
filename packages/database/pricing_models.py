@@ -71,6 +71,23 @@ class FacilityPriceSource(TimestampMixin, Base):
     source_file_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("source_files.id"), index=True
     )
+    file_role: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    health_system_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    vendor_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+
+class FacilityPriceSourceHistory(Base):
+    """Tracks URL changes for facility price sources (self-healing audit trail)."""
+
+    __tablename__ = "facility_price_source_history"
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    facility_price_source_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("facility_price_sources.id"), index=True
+    )
+    previous_url: Mapped[str] = mapped_column(String(2048))
+    new_url: Mapped[str] = mapped_column(String(2048))
+    change_reason: Mapped[str] = mapped_column(String(255))
+    changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class PriceSourceDiscoveryRun(Base):

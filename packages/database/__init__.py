@@ -28,6 +28,7 @@ from packages.database.models import (
 )
 from packages.database.pricing_models import (
     FacilityPriceSource,
+    FacilityPriceSourceHistory,
     FacilityProcedurePriceObservation,
     FacilityProcedurePriceSummary,
     HospitalPriceRateDetail,
@@ -83,6 +84,7 @@ __all__ = [
     "get_session",
     "session_factory",
     "FacilityPriceSource",
+    "FacilityPriceSourceHistory",
     "FacilityProcedurePriceObservation",
     "ImportCheckpoint",
     "FacilityProcedurePriceSummary",
