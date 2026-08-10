@@ -289,6 +289,10 @@ resource "google_cloud_run_v2_service" "web" {
         value = var.api_public_url
       }
       env {
+        name  = "CARECOMPARE_API_URL"
+        value = var.api_public_url
+      }
+      env {
         name  = "NEXT_PUBLIC_SITE_URL"
         value = var.public_app_url
       }
