@@ -136,16 +136,26 @@ export function EmptyState({
   );
 }
 
-export function ErrorState({ retryHref }: { retryHref?: string }) {
+export function ErrorState({
+  retryHref,
+  onRetry,
+}: {
+  retryHref?: string;
+  onRetry?: () => void;
+}) {
   return (
     <section className="state-card error" role="alert">
       <h2>We couldn’t load this information</h2>
       <p>Please try again. No missing prices will be estimated or filled in.</p>
-      {retryHref && (
+      {onRetry ? (
+        <button className="button secondary" type="button" onClick={onRetry}>
+          Try again
+        </button>
+      ) : retryHref ? (
         <Link className="button secondary" href={retryHref}>
           Try again
         </Link>
-      )}
+      ) : null}
     </section>
   );
 }

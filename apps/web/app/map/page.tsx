@@ -7,8 +7,7 @@ import type { MapData, MapFeature } from "../../lib/api";
 import { EmptyState, LoadingSkeleton } from "../components/ui";
 import { launchRegion } from "../../lib/brand";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_CARECOMPARE_API_URL ?? "http://127.0.0.1:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),

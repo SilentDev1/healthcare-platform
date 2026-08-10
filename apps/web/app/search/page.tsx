@@ -5,8 +5,8 @@ import { Suspense, useEffect, useState } from "react";
 import { CareSearch } from "../components/CareSearch";
 import { EmptyState, ErrorState, LoadingSkeleton } from "../components/ui";
 import type { SearchResult } from "../../lib/api";
-const API_URL =
-  process.env.NEXT_PUBLIC_CARECOMPARE_API_URL ?? "http://127.0.0.1:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+const SEARCH_TIMEOUT_MS = 10_000;
 
 function SearchContent() {
   const params = useSearchParams();
@@ -14,17 +14,23 @@ function SearchContent() {
   const location = params.get("location") ?? "";
   const payer = params.get("payer") ?? "";
   const [items, setItems] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState(Boolean(q));
+  const [loading, setLoading] = useState(q.length >= 2);
   const [error, setError] = useState(false);
+  const [requestNonce, setRequestNonce] = useState(0);
   useEffect(() => {
     if (q.length < 2) return;
     const controller = new AbortController();
+    let timedOut = false;
     const reset = setTimeout(() => {
       setLoading(true);
       setError(false);
     }, 0);
     const query = new URLSearchParams({ q });
     if (/^\d{5}$/.test(location)) query.set("postal_code", location);
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, SEARCH_TIMEOUT_MS);
     fetch(`${API_URL}/api/v1/search?${query}`, { signal: controller.signal })
       .then((r) => {
         if (!r.ok) throw new Error();
@@ -32,14 +38,18 @@ function SearchContent() {
       })
       .then((d) => setItems(d.items ?? []))
       .catch((e) => {
-        if (e.name !== "AbortError") setError(true);
+        if (timedOut || e.name !== "AbortError") setError(true);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        clearTimeout(timeout);
+        setLoading(false);
+      });
     return () => {
       clearTimeout(reset);
+      clearTimeout(timeout);
       controller.abort();
     };
-  }, [q, location]);
+  }, [q, location, requestNonce]);
   return (
     <main>
       <div className="page-heading">
@@ -71,7 +81,7 @@ function SearchContent() {
       {loading ? (
         <LoadingSkeleton />
       ) : error ? (
-        <ErrorState retryHref={`/search?q=${encodeURIComponent(q)}`} />
+        <ErrorState onRetry={() => setRequestNonce((value) => value + 1)} />
       ) : q && items.length === 0 ? (
         <EmptyState title="No matching care or hospital found">
           Try a broader term, a nearby city, or browse the procedure catalog. A
