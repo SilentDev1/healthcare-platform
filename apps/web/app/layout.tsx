@@ -22,8 +22,11 @@ export default function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body>
+        <a className="skip-link" href="#main-content">
+          Skip to main content
+        </a>
         <header className="site-header">
           <Link className="brand" href="/">
             <span className="brand-mark" aria-hidden="true">
@@ -38,12 +41,18 @@ export default function Layout({
             <Link href="/map">Map</Link>
           </nav>
         </header>
-        {children}
+        <div id="main-content">{children}</div>
         <footer className="footer">
           <div className="footer-inner">
             <div>
               <strong>{brand.name}</strong>
               <p>{brand.tagline}</p>
+              <nav aria-label="Footer navigation">
+                <Link href="/about-data">About the data</Link>
+                <Link href="/how-it-works">How it works</Link>
+                <Link href="/hospitals">Hospitals</Link>
+                <Link href="/procedures">Procedures</Link>
+              </nav>
             </div>
             <p>
               Published hospital prices are estimates for comparison, not a

@@ -1,8 +1,14 @@
 const API_URL = process.env.CARECOMPARE_API_URL ?? "http://127.0.0.1:8000";
 
+export class ApiError extends Error {
+  constructor(public status: number) {
+    super(`API request failed (${status})`);
+  }
+}
+
 export async function apiGet<T>(path: string): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, { cache: "no-store" });
-  if (!response.ok) throw new Error(`API request failed (${response.status})`);
+  if (!response.ok) throw new ApiError(response.status);
   return (await response.json()) as T;
 }
 
@@ -97,6 +103,28 @@ export interface PricePage {
   total: number;
   page: number;
   page_size: number;
+}
+
+export interface FacilityProcedureOverviewItem {
+  procedure_slug: string;
+  procedure_name: string;
+  facility_location_id: string;
+  location_name: string | null;
+  city: string;
+  service_settings: string[];
+  cash_price_min: string | null;
+  cash_price_max: string | null;
+  negotiated_price_min: string | null;
+  negotiated_price_max: string | null;
+  summary_count: number;
+  latest_updated: string;
+  source_url: string;
+}
+
+export interface FacilityProcedureOverview {
+  facility_id: string;
+  procedure_count: number;
+  items: FacilityProcedureOverviewItem[];
 }
 
 export interface ProcedureComparisonItem {

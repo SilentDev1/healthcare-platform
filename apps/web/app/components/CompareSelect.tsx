@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 
 interface CompareChoice {
   key: string;
@@ -10,49 +10,60 @@ interface CompareChoice {
   name: string;
 }
 
-function readChoices(): CompareChoice[] {
-  if (typeof window === "undefined") return [];
+function storageKey(procedureSlug: string) {
+  return `careveroCompareV1:${procedureSlug}`;
+}
+
+function parseChoices(value: string): CompareChoice[] {
   try {
-    const value: unknown = JSON.parse(
-      sessionStorage.getItem("careveroCompareV1") ?? "[]",
-    );
-    return Array.isArray(value) ? (value as CompareChoice[]).slice(0, 3) : [];
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? (parsed as CompareChoice[]).slice(0, 3) : [];
   } catch {
     return [];
   }
+}
+
+function subscribe(onStoreChange: () => void) {
+  window.addEventListener("carevero:selection", onStoreChange);
+  return () => window.removeEventListener("carevero:selection", onStoreChange);
+}
+
+function useChoices(procedureSlug: string) {
+  const serialized = useSyncExternalStore(
+    subscribe,
+    () => sessionStorage.getItem(storageKey(procedureSlug)) ?? "[]",
+    () => "[]",
+  );
+  return useMemo(() => parseChoices(serialized), [serialized]);
 }
 
 export function CompareSelect({
   facilityId,
   locationId,
   name,
+  procedureSlug,
 }: {
   facilityId: string;
   locationId: string;
   name: string;
+  procedureSlug: string;
 }) {
   const key = `${facilityId}~${locationId}`;
-  const [selected, setSelected] = useState<CompareChoice[]>(readChoices);
+  const selected = useChoices(procedureSlug);
   const active = selected.some((choice) => choice.key === key);
-
-  useEffect(() => {
-    function synchronize() {
-      setSelected(readChoices());
-    }
-    window.addEventListener("carevero:selection", synchronize);
-    return () => window.removeEventListener("carevero:selection", synchronize);
-  }, []);
+  const limitReached = !active && selected.length >= 3;
 
   function toggle() {
-    const current = readChoices();
+    const current = parseChoices(
+      sessionStorage.getItem(storageKey(procedureSlug)) ?? "[]",
+    );
     const currentlyActive = current.some((choice) => choice.key === key);
     const next = currentlyActive
       ? current.filter((choice) => choice.key !== key)
       : current.length < 3
         ? [...current, { key, facilityId, locationId, name }]
         : current;
-    setSelected(next);
-    sessionStorage.setItem("careveroCompareV1", JSON.stringify(next));
+    sessionStorage.setItem(storageKey(procedureSlug), JSON.stringify(next));
     window.dispatchEvent(new Event("carevero:selection"));
   }
 
@@ -62,28 +73,36 @@ export function CompareSelect({
         type="button"
         className="button secondary"
         onClick={toggle}
+        disabled={limitReached}
         aria-pressed={active}
         aria-label={`${active ? "Remove" : "Add"} ${name} ${active ? "from" : "to"} comparison`}
       >
-        {active ? "✓ Selected" : "+ Compare"}
+        {active
+          ? "✓ Selected"
+          : limitReached
+            ? "3 selected — remove one to add"
+            : "+ Compare"}
       </button>
     </div>
   );
 }
 
-export function CompareTray({ procedureSlug }: { procedureSlug: string }) {
-  const [selected, setSelected] = useState<CompareChoice[]>(readChoices);
-
-  useEffect(() => {
-    function synchronize() {
-      setSelected(readChoices());
-    }
-    window.addEventListener("carevero:selection", synchronize);
-    return () => window.removeEventListener("carevero:selection", synchronize);
-  }, []);
+export function CompareTray({
+  procedureSlug,
+  payer,
+}: {
+  procedureSlug: string;
+  payer?: string;
+}) {
+  const selected = useChoices(procedureSlug);
 
   if (selected.length === 0) return null;
-  const compareHref = `/compare?items=${selected.map((choice) => choice.key).join(",")}&procedure=${encodeURIComponent(procedureSlug)}`;
+  const compareQuery = new URLSearchParams({
+    items: selected.map((choice) => choice.key).join(","),
+    procedure: procedureSlug,
+  });
+  if (payer) compareQuery.set("payer", payer);
+  const compareHref = `/compare?${compareQuery}`;
   return (
     <aside className="compare-tray" aria-live="polite">
       <div>

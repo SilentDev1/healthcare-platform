@@ -34,6 +34,10 @@ export default async function Home() {
             Explore published hospital prices and CMS quality information in one
             straightforward place.
           </p>
+          <p className="hero-assurance">
+            Free to use. No account required. Carevero provides comparison
+            information—not medical advice or a guaranteed bill.
+          </p>
           <CareSearch showInsurance />
           <div className="popular">
             <span>Popular:</span>

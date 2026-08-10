@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { MapData, MapFeature } from "../../lib/api";
 import { EmptyState, LoadingSkeleton } from "../components/ui";
+import { launchRegion } from "../../lib/brand";
 
 const API_URL =
   process.env.NEXT_PUBLIC_CARECOMPARE_API_URL ?? "http://127.0.0.1:8000";
@@ -39,11 +40,14 @@ export default function MapPage() {
   const [view, setView] = useState<"list" | "map">("list");
 
   useEffect(() => {
-    const url = filter
-      ? `${API_URL}/api/v1/facilities/map-data?pricing_status=${filter}`
-      : `${API_URL}/api/v1/facilities/map-data`;
+    const query = new URLSearchParams({ state: launchRegion.state });
+    if (filter) query.set("pricing_status", filter);
+    const url = `${API_URL}/api/v1/facilities/map-data?${query}`;
     fetch(url)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("map request failed");
+        return res.json();
+      })
       .then((json: MapData) => {
         setData(json.features);
         setLoaded(true);
@@ -147,8 +151,8 @@ export default function MapPage() {
             className={`map-canvas ${view === "list" ? "desktop-only" : ""}`}
           >
             <MapContainer
-              center={[43.45, -71.56]}
-              zoom={8}
+              center={launchRegion.mapCenter}
+              zoom={launchRegion.mapZoom}
               style={{ height: "100%", width: "100%" }}
             >
               <TileLayer

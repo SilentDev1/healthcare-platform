@@ -2,10 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import type { PriceSummary } from "../../lib/api";
+import type { FacilityProcedureOverviewItem } from "../../lib/api";
 import { PriceRange, SourceAttribution } from "./ui";
 
-export function FacilityPrices({ items }: { items: PriceSummary[] }) {
+export function FacilityPrices({
+  items,
+}: {
+  items: FacilityProcedureOverviewItem[];
+}) {
   const [query, setQuery] = useState("");
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -47,7 +51,9 @@ export function FacilityPrices({ items }: { items: PriceSummary[] }) {
             </thead>
             <tbody>
               {filtered.map((price) => (
-                <tr key={price.id}>
+                <tr
+                  key={`${price.procedure_slug}-${price.facility_location_id}`}
+                >
                   <td data-label="Procedure and location">
                     <Link href={`/procedures/${price.procedure_slug}/prices`}>
                       {price.procedure_name}
@@ -71,12 +77,13 @@ export function FacilityPrices({ items }: { items: PriceSummary[] }) {
                     />
                   </td>
                   <td data-label="Setting">
-                    {price.service_setting?.replaceAll("_", " ")}
+                    {price.service_settings.join(", ").replaceAll("_", " ")}
                   </td>
                   <td data-label="Source">
                     <SourceAttribution
-                      updated={price.last_updated}
+                      updated={price.latest_updated}
                       url={price.source_url}
+                      showLink={false}
                     />
                   </td>
                 </tr>

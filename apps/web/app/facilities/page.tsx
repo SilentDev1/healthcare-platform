@@ -1,10 +1,19 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { apiGet, FacilityPage } from "../../lib/api";
+import { launchRegion } from "../../lib/brand";
+
+export const metadata: Metadata = {
+  title: "Hospitals",
+  description:
+    "Browse active hospitals and service locations in Carevero’s New Hampshire launch region.",
+  alternates: { canonical: "/hospitals" },
+};
 
 export default async function Facilities() {
   try {
     const page = await apiGet<FacilityPage>(
-      "/api/v1/facilities?state=NH&page_size=100",
+      `/api/v1/facilities?state=${launchRegion.state}&page_size=100`,
     );
     return (
       <main>

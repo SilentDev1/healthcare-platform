@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { apiGet, Procedure, type ProcedureComparison } from "../../../lib/api";
 import {
@@ -8,6 +9,26 @@ import {
   SourceAttribution,
 } from "../../components/ui";
 import { launchRegion } from "../../../lib/brand";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  try {
+    const item = await apiGet<Procedure>(
+      `/api/v1/procedures/${encodeURIComponent(slug)}`,
+    );
+    return {
+      title: `${item.consumer_name} prices`,
+      description: `Learn about ${item.consumer_name.toLowerCase()} and compare available hospital-published prices in ${launchRegion.name}.`,
+      alternates: { canonical: `/procedures/${item.slug}` },
+    };
+  } catch {
+    return { title: "Procedure information" };
+  }
+}
 
 export default async function ProcedureDetail({
   params,
@@ -43,8 +64,18 @@ export default async function ProcedureDetail({
   const negotiatedMaxes = priced
     .map((price) => price.negotiated_price_max)
     .filter((value): value is string => value !== null);
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "MedicalProcedure",
+    name: item.consumer_name,
+    description: item.short_description,
+  };
   return (
     <main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <nav className="breadcrumbs" aria-label="Breadcrumb">
         <Link href="/">Home</Link>
         <span>/</span>
@@ -84,7 +115,7 @@ export default async function ProcedureDetail({
         </div>
         <div className="price-overview-grid">
           <article>
-            <span>Cash price range</span>
+            <span>Published cash range across listed settings</span>
             <strong>
               <PriceRange
                 min={
@@ -101,7 +132,7 @@ export default async function ProcedureDetail({
             </strong>
           </article>
           <article>
-            <span>Negotiated price range</span>
+            <span>Published range across available payers and plans</span>
             <strong>
               <PriceRange
                 min={
@@ -122,6 +153,10 @@ export default async function ProcedureDetail({
             <strong>{comparison?.facilities_with_prices ?? 0}</strong>
           </article>
         </div>
+        <p className="field-help">
+          These statewide ranges can combine different service settings. Use the
+          comparison filters to review like-for-like settings and payer context.
+        </p>
       </section>
       <section className="section" style={{ paddingInline: 0 }}>
         <div className="section-heading">

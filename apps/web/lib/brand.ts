@@ -9,4 +9,6 @@ export const launchRegion = {
   state: "NH",
   name: "New Hampshire",
   coverageLabel: "statewide",
+  mapCenter: [43.45, -71.56] as [number, number],
+  mapZoom: 8,
 } as const;

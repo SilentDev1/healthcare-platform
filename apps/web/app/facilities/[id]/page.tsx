@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   apiGet,
+  ApiError,
   type Facility,
-  type PricePage,
+  type FacilityProcedureOverview,
   type QualityPage,
 } from "../../../lib/api";
 import {
@@ -13,6 +16,25 @@ import {
   SourceAttribution,
 } from "../../components/ui";
 import { FacilityPrices } from "../../components/FacilityPrices";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const facility = await apiGet<Facility>(`/api/v1/facilities/${id}`);
+    const location = facility.locations[0];
+    return {
+      title: facility.display_name,
+      description: `View published prices, service locations, and CMS quality information for ${facility.display_name}${location ? ` in ${location.city}, ${location.state}` : ""}.`,
+      alternates: { canonical: `/hospitals/${facility.id}` },
+    };
+  } catch {
+    return { title: "Hospital information" };
+  }
+}
 export default async function FacilityPage({
   params,
 }: {
@@ -23,15 +45,49 @@ export default async function FacilityPage({
     const [facility, quality, prices] = await Promise.all([
       apiGet<Facility>(`/api/v1/facilities/${id}`),
       apiGet<QualityPage>(`/api/v1/facilities/${id}/quality?page_size=100`),
-      apiGet<PricePage>(`/api/v1/facilities/${id}/prices?page_size=50`),
+      apiGet<FacilityProcedureOverview>(
+        `/api/v1/facilities/${id}/procedure-overview`,
+      ),
     ]);
     const location = facility.locations[0];
     const overall = quality.items.find(
       (q) => q.cms_measure_id === "OVERALL_RATING",
     );
     const groups = Object.groupBy(quality.items, (q) => q.category);
+    const priceSources = Array.from(
+      new Map(
+        prices.items.map((price) => [
+          price.source_url,
+          {
+            url: price.source_url,
+            updated: price.latest_updated,
+            context: price.location_name ?? price.city,
+          },
+        ]),
+      ).values(),
+    );
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "Hospital",
+      name: facility.display_name,
+      telephone: facility.phone ?? undefined,
+      url: facility.website_url ?? undefined,
+      address: location
+        ? {
+            "@type": "PostalAddress",
+            streetAddress: location.address_line_1,
+            addressLocality: location.city,
+            addressRegion: location.state,
+            postalCode: location.postal_code,
+          }
+        : undefined,
+    };
     return (
       <main>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
         <nav className="breadcrumbs">
           <Link href="/">Home</Link>
           <span>/</span>
@@ -83,9 +139,19 @@ export default async function FacilityPage({
             </article>
             <article className="card">
               <h3>Contact</h3>
-              <p>{facility.phone ?? "Phone not available"}</p>
+              <p>
+                {facility.phone ? (
+                  <a href={`tel:${facility.phone.replace(/[^\d+]/g, "")}`}>
+                    Call {facility.phone}
+                  </a>
+                ) : (
+                  "Phone not available"
+                )}
+              </p>
               {facility.website_url && (
-                <a href={facility.website_url}>Facility website</a>
+                <a href={facility.website_url} target="_blank" rel="noreferrer">
+                  Visit official facility website (external)
+                </a>
               )}
             </article>
             <article className="card">
@@ -106,8 +172,9 @@ export default async function FacilityPage({
           {prices.items.length ? (
             <>
               <CoverageNotice>
-                {prices.total} publishable procedure price summaries are
-                currently available for this facility.
+                Published pricing is currently available for{" "}
+                {prices.procedure_count} procedure
+                {prices.procedure_count === 1 ? "" : "s"} at this facility.
               </CoverageNotice>
               <FacilityPrices items={prices.items} />
             </>
@@ -159,18 +226,24 @@ export default async function FacilityPage({
             <p className="eyebrow">Data sources</p>
             <h2>Where this information comes from</h2>
           </div>
-          <SourceAttribution quality updated={facility.updated_at} />
-          {prices.items[0] && (
+          <SourceAttribution
+            quality
+            updated={overall?.reporting_period_end ?? undefined}
+          />
+          {priceSources.map((source) => (
             <SourceAttribution
-              updated={prices.items[0].last_updated}
-              url={prices.items[0].source_url}
+              key={source.url}
+              updated={source.updated}
+              url={source.url}
+              context={source.context}
             />
-          )}
+          ))}
         </section>
         <PricingDisclaimer />
       </main>
     );
-  } catch {
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) notFound();
     return (
       <main>
         <h1>Hospital information unavailable</h1>

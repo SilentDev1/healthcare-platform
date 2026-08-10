@@ -94,6 +94,12 @@ export default async function ProcedurePrices({
     const facilityTypes = Array.from(
       new Set(data.items.map((item) => item.facility_type).filter(Boolean)),
     ).sort() as string[];
+    const payerName = filters.payer
+      ? payers.find((payer) => payer.slug === filters.payer)?.name
+      : undefined;
+    const activeFilterCount = Object.entries(filters).filter(
+      ([key, value]) => key !== "sort" && Boolean(value),
+    ).length;
 
     const filterForm = (
       <form className="filter-form">
@@ -202,14 +208,16 @@ export default async function ProcedurePrices({
           </p>
         </div>
         <CoverageNotice>
-          Published prices are available from {data.facilities_with_prices} of{" "}
-          {data.active_facilities} active hospitals for this procedure. All
-          matching hospitals remain visible, including those without a
-          publishable price.
+          {filters.payer && data.facilities_with_prices === 0
+            ? `No published negotiated rate found for ${payerName ?? "this payer"}. This does not mean the payer is not accepted, the hospital is out of network, or the service is not covered.`
+            : `Published prices are available from ${data.facilities_with_prices} of ${data.active_facilities} active hospitals for this procedure. All matching hospitals remain visible, including those without a publishable price.`}
         </CoverageNotice>
         <div className="toolbar comparison-toolbar">
           <strong>
             {items.length} service location{items.length === 1 ? "" : "s"}
+            {activeFilterCount
+              ? ` · ${activeFilterCount} active filter${activeFilterCount === 1 ? "" : "s"}`
+              : ""}
           </strong>
           <form className="sort-form">
             {Object.entries(filters)
@@ -236,21 +244,41 @@ export default async function ProcedurePrices({
           <section className="result-list" aria-label="Facility results">
             {items.length === 0 ? (
               <EmptyState title="No hospitals match these filters">
-                Try removing a filter. A missing result does not mean the
-                service is unavailable.
+                <p>
+                  Try removing a filter. A missing result does not mean the
+                  service is unavailable, not accepted, or not covered.
+                </p>
+                <div className="card-actions">
+                  <Link
+                    className="button secondary"
+                    href={`/procedures/${slug}/prices`}
+                  >
+                    Clear all filters
+                  </Link>
+                  {filters.payer && (
+                    <Link
+                      className="button secondary"
+                      href={`/procedures/${slug}/prices?availability=${filters.availability ?? ""}`}
+                    >
+                      Clear payer
+                    </Link>
+                  )}
+                </div>
               </EmptyState>
             ) : (
               items.map((item) => (
                 <ComparisonFacilityCard
                   key={`${item.facility_id}-${item.facility_location_id}`}
                   item={item}
+                  procedureSlug={slug}
+                  payerName={payerName}
                 />
               ))
             )}
           </section>
         </div>
         <PricingDisclaimer />
-        <CompareTray procedureSlug={slug} />
+        <CompareTray procedureSlug={slug} payer={filters.payer} />
       </main>
     );
   } catch {

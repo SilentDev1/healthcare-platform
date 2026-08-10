@@ -4,9 +4,10 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../../../lib/api", () => ({
+  ApiError: class ApiError extends Error {},
   apiGet: vi.fn().mockImplementation((path: string) =>
-    path.endsWith("/prices?page_size=50")
-      ? Promise.resolve({ items: [], total: 0, page: 1, page_size: 50 })
+    path.endsWith("/procedure-overview")
+      ? Promise.resolve({ items: [], procedure_count: 0, facility_id: "1" })
       : path.endsWith("/quality?page_size=100")
         ? Promise.resolve({
             items: [

@@ -3,14 +3,16 @@ import type { PriceSummary, ProcedureComparisonItem } from "../../lib/api";
 import { CompareSelect } from "./CompareSelect";
 
 export function Money({ value }: { value: string | null }) {
-  if (value === null) return <span className="muted">Not available</span>;
+  const amount = value === null ? Number.NaN : Number(value);
+  if (!Number.isFinite(amount) || amount < 0)
+    return <span className="muted">Not available</span>;
   return (
     <>
       {new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
         maximumFractionDigits: 0,
-      }).format(Number(value))}
+      }).format(amount)}
     </>
   );
 }
@@ -80,29 +82,36 @@ export function SourceAttribution({
   updated,
   url,
   quality = false,
+  showLink = true,
+  context,
 }: {
   updated?: string;
   url?: string;
   quality?: boolean;
+  showLink?: boolean;
+  context?: string;
 }) {
   return (
     <div className="source-attribution">
       <span>
         <strong>Data source:</strong>{" "}
         {quality ? "CMS Care Compare" : "Hospital machine-readable file"}
+        {context ? ` · ${context}` : ""}
       </span>
       {updated && (
         <span>
-          <strong>Updated:</strong>{" "}
+          <strong>Last updated:</strong>{" "}
           {new Date(updated).toLocaleDateString("en-US", {
             month: "short",
+            day: "numeric",
             year: "numeric",
+            timeZone: "UTC",
           })}
         </span>
       )}
-      {url && (
+      {url && showLink && (
         <a href={url} target="_blank" rel="noreferrer">
-          View source
+          View official source file (external)
         </a>
       )}
     </div>
@@ -122,7 +131,7 @@ export function EmptyState({
         ○
       </span>
       <h2>{title}</h2>
-      <p>{children}</p>
+      <div className="state-body">{children}</div>
     </section>
   );
 }
@@ -218,8 +227,12 @@ export function FacilityPriceCard({
 
 export function ComparisonFacilityCard({
   item,
+  procedureSlug,
+  payerName,
 }: {
   item: ProcedureComparisonItem;
+  procedureSlug: string;
+  payerName?: string;
 }) {
   const locationLabel = item.location_name
     ? `${item.location_name} · ${item.city}, ${item.state}`
@@ -262,7 +275,10 @@ export function ComparisonFacilityCard({
             </strong>
           </div>
           <div>
-            <span>Published negotiated range</span>
+            <span>
+              Published negotiated range
+              {payerName ? ` · ${payerName}` : " · across available payers"}
+            </span>
             <strong>
               <PriceRange
                 min={item.negotiated_price_min}
@@ -294,6 +310,7 @@ export function ComparisonFacilityCard({
           facilityId={item.facility_id}
           locationId={item.facility_location_id}
           name={locationLabel}
+          procedureSlug={procedureSlug}
         />
       </div>
     </article>

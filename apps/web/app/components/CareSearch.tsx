@@ -30,6 +30,8 @@ export function CareSearch({
   const [items, setItems] = useState<SearchSuggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
+  const [suggesting, setSuggesting] = useState(false);
+  const [locationError, setLocationError] = useState("");
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => {
     clearTimeout(timer.current);
@@ -37,6 +39,7 @@ export function CareSearch({
       return;
     }
     timer.current = setTimeout(async () => {
+      setSuggesting(true);
       try {
         const response = await fetch(
           `${API_URL}/api/v1/search/suggestions?q=${encodeURIComponent(care)}&limit=7`,
@@ -47,6 +50,8 @@ export function CareSearch({
         }
       } catch {
         setItems([]);
+      } finally {
+        setSuggesting(false);
       }
     }, 200);
     return () => clearTimeout(timer.current);
@@ -61,6 +66,11 @@ export function CareSearch({
   function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!care.trim()) return;
+    if (/^\d+$/.test(location.trim()) && !/^\d{5}$/.test(location.trim())) {
+      setLocationError("Enter a 5-digit ZIP code or a city name.");
+      return;
+    }
+    setLocationError("");
     const params = new URLSearchParams({ q: care.trim() });
     if (location.trim()) params.set("location", location.trim());
     if (payer) params.set("payer", payer);
@@ -112,6 +122,8 @@ export function CareSearch({
           }
           placeholder="MRI, colonoscopy, knee replacement…"
           autoComplete="off"
+          aria-autocomplete="list"
+          required
         />
         {open && items.length > 0 && (
           <ul id={listId} className="suggestions" role="listbox">
@@ -132,6 +144,13 @@ export function CareSearch({
             ))}
           </ul>
         )}
+        <span className="field-help" role="status" aria-live="polite">
+          {suggesting
+            ? "Finding matches…"
+            : care.trim().length >= 2 && !open && items.length === 0
+              ? "Press Enter to search all care and hospitals."
+              : ""}
+        </span>
       </div>
       <div className="field">
         <label htmlFor={`${listId}-location`}>Where?</label>
@@ -140,7 +159,16 @@ export function CareSearch({
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           placeholder="ZIP or city"
+          autoComplete="postal-code"
+          aria-describedby={`${listId}-location-help`}
         />
+        <span
+          id={`${listId}-location-help`}
+          className={locationError ? "field-error" : "field-help"}
+          role={locationError ? "alert" : undefined}
+        >
+          {locationError || "Optional. Use a 5-digit ZIP or city name."}
+        </span>
       </div>
       {showInsurance && (
         <div className="field insurance-field">

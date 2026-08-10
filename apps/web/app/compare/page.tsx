@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   apiGet,
   type ProcedureComparison,
@@ -11,14 +12,21 @@ import {
   SourceAttribution,
 } from "../components/ui";
 import { launchRegion } from "../../lib/brand";
+import { ShareComparison } from "../components/ShareComparison";
+
+export const metadata: Metadata = {
+  title: "Compare hospital prices",
+  robots: { index: false, follow: true },
+};
 
 export default async function ComparePage({
   searchParams,
 }: {
-  searchParams: Promise<{ items?: string; procedure?: string }>;
+  searchParams: Promise<{ items?: string; procedure?: string; payer?: string }>;
 }) {
   const values = await searchParams;
   const procedure = values.procedure ?? "";
+  const payer = values.payer ?? "";
   const selected = (values.items ?? "").split(",").filter(Boolean).slice(0, 3);
   if (!procedure || selected.length < 2) {
     return (
@@ -37,10 +45,20 @@ export default async function ComparePage({
   }
 
   let data: ProcedureComparison;
+  let payerName = "";
   try {
-    data = await apiGet<ProcedureComparison>(
-      `/api/v1/procedures/${encodeURIComponent(procedure)}/comparison?state=${launchRegion.state}`,
-    );
+    const [comparison, payers] = await Promise.all([
+      apiGet<ProcedureComparison>(
+        `/api/v1/procedures/${encodeURIComponent(procedure)}/comparison?state=${launchRegion.state}${payer ? `&payer=${encodeURIComponent(payer)}` : ""}`,
+      ),
+      payer
+        ? apiGet<Array<{ slug: string; name: string }>>(
+            "/api/v1/pricing/payers",
+          )
+        : Promise.resolve([]),
+    ]);
+    data = comparison;
+    payerName = payers.find((item) => item.slug === payer)?.name ?? payer;
   } catch {
     return (
       <main>
@@ -102,9 +120,13 @@ export default async function ComparePage({
         Review published differences without treating price or a single quality
         measure as a “best hospital” ranking.
       </p>
+      <ShareComparison />
       <div className="comparison-key" role="note">
-        <strong>Price label:</strong> “Lowest published price” describes this
-        dataset only. It is not a recommendation or a personalized estimate.
+        <strong>Negotiated-price context:</strong>{" "}
+        {payer
+          ? `Only negotiated rates published for the selected payer (${payerName}) are included.`
+          : "Negotiated ranges combine available published payers and plans."}{" "}
+        This does not guarantee network participation or coverage.
       </div>
       <div className="table-wrap compare-wrap">
         <table className="compare-table">
@@ -135,12 +157,17 @@ export default async function ComparePage({
             {row("Published cash price", (item) => (
               <PriceRange min={item.cash_price_min} max={item.cash_price_max} />
             ))}
-            {row("Published negotiated range", (item) => (
-              <PriceRange
-                min={item.negotiated_price_min}
-                max={item.negotiated_price_max}
-              />
-            ))}
+            {row(
+              payer
+                ? "Published negotiated range for selected payer"
+                : "Published negotiated range across available payers",
+              (item) => (
+                <PriceRange
+                  min={item.negotiated_price_min}
+                  max={item.negotiated_price_max}
+                />
+              ),
+            )}
             {row("Service setting", (item) =>
               item.service_settings.length
                 ? item.service_settings.join(", ").replaceAll("_", " ")

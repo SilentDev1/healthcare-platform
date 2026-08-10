@@ -1,5 +1,13 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { apiGet, Procedure } from "../../lib/api";
+
+export const metadata: Metadata = {
+  title: "Procedures",
+  description:
+    "Browse plain-language healthcare procedures and compare available hospital-published prices.",
+  alternates: { canonical: "/procedures" },
+};
 
 export default async function Procedures({
   searchParams,
