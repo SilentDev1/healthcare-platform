@@ -5,22 +5,33 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-import packages.database.pricing_models  # noqa: F401
-from packages.database.models import Base
-
 revision: str = "0007"
 down_revision: str | None = "0006"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
-NEW_TABLES = ("facility_price_source_history",)
-
 
 def upgrade() -> None:
     bind = op.get_bind()
-    # Create new tables
-    for table_name in NEW_TABLES:
-        Base.metadata.tables[table_name].create(bind=bind, checkfirst=True)
+    op.create_table(
+        "facility_price_source_history",
+        sa.Column("id", sa.Uuid(), primary_key=True),
+        sa.Column(
+            "facility_price_source_id",
+            sa.Uuid(),
+            sa.ForeignKey("facility_price_sources.id"),
+            nullable=False,
+        ),
+        sa.Column("previous_url", sa.String(2048), nullable=False),
+        sa.Column("new_url", sa.String(2048), nullable=False),
+        sa.Column("change_reason", sa.String(255), nullable=False),
+        sa.Column("changed_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+    )
+    op.create_index(
+        "ix_facility_price_source_history_facility_price_source_id",
+        "facility_price_source_history",
+        ["facility_price_source_id"],
+    )
     # Add new columns (idempotent via checkfirst pattern)
     from sqlalchemy import inspect as sa_inspect
 
@@ -41,9 +52,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    bind = op.get_bind()
     op.drop_column("facility_price_sources", "vendor_name")
     op.drop_column("facility_price_sources", "health_system_name")
     op.drop_column("facility_price_sources", "file_role")
-    for table_name in reversed(NEW_TABLES):
-        Base.metadata.tables[table_name].drop(bind=bind, checkfirst=True)
+    op.drop_table("facility_price_source_history")

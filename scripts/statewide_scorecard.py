@@ -10,9 +10,9 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from collectors.hospital_prices.inventory import load_inventory
+from collectors.hospital_prices.scope import active_consumer_facility_ids
 from packages.database import (
     Facility,
-    FacilityLocation,
     FacilityPriceSource,
     FacilityProcedurePriceSummary,
     HospitalPriceRecord,
@@ -25,13 +25,7 @@ from packages.database.pricing_models import ParserReview
 
 def calculate_scorecard(session: Session, state_code: str = "NH") -> dict[str, object]:
     """Calculate composite readiness score from 12+ metrics."""
-    nh_ids = set(
-        session.scalars(
-            select(Facility.id)
-            .join(FacilityLocation)
-            .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
-        )
-    )
+    nh_ids = active_consumer_facility_ids(session, state_code)
     total_facilities = len(nh_ids)
     if total_facilities == 0:
         return {"total_facilities": 0, "overall_readiness": 0}
@@ -39,8 +33,8 @@ def calculate_scorecard(session: Session, state_code: str = "NH") -> dict[str, o
     # Load inventory for exclusion awareness
     try:
         inventory = load_inventory()
-        excluded_count = len(inventory.excluded_hospitals)
-        active_target = total_facilities - excluded_count
+        excluded_count = len(inventory.excluded_hospitals) if state_code.upper() == "NH" else 0
+        active_target = total_facilities
     except Exception:
         excluded_count = 0
         active_target = total_facilities

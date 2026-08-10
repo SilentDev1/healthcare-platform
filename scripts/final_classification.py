@@ -13,9 +13,9 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from collectors.hospital_prices.inventory import load_inventory
+from collectors.hospital_prices.scope import active_consumer_facility_ids
 from packages.database import (
     Facility,
-    FacilityLocation,
     FacilityPriceSource,
     FacilityProcedurePriceSummary,
     HospitalPriceRecord,
@@ -179,13 +179,7 @@ def classify_facility(session: Session, facility_id: object, state_code: str) ->
 
 def classify_all(session: Session, state_code: str = "NH") -> dict[str, object]:
     """Classify every facility in the state."""
-    facility_ids = list(
-        session.scalars(
-            select(Facility.id)
-            .join(FacilityLocation)
-            .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
-        )
-    )
+    facility_ids = sorted(active_consumer_facility_ids(session, state_code), key=str)
 
     classifications: list[dict[str, object]] = []
     summary_counts: dict[str, int] = {}

@@ -372,6 +372,10 @@ class PublicPriceSummaryResponse(BaseModel):
     id: uuid.UUID
     facility_id: uuid.UUID
     facility_name: str
+    facility_location_id: uuid.UUID | None
+    location_name: str | None
+    location_type: str | None
+    address_line_1: str | None
     city: str | None
     procedure_slug: str
     procedure_name: str
@@ -387,7 +391,7 @@ class PublicPriceSummaryResponse(BaseModel):
     source_url: str
     source_checksum_sha256: str
     last_updated: datetime
-    included_component_scope: str = "Source billing class; other charges may be separate"
+    included_component_scope: str
     disclaimer: str = (
         "Public hospital transparency prices may not equal a patient's final bill or "
         "out-of-pocket responsibility. Verify network status and benefits separately."

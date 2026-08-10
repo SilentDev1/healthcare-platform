@@ -5,11 +5,12 @@ from typing import Annotated, Any
 
 import structlog
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response, status
-from sqlalchemy import desc, func, select, text
+from sqlalchemy import case, desc, func, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.sql.elements import ColumnElement
 
+from collectors.hospital_prices.scope import active_consumer_facility_ids
 from packages.database import (
     DataHealthEvaluation,
     DataHealthRule,
@@ -335,7 +336,7 @@ def admin_dashboard(
     total = session.scalar(select(func.count(Facility.id))) or 0
     nh = (
         session.scalar(
-            select(func.count(Facility.id))
+            select(func.count(func.distinct(Facility.id)))
             .join(FacilityLocation)
             .where(FacilityLocation.state == "NH")
         )
@@ -498,6 +499,17 @@ def admin_facilities(
         .correlate(Facility)
         .scalar_subquery()
     )
+    primary_location_id = (
+        select(FacilityLocation.id)
+        .where(FacilityLocation.facility_id == Facility.id)
+        .order_by(
+            case((FacilityLocation.location_type == "hospital_campus", 0), else_=1),
+            FacilityLocation.id,
+        )
+        .limit(1)
+        .correlate(Facility)
+        .scalar_subquery()
+    )
     filters = [FacilityLocation.state == state_code.upper()] if state_code else []
     sort_column = {
         "display_name": Facility.display_name,
@@ -506,14 +518,16 @@ def admin_facilities(
     }[sort]
     rows = session.execute(
         select(Facility, FacilityLocation, SourceFile, quality_count)
-        .outerjoin(FacilityLocation, FacilityLocation.facility_id == Facility.id)
+        .outerjoin(FacilityLocation, FacilityLocation.id == primary_location_id)
         .join(SourceFile, SourceFile.id == Facility.source_file_id)
         .where(*filters)
         .order_by(sort_column, Facility.id)
         .offset((page - 1) * page_size)
         .limit(page_size)
     ).all()
-    count_query = select(func.count(Facility.id)).outerjoin(FacilityLocation)
+    count_query = select(func.count(Facility.id)).outerjoin(
+        FacilityLocation, FacilityLocation.id == primary_location_id
+    )
     total = session.scalar(count_query.where(*filters)) or 0
     items = [
         {
@@ -1158,7 +1172,10 @@ def _public_price_page(
             SourceFile,
         )
         .join(Facility, Facility.id == FacilityProcedurePriceSummary.facility_id)
-        .outerjoin(FacilityLocation, FacilityLocation.facility_id == Facility.id)
+        .outerjoin(
+            FacilityLocation,
+            FacilityLocation.id == FacilityProcedurePriceSummary.facility_location_id,
+        )
         .join(Procedure, Procedure.id == FacilityProcedurePriceSummary.procedure_id)
         .outerjoin(PayerEntity, PayerEntity.id == FacilityProcedurePriceSummary.payer_entity_id)
         .outerjoin(
@@ -1182,6 +1199,10 @@ def _public_price_page(
             "id": item.id,
             "facility_id": facility.id,
             "facility_name": facility.display_name,
+            "facility_location_id": item.facility_location_id,
+            "location_name": location.location_name if location else None,
+            "location_type": location.location_type if location else None,
+            "address_line_1": location.address_line_1 if location else None,
             "city": location.city if location else None,
             "procedure_slug": procedure.slug,
             "procedure_name": procedure.consumer_name,
@@ -1194,6 +1215,7 @@ def _public_price_page(
             "negotiated_price_min": item.negotiated_price_min,
             "negotiated_price_max": item.negotiated_price_max,
             "record_count": item.record_count,
+            "included_component_scope": item.included_component_scope,
             "source_url": source.source_url,
             "source_checksum_sha256": source.checksum_sha256,
             "last_updated": item.calculated_at,
@@ -1433,12 +1455,7 @@ def facility_pricing_health(
 @app.get("/api/v1/pricing/coverage", response_model=PricingCoverageResponse, tags=["pricing"])
 def pricing_coverage(session: Annotated[Session, Depends(get_session)]) -> PricingCoverageResponse:
     return PricingCoverageResponse(
-        nh_facilities=session.scalar(
-            select(func.count(Facility.id))
-            .join(FacilityLocation)
-            .where(FacilityLocation.state == "NH")
-        )
-        or 0,
+        nh_facilities=len(active_consumer_facility_ids(session, "NH")),
         facilities_with_sources=session.scalar(
             select(func.count(func.distinct(FacilityPriceSource.facility_id)))
         )

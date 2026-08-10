@@ -11,6 +11,7 @@ from packages.database import (
     FacilityPriceSource,
     FacilityProcedurePriceObservation,
     FacilityProcedurePriceSummary,
+    FacilityProcedurePriceSummarySource,
     HospitalPriceRateDetail,
     HospitalPriceRecord,
     PriceChangeSnapshot,
@@ -40,6 +41,19 @@ def freshness_score(last_download: datetime | None) -> float:
     return 0.0
 
 
+def consumer_summary_key(observation: FacilityProcedurePriceObservation) -> tuple[object, ...]:
+    """Source-independent identity for a consumer-comparable price group."""
+    return (
+        observation.facility_id,
+        observation.facility_location_id,
+        observation.procedure_id,
+        observation.payer_entity_id,
+        observation.insurance_plan_entity_id,
+        observation.service_setting,
+        observation.included_component_scope,
+    )
+
+
 def rebuild_price_summaries(session: Session) -> dict[str, int]:
     # Snapshot current summaries before deleting (for historical price tracking)
     existing_summaries = session.scalars(
@@ -47,13 +61,19 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
             FacilityProcedurePriceSummary.publication_status == "publishable"
         )
     ).all()
-    previous_prices: dict[
-        tuple[object, object, object, str], tuple[Decimal | None, Decimal | None]
-    ] = {}
+    previous_prices: dict[tuple[object, ...], tuple[Decimal | None, Decimal | None]] = {}
     for s in existing_summaries:
-        key = (s.facility_id, s.procedure_id, s.payer_entity_id, s.service_setting)
+        key = (
+            s.facility_id,
+            s.facility_location_id,
+            s.procedure_id,
+            s.payer_entity_id,
+            s.service_setting,
+            s.included_component_scope,
+        )
         previous_prices[key] = (s.cash_price_median, s.negotiated_price_median)
 
+    session.execute(delete(FacilityProcedurePriceSummarySource))
     session.execute(delete(FacilityProcedurePriceSummary))
     session.execute(delete(FacilityProcedurePriceObservation))
 
@@ -69,6 +89,20 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
             .distinct()
         )
     )
+
+    location_by_source_file: dict[object, object] = {
+        source_file_id: location_id
+        for source_file_id, location_id in session.execute(
+            select(
+                FacilityPriceSource.source_file_id,
+                FacilityPriceSource.facility_location_id,
+            ).where(
+                FacilityPriceSource.source_file_id.is_not(None),
+                FacilityPriceSource.facility_location_id.is_not(None),
+                FacilityPriceSource.location_association_status == "verified",
+            )
+        )
+    }
 
     records = session.execute(
         select(HospitalPriceRecord, PriceRecordProcedureMapping)
@@ -102,8 +136,13 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
 
     observation_count = 0
     for record, mapping in records:
+        location_id = record.facility_location_id or location_by_source_file.get(
+            record.source_file_id
+        )
         is_blocked = record.id in blocked_ids
-        if is_blocked:
+        if location_id is None:
+            status = "review_required"
+        elif is_blocked:
             status = "suppressed"
         elif record.parser_name in _ALWAYS_PUBLISHABLE:
             status = "publishable"
@@ -128,6 +167,7 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
                 session.add(
                     FacilityProcedurePriceObservation(
                         facility_id=record.facility_id,
+                        facility_location_id=location_id,
                         procedure_id=mapping.procedure_id,
                         hospital_price_record_id=record.id,
                         price_type=price_type,
@@ -148,6 +188,7 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
                 session.add(
                     FacilityProcedurePriceObservation(
                         facility_id=record.facility_id,
+                        facility_location_id=location_id,
                         procedure_id=mapping.procedure_id,
                         hospital_price_record_id=record.id,
                         hospital_price_rate_detail_id=rate.id,
@@ -172,45 +213,59 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
             FacilityProcedurePriceObservation.publication_status == "publishable"
         )
     ):
-        groups[
-            (
-                observation.facility_id,
-                observation.procedure_id,
-                observation.payer_entity_id,
-                observation.insurance_plan_entity_id,
-                observation.service_setting,
-            )
-        ].append(observation)
+        groups[consumer_summary_key(observation)].append(observation)
     for group_key, observations in groups.items():
         cash = [item.amount for item in observations if item.price_type == "discounted_cash"]
         negotiated = [item.amount for item in observations if item.price_type == "payer_negotiated"]
-        record = session.get(HospitalPriceRecord, observations[0].hospital_price_record_id)
-        if record is None:
-            continue
-        session.add(
-            FacilityProcedurePriceSummary(
-                facility_id=group_key[0],
-                procedure_id=group_key[1],
-                payer_entity_id=group_key[2],
-                insurance_plan_entity_id=group_key[3],
-                service_setting=str(group_key[4]),
-                cash_price_min=min(cash) if cash else None,
-                cash_price_max=max(cash) if cash else None,
-                cash_price_median=Decimal(median(cash)) if cash else None,
-                negotiated_price_min=min(negotiated) if negotiated else None,
-                negotiated_price_max=max(negotiated) if negotiated else None,
-                negotiated_price_median=Decimal(median(negotiated)) if negotiated else None,
-                record_count=len({item.hospital_price_record_id for item in observations}),
-                source_file_id=record.source_file_id,
-                calculated_at=datetime.now(UTC),
-                publication_status="publishable",
-                completeness_score=100 if cash or negotiated else 50,
-                notes=(
-                    "Facility/professional scope follows the source billing class; "
-                    "other charges may be separate."
-                ),
+        group_records = {
+            item.hospital_price_record_id: session.get(
+                HospitalPriceRecord, item.hospital_price_record_id
             )
+            for item in observations
+        }
+        group_records = {key: value for key, value in group_records.items() if value is not None}
+        if not group_records:
+            continue
+        source_counts: dict[object, int] = defaultdict(int)
+        for item in observations:
+            source_record = group_records.get(item.hospital_price_record_id)
+            if source_record is not None:
+                source_counts[source_record.source_file_id] += 1
+        primary_source_id = sorted(source_counts, key=str)[0]
+        summary = FacilityProcedurePriceSummary(
+            facility_id=group_key[0],
+            facility_location_id=group_key[1],
+            procedure_id=group_key[2],
+            payer_entity_id=group_key[3],
+            insurance_plan_entity_id=group_key[4],
+            service_setting=str(group_key[5]),
+            included_component_scope=str(group_key[6]),
+            cash_price_min=min(cash) if cash else None,
+            cash_price_max=max(cash) if cash else None,
+            cash_price_median=Decimal(median(cash)) if cash else None,
+            negotiated_price_min=min(negotiated) if negotiated else None,
+            negotiated_price_max=max(negotiated) if negotiated else None,
+            negotiated_price_median=Decimal(median(negotiated)) if negotiated else None,
+            record_count=len({item.hospital_price_record_id for item in observations}),
+            source_file_id=primary_source_id,
+            calculated_at=datetime.now(UTC),
+            publication_status="publishable",
+            completeness_score=100 if cash or negotiated else 50,
+            notes=(
+                "Facility/professional scope follows the source billing class; "
+                "other charges may be separate."
+            ),
         )
+        session.add(summary)
+        session.flush()
+        for source_file_id, count in source_counts.items():
+            session.add(
+                FacilityProcedurePriceSummarySource(
+                    summary_id=summary.id,
+                    source_file_id=source_file_id,
+                    observation_count=count,
+                )
+            )
     session.flush()
 
     # Create change snapshots for any prices that changed
@@ -222,9 +277,11 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
         ):
             snap_key = (
                 new_summary.facility_id,
+                new_summary.facility_location_id,
                 new_summary.procedure_id,
                 new_summary.payer_entity_id,
                 new_summary.service_setting,
+                new_summary.included_component_scope,
             )
             prev = previous_prices.get(snap_key)
             if prev is None:
@@ -243,9 +300,11 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
             session.add(
                 PriceChangeSnapshot(
                     facility_id=new_summary.facility_id,
+                    facility_location_id=new_summary.facility_location_id,
                     procedure_id=new_summary.procedure_id,
                     payer_entity_id=new_summary.payer_entity_id,
                     service_setting=new_summary.service_setting,
+                    included_component_scope=new_summary.included_component_scope,
                     previous_cash_median=prev_cash,
                     current_cash_median=curr_cash,
                     cash_change_pct=_pct(prev_cash, curr_cash),

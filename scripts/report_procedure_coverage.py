@@ -5,6 +5,7 @@ import json
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from collectors.hospital_prices.scope import active_consumer_facility_ids
 from packages.database import (
     Facility,
     FacilityLocation,
@@ -19,12 +20,10 @@ def report_procedure_coverage(session: Session, state_code: str = "NH") -> dict[
     total_procedures = (
         session.scalar(select(func.count(Procedure.id)).where(Procedure.active.is_(True))) or 0
     )
+    facility_ids = active_consumer_facility_ids(session, state_code)
 
-    facilities = session.execute(
-        select(Facility, FacilityLocation)
-        .join(FacilityLocation)
-        .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
-        .order_by(Facility.display_name)
+    facilities = session.scalars(
+        select(Facility).where(Facility.id.in_(facility_ids)).order_by(Facility.display_name)
     ).all()
 
     # Publishable procedure counts per facility
@@ -35,7 +34,10 @@ def report_procedure_coverage(session: Session, state_code: str = "NH") -> dict[
                 FacilityProcedurePriceSummary.facility_id,
                 func.count(func.distinct(FacilityProcedurePriceSummary.procedure_id)),
             )
-            .where(FacilityProcedurePriceSummary.publication_status == "publishable")
+            .where(
+                FacilityProcedurePriceSummary.publication_status == "publishable",
+                FacilityProcedurePriceSummary.facility_id.in_(facility_ids),
+            )
             .group_by(FacilityProcedurePriceSummary.facility_id)
         ).all()
     }
@@ -44,7 +46,8 @@ def report_procedure_coverage(session: Session, state_code: str = "NH") -> dict[
     all_priced_procedures = set(
         session.scalars(
             select(func.distinct(FacilityProcedurePriceSummary.procedure_id)).where(
-                FacilityProcedurePriceSummary.publication_status == "publishable"
+                FacilityProcedurePriceSummary.publication_status == "publishable",
+                FacilityProcedurePriceSummary.facility_id.in_(facility_ids),
             )
         )
     )
@@ -56,7 +59,13 @@ def report_procedure_coverage(session: Session, state_code: str = "NH") -> dict[
     }
 
     facility_reports = []
-    for facility, location in facilities:
+    for facility in facilities:
+        location = session.scalar(
+            select(FacilityLocation)
+            .where(FacilityLocation.facility_id == facility.id)
+            .order_by(FacilityLocation.id)
+            .limit(1)
+        )
         mapped = coverage_counts.get(facility.id, 0)
         pct = round(mapped / total_procedures * 100, 1) if total_procedures else 0
 
@@ -78,7 +87,7 @@ def report_procedure_coverage(session: Session, state_code: str = "NH") -> dict[
         facility_reports.append(
             {
                 "facility_name": facility.display_name,
-                "city": location.city,
+                "city": location.city if location else None,
                 "procedures_mapped": mapped,
                 "total_procedures": total_procedures,
                 "coverage_pct": pct,

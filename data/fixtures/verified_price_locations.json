@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "locations": [
+    {
+      "facility_ccn": "300029",
+      "location_name": "Portsmouth Regional Hospital",
+      "location_type": "hospital_campus",
+      "address_line_1": "333 Borthwick Ave",
+      "city": "Portsmouth",
+      "state": "NH",
+      "postal_code": "03801",
+      "source_filename_token": "PORTSMOUTH-REGIONAL-HOSPITAL",
+      "evidence_url": "https://www.portsmouthhospital.com/contact-us"
+    },
+    {
+      "facility_ccn": "300029",
+      "location_name": "Dover Emergency Room",
+      "location_type": "freestanding_emergency_room",
+      "address_line_1": "10 Central Ave",
+      "city": "Dover",
+      "state": "NH",
+      "postal_code": "03820",
+      "source_filename_token": "DOVER-EMERGENCY-ROOM",
+      "evidence_url": "https://www.portsmouthhospital.com/locations/dover-er"
+    },
+    {
+      "facility_ccn": "300029",
+      "location_name": "Seabrook Emergency Room",
+      "location_type": "freestanding_emergency_room",
+      "address_line_1": "603 Lafayette Rd",
+      "city": "Seabrook",
+      "state": "NH",
+      "postal_code": "03874",
+      "source_filename_token": "SEABROOK-EMERGENCY",
+      "evidence_url": "https://www.portsmouthhospital.com/locations/seabrook-er"
+    },
+    {
+      "facility_ccn": "300017",
+      "location_name": "Parkland Medical Center",
+      "location_type": "hospital_campus",
+      "address_line_1": "1 Parkland Dr",
+      "city": "Derry",
+      "state": "NH",
+      "postal_code": "03038",
+      "source_filename_token": "PARKLAND-MEDICAL-CENTER",
+      "evidence_url": "https://www.parklandmedicalcenter.com/contact-us"
+    },
+    {
+      "facility_ccn": "300017",
+      "location_name": "Plaistow Emergency Room",
+      "location_type": "freestanding_emergency_room",
+      "address_line_1": "26 Plaistow Rd",
+      "city": "Plaistow",
+      "state": "NH",
+      "postal_code": "03865",
+      "source_filename_token": "PLAISTOW-FSER",
+      "evidence_url": "https://www.parklandmedicalcenter.com/locations"
+    }
+  ]
+}

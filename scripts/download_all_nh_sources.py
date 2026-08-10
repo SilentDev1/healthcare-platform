@@ -18,6 +18,7 @@ def download_all_sources(session: Session, state_code: str = "NH") -> dict[str, 
     facility_ids = set(
         session.scalars(
             select(Facility.id)
+            .distinct()
             .join(FacilityLocation)
             .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
         )

@@ -31,6 +31,7 @@ def rank_unmapped_codes(
     facility_ids = set(
         session.scalars(
             select(Facility.id)
+            .distinct()
             .join(FacilityLocation)
             .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
         )
@@ -69,6 +70,7 @@ def identify_compound_codes(session: Session, state_code: str = "NH") -> list[di
     facility_ids = set(
         session.scalars(
             select(Facility.id)
+            .distinct()
             .join(FacilityLocation)
             .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
         )
@@ -86,21 +88,22 @@ def identify_compound_codes(session: Session, state_code: str = "NH") -> list[di
     for code in codes:
         match = compound_pattern.match(str(code))
         if match:
-            compounds.append({
-                "compound_code": str(code),
-                "component_1": match.group(1),
-                "component_2": match.group(2),
-            })
+            compounds.append(
+                {
+                    "compound_code": str(code),
+                    "component_1": match.group(1),
+                    "component_2": match.group(2),
+                }
+            )
     return compounds
 
 
-def code_system_distribution(
-    session: Session, state_code: str = "NH"
-) -> dict[str, int]:
+def code_system_distribution(session: Session, state_code: str = "NH") -> dict[str, int]:
     """Count records by code_system for the state."""
     facility_ids = set(
         session.scalars(
             select(Facility.id)
+            .distinct()
             .join(FacilityLocation)
             .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
         )
@@ -116,13 +119,12 @@ def code_system_distribution(
     return {str(row[0]): row[1] for row in rows}
 
 
-def per_facility_unmapped(
-    session: Session, state_code: str = "NH"
-) -> list[dict[str, Any]]:
+def per_facility_unmapped(session: Session, state_code: str = "NH") -> list[dict[str, Any]]:
     """Top unmapped codes per facility."""
     facility_ids = set(
         session.scalars(
             select(Facility.id)
+            .distinct()
             .join(FacilityLocation)
             .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
         )
@@ -133,16 +135,22 @@ def per_facility_unmapped(
         facility = session.get(Facility, fid)
         if not facility:
             continue
-        total_unmatched = session.scalar(
-            select(func.count(PricingUnmatchedRecord.id)).where(
-                PricingUnmatchedRecord.facility_id == fid
+        total_unmatched = (
+            session.scalar(
+                select(func.count(PricingUnmatchedRecord.id)).where(
+                    PricingUnmatchedRecord.facility_id == fid
+                )
             )
-        ) or 0
-        total_records = session.scalar(
-            select(func.count(HospitalPriceRecord.id)).where(
-                HospitalPriceRecord.facility_id == fid
+            or 0
+        )
+        total_records = (
+            session.scalar(
+                select(func.count(HospitalPriceRecord.id)).where(
+                    HospitalPriceRecord.facility_id == fid
+                )
             )
-        ) or 0
+            or 0
+        )
 
         # Get top 5 rejection reasons
         reasons = Counter[str]()
@@ -156,17 +164,19 @@ def per_facility_unmapped(
             reasons[row[0]] = row[1]
 
         if total_records > 0 or total_unmatched > 0:
-            results.append({
-                "facility": facility.legal_name,
-                "total_records": total_records,
-                "unmatched": total_unmatched,
-                "rejection_pct": round(
-                    total_unmatched / (total_records + total_unmatched) * 100, 1
-                )
-                if (total_records + total_unmatched) > 0
-                else 0,
-                "top_reasons": dict(reasons),
-            })
+            results.append(
+                {
+                    "facility": facility.legal_name,
+                    "total_records": total_records,
+                    "unmatched": total_unmatched,
+                    "rejection_pct": round(
+                        total_unmatched / (total_records + total_unmatched) * 100, 1
+                    )
+                    if (total_records + total_unmatched) > 0
+                    else 0,
+                    "top_reasons": dict(reasons),
+                }
+            )
     results.sort(key=lambda x: x.get("unmatched", 0), reverse=True)
     return results
 

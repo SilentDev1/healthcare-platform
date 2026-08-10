@@ -147,9 +147,7 @@ class ImportCaches:
                 )
                 if existing:
                     # Update cache to point to existing plan
-                    self.plan_cache[
-                        (plan.payer_entity_id, plan.normalized_name)
-                    ] = existing
+                    self.plan_cache[(plan.payer_entity_id, plan.normalized_name)] = existing
                 else:
                     session.add(plan)
             self.pending_plans.clear()

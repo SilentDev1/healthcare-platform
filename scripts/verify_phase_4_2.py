@@ -41,7 +41,7 @@ def verify() -> dict[str, object]:
         # Check 2: NH facilities exist
         nh_count = (
             session.scalar(
-                select(func.count(Facility.id))
+                select(func.count(func.distinct(Facility.id)))
                 .join(FacilityLocation)
                 .where(FacilityLocation.state == "NH", Facility.active.is_(True))
             )

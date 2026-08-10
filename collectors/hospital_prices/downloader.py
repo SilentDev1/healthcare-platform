@@ -142,15 +142,12 @@ def extract_mrf_link_from_html(path: Path) -> str | None:
         url = match.group(1)
         url_lower = url.lower()
         if any(ext in url_lower for ext in mrf_extensions) and any(
-            kw in url_lower
-            for kw in ("charge", "price", "transparency", "mrf", "standard")
+            kw in url_lower for kw in ("charge", "price", "transparency", "mrf", "standard")
         ):
             return url
 
     # Check meta-refresh
-    meta_match = re.search(
-        r'<meta[^>]+http-equiv=["\']refresh["\'][^>]+url=([^"\';\s>]+)', html
-    )
+    meta_match = re.search(r'<meta[^>]+http-equiv=["\']refresh["\'][^>]+url=([^"\';\s>]+)', html)
     if meta_match:
         url = meta_match.group(1)
         if any(ext in url.lower() for ext in mrf_extensions):
@@ -285,9 +282,7 @@ def register_local_file(
             detect_container(Path(existing.storage_path)),
             True,
         )
-    archived = _archive_stream(
-        path, str(price_source.id), path.suffix or ".dat", settings
-    )
+    archived = _archive_stream(path, str(price_source.id), path.suffix or ".dat", settings)
 
     detected = detect_container(archived)
     source = SourceFile(
@@ -436,9 +431,7 @@ def download_price_source(
                     for chunk in response.iter_bytes(64 * 1024):
                         size += len(chunk)
                         if size > settings.hospital_price_max_bytes:
-                            raise ValueError(
-                                "streamed source size exceeds configured maximum"
-                            )
+                            raise ValueError("streamed source size exceeds configured maximum")
                         digest.update(chunk)
                         f.write(chunk)
                 resp_headers = response.headers
@@ -458,12 +451,16 @@ def download_price_source(
             )
             if existing:
                 _cleanup_part_files(part_path, meta_path)
+                price_source.source_file_id = existing.id
+                price_source.detected_format = detect_container(Path(existing.storage_path))
+                price_source.last_successful_download_at = datetime.now(UTC)
+                session.commit()
                 return DownloadedPriceFile(
                     existing.id,
                     Path(existing.storage_path),
                     checksum,
                     existing.file_size,
-                    detect_container(Path(existing.storage_path)),
+                    price_source.detected_format,
                     True,
                 )
 

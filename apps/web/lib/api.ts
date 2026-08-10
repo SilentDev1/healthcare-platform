@@ -69,6 +69,10 @@ export interface PriceSummary {
   id: string;
   facility_id: string;
   facility_name: string;
+  facility_location_id: string | null;
+  location_name: string | null;
+  location_type: string | null;
+  address_line_1: string | null;
   city: string | null;
   procedure_slug: string;
   procedure_name: string;

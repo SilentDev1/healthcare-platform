@@ -83,9 +83,24 @@ class Facility(TimestampMixin, Base):
 
 class FacilityLocation(TimestampMixin, Base):
     __tablename__ = "facility_locations"
+    __table_args__ = (
+        UniqueConstraint(
+            "facility_id",
+            "address_line_1",
+            "city",
+            "state",
+            "postal_code",
+            name="uq_facility_physical_location",
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), unique=True)
+    facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    location_name: Mapped[str | None] = mapped_column(String(255))
+    location_type: Mapped[str] = mapped_column(
+        String(50), default="hospital_campus", server_default="hospital_campus"
+    )
+    active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
     address_line_1: Mapped[str] = mapped_column(String(255))
     address_line_2: Mapped[str | None] = mapped_column(String(255))
     city: Mapped[str] = mapped_column(String(100))

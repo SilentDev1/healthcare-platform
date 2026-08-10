@@ -50,6 +50,13 @@ class FacilityPriceSource(TimestampMixin, Base):
     )
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    facility_location_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("facility_locations.id"), index=True
+    )
+    location_association_status: Mapped[str] = mapped_column(
+        String(40), default="unresolved", server_default="unresolved", index=True
+    )
+    location_association_evidence: Mapped[dict[str, object] | None] = mapped_column(JSON)
     source_type: Mapped[str] = mapped_column(String(50), index=True)
     source_page_url: Mapped[str | None] = mapped_column(String(2048))
     machine_readable_file_url: Mapped[str] = mapped_column(String(2048))
@@ -247,6 +254,9 @@ class HospitalPriceRecord(Base):
     )
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    facility_location_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("facility_locations.id"), index=True
+    )
     source_file_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("source_files.id"), index=True)
     import_run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("import_runs.id"), index=True)
     facility_source_observation_id: Mapped[uuid.UUID | None] = mapped_column(
@@ -440,6 +450,9 @@ class FacilityProcedurePriceObservation(TimestampMixin, Base):
     )
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    facility_location_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("facility_locations.id"), index=True
+    )
     procedure_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("procedures.id"), index=True)
     hospital_price_record_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("hospital_price_records.id"), index=True
@@ -467,16 +480,21 @@ class FacilityProcedurePriceSummary(Base):
     __table_args__ = (
         UniqueConstraint(
             "facility_id",
+            "facility_location_id",
             "procedure_id",
             "payer_entity_id",
             "insurance_plan_entity_id",
             "service_setting",
+            "included_component_scope",
             name="uq_facility_procedure_price_summary",
         ),
         Index("ix_price_summary_public", "procedure_id", "publication_status", "service_setting"),
     )
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    facility_location_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("facility_locations.id"), index=True
+    )
     procedure_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("procedures.id"), index=True)
     payer_entity_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("payer_entities.id"), index=True
@@ -485,6 +503,9 @@ class FacilityProcedurePriceSummary(Base):
         ForeignKey("insurance_plan_entities.id"), index=True
     )
     service_setting: Mapped[str] = mapped_column(String(40), index=True)
+    included_component_scope: Mapped[str] = mapped_column(
+        String(100), default="unknown", server_default="unknown"
+    )
     cash_price_min: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
     cash_price_max: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
     cash_price_median: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
@@ -499,6 +520,42 @@ class FacilityProcedurePriceSummary(Base):
     publication_status: Mapped[str] = mapped_column(String(30), index=True)
     completeness_score: Mapped[Decimal] = mapped_column(Numeric(6, 2))
     notes: Mapped[str | None] = mapped_column(Text)
+
+
+class FacilityProcedurePriceSummarySource(Base):
+    __tablename__ = "facility_procedure_price_summary_sources"
+    __table_args__ = (
+        UniqueConstraint("summary_id", "source_file_id", name="uq_summary_source_file"),
+    )
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    summary_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("facility_procedure_price_summaries.id", ondelete="CASCADE"), index=True
+    )
+    source_file_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("source_files.id"), index=True)
+    observation_count: Mapped[int] = mapped_column(default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class PriceSourceOverlapAnalysis(Base):
+    __tablename__ = "price_source_overlap_analyses"
+    __table_args__ = (
+        UniqueConstraint(
+            "left_source_file_id", "right_source_file_id", name="uq_price_source_overlap_pair"
+        ),
+        Index("ix_price_source_overlap_classification", "classification"),
+    )
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    left_source_file_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("source_files.id"))
+    right_source_file_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("source_files.id"))
+    left_location_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("facility_locations.id"))
+    right_location_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("facility_locations.id"))
+    classification: Mapped[str] = mapped_column(String(60), index=True)
+    metrics: Mapped[dict[str, object]] = mapped_column(JSON)
+    evidence: Mapped[dict[str, object]] = mapped_column(JSON)
+    analyzed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
 
 class PricingHealthScore(Base):
@@ -546,11 +603,17 @@ class PriceChangeSnapshot(Base):
     )
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    facility_location_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("facility_locations.id"), index=True
+    )
     procedure_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("procedures.id"), index=True)
     payer_entity_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("payer_entities.id"), nullable=True
     )
     service_setting: Mapped[str] = mapped_column(String(50))
+    included_component_scope: Mapped[str] = mapped_column(
+        String(100), default="unknown", server_default="unknown"
+    )
     previous_cash_median: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
     current_cash_median: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
     cash_change_pct: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))

@@ -12,9 +12,9 @@ from datetime import UTC, datetime
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from collectors.hospital_prices.scope import active_consumer_facility_ids
 from packages.database import (
     Facility,
-    FacilityLocation,
     FacilityPriceSource,
     FacilityProcedurePriceSummary,
     HospitalPriceRecord,
@@ -34,34 +34,43 @@ def _classify_facility(session: Session, facility_id: object) -> list[str]:
     blockers: list[str] = []
 
     # Check for any price sources
-    source_count = session.scalar(
-        select(func.count(FacilityPriceSource.id)).where(
-            FacilityPriceSource.facility_id == facility_id,
-            FacilityPriceSource.active.is_(True),
+    source_count = (
+        session.scalar(
+            select(func.count(FacilityPriceSource.id)).where(
+                FacilityPriceSource.facility_id == facility_id,
+                FacilityPriceSource.active.is_(True),
+            )
         )
-    ) or 0
+        or 0
+    )
     if source_count == 0:
         blockers.append("no_sources")
         return blockers
 
     # Check for downloaded sources
-    downloaded = session.scalar(
-        select(func.count(FacilityPriceSource.id)).where(
-            FacilityPriceSource.facility_id == facility_id,
-            FacilityPriceSource.active.is_(True),
-            FacilityPriceSource.source_file_id.is_not(None),
+    downloaded = (
+        session.scalar(
+            select(func.count(FacilityPriceSource.id)).where(
+                FacilityPriceSource.facility_id == facility_id,
+                FacilityPriceSource.active.is_(True),
+                FacilityPriceSource.source_file_id.is_not(None),
+            )
         )
-    ) or 0
+        or 0
+    )
     if downloaded == 0:
         blockers.append("download_failed")
         return blockers
 
     # Check for parsed records
-    record_count = session.scalar(
-        select(func.count(HospitalPriceRecord.id)).where(
-            HospitalPriceRecord.facility_id == facility_id
+    record_count = (
+        session.scalar(
+            select(func.count(HospitalPriceRecord.id)).where(
+                HospitalPriceRecord.facility_id == facility_id
+            )
         )
-    ) or 0
+        or 0
+    )
     if record_count == 0:
         blockers.append("parse_failed")
         return blockers
@@ -94,36 +103,45 @@ def _classify_facility(session: Session, facility_id: object) -> list[str]:
         blockers.append("cdm_codes_unresolved")
 
     # Check for open critical/error anomalies
-    anomaly_count = session.scalar(
-        select(func.count(PricingAnomaly.id))
-        .join(HospitalPriceRecord)
-        .where(
-            HospitalPriceRecord.facility_id == facility_id,
-            PricingAnomaly.status == "open",
-            PricingAnomaly.severity.in_(["error", "critical"]),
+    anomaly_count = (
+        session.scalar(
+            select(func.count(PricingAnomaly.id))
+            .join(HospitalPriceRecord)
+            .where(
+                HospitalPriceRecord.facility_id == facility_id,
+                PricingAnomaly.status == "open",
+                PricingAnomaly.severity.in_(["error", "critical"]),
+            )
         )
-    ) or 0
+        or 0
+    )
     if anomaly_count > 0:
         blockers.append("open_critical_anomalies")
 
     # Check for procedure mappings
-    mapping_count = session.scalar(
-        select(func.count(PriceRecordProcedureMapping.id))
-        .join(HospitalPriceRecord)
-        .where(
-            HospitalPriceRecord.facility_id == facility_id,
-            PriceRecordProcedureMapping.reviewed.is_(True),
+    mapping_count = (
+        session.scalar(
+            select(func.count(PriceRecordProcedureMapping.id))
+            .join(HospitalPriceRecord)
+            .where(
+                HospitalPriceRecord.facility_id == facility_id,
+                PriceRecordProcedureMapping.reviewed.is_(True),
+            )
         )
-    ) or 0
+        or 0
+    )
     if mapping_count == 0:
         blockers.append("no_procedure_match")
 
     # Check for rejection rate
-    unmatched_count = session.scalar(
-        select(func.count(PricingUnmatchedRecord.id)).where(
-            PricingUnmatchedRecord.facility_id == facility_id
+    unmatched_count = (
+        session.scalar(
+            select(func.count(PricingUnmatchedRecord.id)).where(
+                PricingUnmatchedRecord.facility_id == facility_id
+            )
         )
-    ) or 0
+        or 0
+    )
     if unmatched_count > record_count:
         blockers.append("high_rejection_rate")
 
@@ -133,17 +151,9 @@ def _classify_facility(session: Session, facility_id: object) -> list[str]:
     return blockers
 
 
-def analyze_blockers(
-    session: Session, state_code: str = "NH"
-) -> dict[str, object]:
+def analyze_blockers(session: Session, state_code: str = "NH") -> dict[str, object]:
     """Analyze publication blockers for all facilities in a state."""
-    facility_ids = list(
-        session.scalars(
-            select(Facility.id)
-            .join(FacilityLocation)
-            .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
-        )
-    )
+    facility_ids = sorted(active_consumer_facility_ids(session, state_code), key=str)
 
     per_facility: list[dict[str, object]] = []
     blocker_counts = Counter[str]()
@@ -154,40 +164,50 @@ def analyze_blockers(
             continue
 
         # Check if already publishable
-        pub_count = session.scalar(
-            select(func.count(FacilityProcedurePriceSummary.id)).where(
-                FacilityProcedurePriceSummary.facility_id == fid,
-                FacilityProcedurePriceSummary.publication_status == "publishable",
+        pub_count = (
+            session.scalar(
+                select(func.count(FacilityProcedurePriceSummary.id)).where(
+                    FacilityProcedurePriceSummary.facility_id == fid,
+                    FacilityProcedurePriceSummary.publication_status == "publishable",
+                )
             )
-        ) or 0
+            or 0
+        )
 
         if pub_count > 0:
-            per_facility.append({
-                "facility": facility.legal_name,
-                "ccn": facility.cms_certification_number,
-                "status": "publishable",
-                "publishable_summaries": pub_count,
-                "blockers": [],
-            })
+            per_facility.append(
+                {
+                    "facility": facility.legal_name,
+                    "ccn": facility.cms_certification_number,
+                    "status": "publishable",
+                    "publishable_summaries": pub_count,
+                    "blockers": [],
+                }
+            )
             continue
 
         blockers = _classify_facility(session, fid)
         for b in blockers:
             blocker_counts[b] += 1
 
-        record_count = session.scalar(
-            select(func.count(HospitalPriceRecord.id)).where(
-                HospitalPriceRecord.facility_id == fid
+        record_count = (
+            session.scalar(
+                select(func.count(HospitalPriceRecord.id)).where(
+                    HospitalPriceRecord.facility_id == fid
+                )
             )
-        ) or 0
+            or 0
+        )
 
-        per_facility.append({
-            "facility": facility.legal_name,
-            "ccn": facility.cms_certification_number,
-            "status": "blocked",
-            "records": record_count,
-            "blockers": blockers,
-        })
+        per_facility.append(
+            {
+                "facility": facility.legal_name,
+                "ccn": facility.cms_certification_number,
+                "status": "blocked",
+                "records": record_count,
+                "blockers": blockers,
+            }
+        )
 
     per_facility.sort(
         key=lambda x: len(x.get("blockers") or []),  # type: ignore[arg-type]

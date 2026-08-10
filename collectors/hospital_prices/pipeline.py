@@ -53,6 +53,12 @@ def run_fixture_pipeline(
         "malformed.json",
     )
     for facility, fixture_name in zip(facilities, fixture_names, strict=False):
+        locations = list(
+            session.scalars(
+                select(FacilityLocation).where(FacilityLocation.facility_id == facility.id)
+            )
+        )
+        location = locations[0] if len(locations) == 1 else None
         path = fixtures_dir / fixture_name
         url = path.resolve().as_uri()
         price_source = session.scalar(
@@ -64,6 +70,11 @@ def run_fixture_pipeline(
         if price_source is None:
             price_source = FacilityPriceSource(
                 facility_id=facility.id,
+                facility_location_id=location.id if location else None,
+                location_association_status="verified" if location else "unresolved",
+                location_association_evidence={"method": "only_active_location"}
+                if location
+                else None,
                 source_type="hospital_mrf",
                 source_page_url="https://example.test/pricing",
                 machine_readable_file_url=url,
@@ -73,6 +84,10 @@ def run_fixture_pipeline(
             )
             session.add(price_source)
             session.flush()
+        elif price_source.facility_location_id is None and location is not None:
+            price_source.facility_location_id = location.id
+            price_source.location_association_status = "verified"
+            price_source.location_association_evidence = {"method": "only_active_location"}
         downloaded = register_local_file(session, price_source, path)
         summary.files_skipped_unchanged += int(downloaded.skipped_unchanged)
         summary.files_registered += int(not downloaded.skipped_unchanged)
@@ -115,6 +130,7 @@ def run_statewide_pipeline(session: Session, state_code: str = "NH") -> Statewid
     facility_ids = set(
         session.scalars(
             select(Facility.id)
+            .distinct()
             .join(FacilityLocation)
             .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
         )
@@ -164,9 +180,7 @@ class DownloadRetryResult:
     errors: list[str] = field(default_factory=list)
 
 
-def run_download_retry(
-    session: Session, state_code: str = "NH"
-) -> DownloadRetryResult:
+def run_download_retry(session: Session, state_code: str = "NH") -> DownloadRetryResult:
     """Re-attempt downloads for sources with previous failures.
 
     Pre-checks source health via HEAD request, follows redirects,
@@ -178,6 +192,7 @@ def run_download_retry(
     facility_ids = set(
         session.scalars(
             select(Facility.id)
+            .distinct()
             .join(FacilityLocation)
             .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
         )

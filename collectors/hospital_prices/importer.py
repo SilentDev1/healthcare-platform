@@ -307,6 +307,7 @@ def import_price_source(
                     record = HospitalPriceRecord(
                         id=rec_uuid,
                         facility_id=price_source.facility_id,
+                        facility_location_id=price_source.facility_location_id,
                         source_file_id=source.id,
                         import_run_id=run.id,
                         facility_source_observation_id=observation.id,
