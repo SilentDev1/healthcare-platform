@@ -35,6 +35,7 @@ export default function MapPage() {
   const [filter, setFilter] = useState("");
   const [error, setError] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [view, setView] = useState<"list" | "map">("list");
 
   useEffect(() => {
     const url = filter
@@ -61,9 +62,13 @@ export default function MapPage() {
   }, []);
 
   return (
-    <main style={{ maxWidth: "100%", padding: "1rem 2rem" }}>
-      <p className="eyebrow">NEW HAMPSHIRE</p>
-      <h1 style={{ fontSize: "2rem" }}>Hospital map</h1>
+    <main style={{ maxWidth: "100%", padding: "1.5rem" }}>
+      <p className="eyebrow">Explore by location</p>
+      <h1 style={{ fontSize: "2.5rem" }}>Hospital map</h1>
+      <p>
+        Only facilities with published coordinates appear as markers. All
+        facilities remain available in the hospital directory.
+      </p>
       <div style={{ marginBottom: "1rem", display: "flex", gap: "0.5rem" }}>
         <select
           value={filter}
@@ -87,58 +92,99 @@ export default function MapPage() {
           <span style={{ color: "#e67700" }}>●</span> Partial{" "}
           <span style={{ color: "#868e96" }}>●</span> No data
         </span>
+        <div
+          className="mobile-only"
+          role="group"
+          aria-label="Choose map or list view"
+        >
+          <button
+            className={`button ${view === "list" ? "" : "secondary"}`}
+            onClick={() => setView("list")}
+          >
+            List
+          </button>
+          <button
+            className={`button ${view === "map" ? "" : "secondary"}`}
+            onClick={() => setView("map")}
+          >
+            Map
+          </button>
+        </div>
       </div>
       {error && <p className="error">{error}</p>}
       {loaded && (
-        <div
-          style={{
-            height: "600px",
-            borderRadius: "0.5rem",
-            overflow: "hidden",
-            border: "1px solid #d7e1de",
-          }}
-        >
-          <MapContainer
-            center={[43.45, -71.56]}
-            zoom={8}
-            style={{ height: "100%", width: "100%" }}
+        <div className="map-shell">
+          <section
+            className={`map-list ${view === "map" ? "desktop-only" : ""}`}
+            aria-label="Mapped hospitals"
           >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {data.map((feature) => (
-              <CircleMarker
-                key={feature.properties.id}
-                center={[
-                  feature.geometry.coordinates[1],
-                  feature.geometry.coordinates[0],
-                ]}
-                radius={8}
-                pathOptions={{
-                  color:
-                    STATUS_COLORS[feature.properties.pricing_status] ??
-                    "#868e96",
-                  fillColor:
-                    STATUS_COLORS[feature.properties.pricing_status] ??
-                    "#868e96",
-                  fillOpacity: 0.7,
-                }}
-              >
-                <Popup>
-                  <strong>{feature.properties.name}</strong>
-                  <br />
-                  {feature.properties.city}
-                  <br />
-                  {feature.properties.procedure_count} procedures
-                  <br />
-                  <Link href={`/facilities/${feature.properties.id}`}>
-                    View details →
+            <strong>{data.length} mapped hospitals</strong>
+            <div className="result-list" style={{ marginTop: "1rem" }}>
+              {data.map((feature) => (
+                <article className="card" key={feature.properties.id}>
+                  <span className="badge neutral">
+                    {feature.properties.pricing_status.replaceAll("_", " ")}
+                  </span>
+                  <h2>{feature.properties.name}</h2>
+                  <p>
+                    {feature.properties.city} ·{" "}
+                    {feature.properties.procedure_count} published procedures
+                  </p>
+                  <Link
+                    className="button secondary"
+                    href={`/hospitals/${feature.properties.id}`}
+                  >
+                    View details
                   </Link>
-                </Popup>
-              </CircleMarker>
-            ))}
-          </MapContainer>
+                </article>
+              ))}
+            </div>
+          </section>
+          <div
+            className={`map-canvas ${view === "list" ? "desktop-only" : ""}`}
+          >
+            <MapContainer
+              center={[43.45, -71.56]}
+              zoom={8}
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {data.map((feature) => (
+                <CircleMarker
+                  key={feature.properties.id}
+                  center={[
+                    feature.geometry.coordinates[1],
+                    feature.geometry.coordinates[0],
+                  ]}
+                  radius={8}
+                  pathOptions={{
+                    color:
+                      STATUS_COLORS[feature.properties.pricing_status] ??
+                      "#868e96",
+                    fillColor:
+                      STATUS_COLORS[feature.properties.pricing_status] ??
+                      "#868e96",
+                    fillOpacity: 0.7,
+                  }}
+                >
+                  <Popup>
+                    <strong>{feature.properties.name}</strong>
+                    <br />
+                    {feature.properties.city}
+                    <br />
+                    {feature.properties.procedure_count} procedures
+                    <br />
+                    <Link href={`/hospitals/${feature.properties.id}`}>
+                      View details →
+                    </Link>
+                  </Popup>
+                </CircleMarker>
+              ))}
+            </MapContainer>
+          </div>
         </div>
       )}
     </main>

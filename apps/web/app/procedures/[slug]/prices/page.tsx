@@ -1,15 +1,13 @@
 import Link from "next/link";
-import { apiGet, type PricePage } from "../../../../lib/api";
-
-const money = (value: string | null) =>
-  value === null
-    ? "—"
-    : new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(Number(value));
-const range = (low: string | null, high: string | null) =>
-  low === high ? money(low) : `${money(low)} – ${money(high)}`;
+import { apiGet, type PricePage, type Procedure } from "../../../../lib/api";
+import { CompareSelect } from "../../../components/CompareSelect";
+import {
+  CoverageNotice,
+  EmptyState,
+  ErrorState,
+  FacilityPriceCard,
+  PricingDisclaimer,
+} from "../../../components/ui";
 
 export default async function ProcedurePrices({
   params,
@@ -17,216 +15,156 @@ export default async function ProcedurePrices({
 }: {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{
-    service_setting?: string;
-    billing_class?: string;
+    setting?: string;
     payer?: string;
+    city?: string;
+    sort?: string;
   }>;
 }) {
   const { slug } = await params;
   const filters = await searchParams;
-  const queryParts = ["state=NH", "page_size=50"];
-  if (filters.service_setting)
-    queryParts.push(`setting=${encodeURIComponent(filters.service_setting)}`);
-  if (filters.payer)
-    queryParts.push(`payer=${encodeURIComponent(filters.payer)}`);
+  const query = new URLSearchParams({ state: "NH", page_size: "50" });
+  if (filters.setting) query.set("setting", filters.setting);
+  if (filters.payer) query.set("payer", filters.payer);
+  if (filters.city) query.set("city", filters.city);
   try {
-    const data = await apiGet<PricePage>(
-      `/api/v1/procedures/${encodeURIComponent(slug)}/prices?${queryParts.join("&")}`,
+    const [data, procedure, payers] = await Promise.all([
+      apiGet<PricePage>(
+        `/api/v1/procedures/${encodeURIComponent(slug)}/prices?${query}`,
+      ),
+      apiGet<Procedure>(`/api/v1/procedures/${encodeURIComponent(slug)}`),
+      apiGet<Array<{ slug: string; name: string }>>("/api/v1/pricing/payers"),
+    ]);
+    const items = [...data.items].sort((a, b) =>
+      filters.sort === "cash"
+        ? Number(a.cash_price_min ?? Infinity) -
+          Number(b.cash_price_min ?? Infinity)
+        : filters.sort === "name"
+          ? a.facility_name.localeCompare(b.facility_name)
+          : 0,
     );
-
-    const cashValues = data.items
-      .map((i) => (i.cash_price_min ? Number(i.cash_price_min) : null))
-      .filter((v): v is number => v !== null);
-    const minCash = cashValues.length ? Math.min(...cashValues) : null;
-    const maxCash = cashValues.length ? Math.max(...cashValues) : null;
-    const avgCash = cashValues.length
-      ? Math.round(cashValues.reduce((a, b) => a + b, 0) / cashValues.length)
-      : null;
-    const maxBar = maxCash ?? 1;
-
     return (
       <main>
-        <Link href={`/procedures/${slug}`}>← Procedure details</Link>
-        <h1>Published hospital prices</h1>
-        <p>
-          These values come from public hospital transparency files. They are
-          not an exact patient cost or a complete episode price.
-        </p>
-
-        <form className="search-form" style={{ flexWrap: "wrap" }}>
-          <select
-            name="service_setting"
-            defaultValue={filters.service_setting ?? ""}
-            aria-label="Service setting"
-            style={{
-              padding: "0.6rem",
-              border: "1px solid #9fb3ae",
-              borderRadius: "0.5rem",
-            }}
-          >
-            <option value="">All settings</option>
-            <option value="inpatient">Inpatient</option>
-            <option value="outpatient">Outpatient</option>
-            <option value="emergency_department">Emergency</option>
-          </select>
-          <select
-            name="billing_class"
-            defaultValue={filters.billing_class ?? ""}
-            aria-label="Billing class"
-            style={{
-              padding: "0.6rem",
-              border: "1px solid #9fb3ae",
-              borderRadius: "0.5rem",
-            }}
-          >
-            <option value="">All billing classes</option>
-            <option value="facility">Facility</option>
-            <option value="professional">Professional</option>
-          </select>
-          <button>Filter</button>
-        </form>
-
-        {cashValues.length > 0 && (
-          <section
-            className="card"
-            style={{ marginBottom: "1.5rem" }}
-            aria-label="Statewide price summary"
-          >
-            <h2 style={{ margin: "0 0 0.5rem" }}>
-              Statewide summary ({data.items.length} facilities)
-            </h2>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "1rem",
-                textAlign: "center",
-              }}
-            >
-              <div>
-                <div style={{ color: "#526862", fontSize: "0.85rem" }}>
-                  Lowest
-                </div>
-                <strong style={{ fontSize: "1.3rem" }}>
-                  {money(String(minCash))}
-                </strong>
-              </div>
-              <div>
-                <div style={{ color: "#526862", fontSize: "0.85rem" }}>
-                  Average
-                </div>
-                <strong style={{ fontSize: "1.3rem" }}>
-                  {money(String(avgCash))}
-                </strong>
-              </div>
-              <div>
-                <div style={{ color: "#526862", fontSize: "0.85rem" }}>
-                  Highest
-                </div>
-                <strong style={{ fontSize: "1.3rem" }}>
-                  {money(String(maxCash))}
-                </strong>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {data.items.length === 0 ? (
-          <p>
-            No reviewed, publishable prices are available for this procedure.
+        <nav className="breadcrumbs" aria-label="Breadcrumb">
+          <Link href="/">Home</Link>
+          <span>/</span>
+          <Link href="/procedures">Procedures</Link>
+          <span>/</span>
+          <Link href={`/procedures/${slug}`}>{procedure.consumer_name}</Link>
+          <span>/</span>
+          <span>Prices</span>
+        </nav>
+        <div className="page-heading">
+          <p className="eyebrow">Compare facilities</p>
+          <h1>{procedure.consumer_name}</h1>
+          <p className="lede">
+            Published prices from hospital transparency files. These are not
+            personalized estimates.
           </p>
-        ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Facility</th>
-                  <th>City</th>
-                  <th>Cash price</th>
-                  <th style={{ width: "20%" }}>Range</th>
-                  <th>Negotiated price</th>
-                  <th>Setting</th>
-                  <th>Updated</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((item) => {
-                  const cashMin = item.cash_price_min
-                    ? Number(item.cash_price_min)
-                    : 0;
-                  const barWidth =
-                    maxBar > 0
-                      ? Math.max(2, Math.round((cashMin / maxBar) * 100))
-                      : 0;
-                  return (
-                    <tr key={item.id}>
-                      <td>
-                        <Link href={`/facilities/${item.facility_id}`}>
-                          {item.facility_name}
-                        </Link>
-                      </td>
-                      <td>{item.city ?? "—"}</td>
-                      <td>{range(item.cash_price_min, item.cash_price_max)}</td>
-                      <td>
-                        <div
-                          style={{
-                            background: "#e8efed",
-                            borderRadius: "0.25rem",
-                            height: "1rem",
-                            overflow: "hidden",
-                          }}
-                        >
-                          <div
-                            style={{
-                              background: "#087f5b",
-                              width: `${barWidth}%`,
-                              height: "100%",
-                              borderRadius: "0.25rem",
-                              transition: "width 0.3s",
-                            }}
-                          />
-                        </div>
-                      </td>
-                      <td>
-                        {range(
-                          item.negotiated_price_min,
-                          item.negotiated_price_max,
-                        )}
-                      </td>
-                      <td>{item.service_setting}</td>
-                      <td>
-                        <a href={item.source_url}>Source</a> ·{" "}
-                        {new Date(item.last_updated).toLocaleDateString(
-                          "en-US",
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        </div>
+        <CoverageNotice>
+          Prices are available at{" "}
+          {new Set(items.map((i) => i.facility_id)).size} facilities for this
+          procedure. Coverage varies by price type and service setting.
+        </CoverageNotice>
+        <div className="toolbar">
+          <strong>
+            {items.length} published result{items.length === 1 ? "" : "s"}
+          </strong>
+          <div className="toolbar-group">
+            <label htmlFor="sort">Sort</label>
+            <form>
+              <select
+                id="sort"
+                name="sort"
+                defaultValue={filters.sort ?? "recommended"}
+              >
+                <option value="recommended">Recommended</option>
+                <option value="cash">Lowest published cash price</option>
+                <option value="name">Hospital name</option>
+              </select>
+              <button className="button secondary">Apply</button>
+            </form>
           </div>
-        )}
-        <section className="card">
-          <h2>Important limitations</h2>
-          <p>
-            Physician, anesthesia, imaging, pathology, laboratory, medication,
-            implant, or other charges may be separate. A published negotiated
-            rate does not prove current network participation. Actual
-            out-of-pocket cost depends on benefits, deductible, coinsurance,
-            copays, authorization, and services received.
-          </p>
-        </section>
+        </div>
+        <div className="results-layout">
+          <aside className="filters" aria-label="Filters">
+            <h2>Filter results</h2>
+            <form>
+              <div className="filter-group">
+                <label htmlFor="city">City</label>
+                <input
+                  id="city"
+                  name="city"
+                  defaultValue={filters.city ?? ""}
+                  placeholder="Any city"
+                />
+              </div>
+              <div className="filter-group">
+                <label htmlFor="setting">Service setting</label>
+                <select
+                  id="setting"
+                  name="setting"
+                  defaultValue={filters.setting ?? ""}
+                >
+                  <option value="">All settings</option>
+                  <option value="outpatient">Outpatient</option>
+                  <option value="inpatient">Inpatient</option>
+                  <option value="emergency_department">
+                    Emergency department
+                  </option>
+                </select>
+              </div>
+              <div className="filter-group">
+                <label htmlFor="payer">Insurance (published rates)</label>
+                <select
+                  id="payer"
+                  name="payer"
+                  defaultValue={filters.payer ?? ""}
+                >
+                  <option value="">All available payers</option>
+                  {payers.map((p) => (
+                    <option key={p.slug} value={p.slug}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="muted">
+                  A published rate does not guarantee your plan or network
+                  participation.
+                </p>
+              </div>
+              <button className="button">Apply filters</button>
+            </form>
+          </aside>
+          <section className="result-list" aria-label="Facility results">
+            {items.length === 0 ? (
+              <EmptyState title="No publishable prices match these filters">
+                Try removing a filter. This does not mean nearby hospitals do
+                not provide this service.
+              </EmptyState>
+            ) : (
+              items.map((item) => (
+                <div key={item.id}>
+                  <FacilityPriceCard item={item} compare={false} />
+                  <div className="card-actions">
+                    <CompareSelect
+                      id={item.facility_id}
+                      name={item.facility_name}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
+          </section>
+        </div>
+        <PricingDisclaimer />
       </main>
     );
-  } catch (error) {
+  } catch {
     return (
       <main>
-        <h1>Published hospital prices</h1>
-        <p className="error" role="alert">
-          Unable to load prices:{" "}
-          {error instanceof Error ? error.message : "Unknown error"}
-        </p>
+        <ErrorState retryHref={`/procedures/${slug}/prices`} />
       </main>
     );
   }

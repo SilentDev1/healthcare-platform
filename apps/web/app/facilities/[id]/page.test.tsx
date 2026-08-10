@@ -5,33 +5,35 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../../../lib/api", () => ({
   apiGet: vi.fn().mockImplementation((path: string) =>
-    path.endsWith("/quality?page_size=100")
-      ? Promise.resolve({
-          items: [
-            {
-              id: "q1",
-              cms_measure_id: "OVERALL_RATING",
-              measure_name: "Overall hospital rating",
-              category: "overall_rating",
-              score: "4",
-              footnote_code: null,
-            },
-          ],
-          total: 1,
-        })
-      : Promise.resolve({
-          id: "1",
-          display_name: "Concord Hospital",
-          updated_at: "2026-08-06T12:00:00Z",
-          locations: [
-            {
-              address_line_1: "1 Main St",
-              city: "Concord",
-              state: "NH",
-              postal_code: "03301",
-            },
-          ],
-        }),
+    path.endsWith("/prices?page_size=25")
+      ? Promise.resolve({ items: [], total: 0, page: 1, page_size: 25 })
+      : path.endsWith("/quality?page_size=100")
+        ? Promise.resolve({
+            items: [
+              {
+                id: "q1",
+                cms_measure_id: "OVERALL_RATING",
+                measure_name: "Overall hospital rating",
+                category: "overall_rating",
+                score: "4",
+                footnote_code: null,
+              },
+            ],
+            total: 1,
+          })
+        : Promise.resolve({
+            id: "1",
+            display_name: "Concord Hospital",
+            updated_at: "2026-08-06T12:00:00Z",
+            locations: [
+              {
+                address_line_1: "1 Main St",
+                city: "Concord",
+                state: "NH",
+                postal_code: "03301",
+              },
+            ],
+          }),
   ),
 }));
 import FacilityPage from "./page";
@@ -42,7 +44,10 @@ describe("FacilityPage", () => {
     expect(
       screen.getByRole("heading", { name: "Concord Hospital" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("4 out of 5")).toBeInTheDocument();
-    expect(screen.getByText(/Centers for Medicare/)).toBeInTheDocument();
+    expect(screen.getAllByText("4/5 CMS").length).toBeGreaterThan(0);
+    expect(screen.getByText(/CMS Care Compare/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Pricing data is not currently available/),
+    ).toBeInTheDocument();
   });
 });

@@ -8,17 +8,29 @@ export default async function Facilities() {
     );
     return (
       <main>
-        <p className="eyebrow">NEW HAMPSHIRE</p>
-        <h1>Facility directory</h1>
+        <nav className="breadcrumbs">
+          <Link href="/">Home</Link>
+          <span>/</span>
+          <span>Hospitals</span>
+        </nav>
+        <p className="eyebrow">Hospital directory</p>
+        <h1>Explore hospitals</h1>
+        <p className="lede">
+          All active facilities remain visible, including those without
+          currently publishable prices.
+        </p>
         <div className="cards">
           {page.items.map((item) => (
             <article className="card" key={item.id}>
               <h2>
-                <Link href={`/facilities/${item.id}`}>{item.display_name}</Link>
+                <Link href={`/hospitals/${item.id}`}>{item.display_name}</Link>
               </h2>
               <p>
                 {item.locations[0]?.city}, {item.locations[0]?.state}
               </p>
+              <span className="badge neutral">
+                {item.facility_type ?? "Hospital"}
+              </span>
             </article>
           ))}
         </div>

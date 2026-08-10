@@ -5,30 +5,26 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../lib/api", () => ({
   apiGet: vi.fn().mockResolvedValue({
-    items: [
-      {
-        id: "1",
-        display_name: "Concord Hospital",
-        facility_type: "Acute Care",
-        locations: [{ city: "Concord" }],
-      },
-    ],
-    total: 1,
+    nh_facilities: 26,
+    facilities_with_publishable_prices: 12,
+    publishable_procedures: 48,
   }),
 }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 import Home from "./page";
 
 describe("Home", () => {
-  it("renders the NH directory and pricing notice", async () => {
+  it("renders the consumer search and transparent coverage notice", async () => {
     render(await Home());
     expect(
-      screen.getByRole("heading", { name: "Find a New Hampshire hospital." }),
+      screen.getByRole("heading", {
+        name: "Compare healthcare costs near you",
+      }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "Concord Hospital" }),
+      screen.getByRole("combobox", { name: "What do you need?" }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(/Pricing comparison is coming later/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/12 of 26 active hospitals/)).toBeInTheDocument();
+    expect(screen.getByText(/not generated estimates/)).toBeInTheDocument();
   });
 });

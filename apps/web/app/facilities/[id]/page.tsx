@@ -3,64 +3,16 @@ import {
   apiGet,
   type Facility,
   type PricePage,
-  type PricingHealth,
   type QualityPage,
 } from "../../../lib/api";
-
-function ScoreBadge({ score }: { score: number }) {
-  const color = score >= 80 ? "#087f5b" : score >= 50 ? "#e67700" : "#c92a2a";
-  return (
-    <span
-      style={{
-        background: color,
-        color: "white",
-        padding: "0.25rem 0.6rem",
-        borderRadius: "0.3rem",
-        fontWeight: 700,
-        fontSize: "0.9rem",
-      }}
-    >
-      {Math.round(score)}%
-    </span>
-  );
-}
-
-function ScoreBar({ label, value }: { label: string; value: number }) {
-  const color = value >= 80 ? "#087f5b" : value >= 50 ? "#e67700" : "#c92a2a";
-  return (
-    <div style={{ marginBottom: "0.4rem" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          fontSize: "0.85rem",
-          color: "#526862",
-        }}
-      >
-        <span>{label}</span>
-        <span>{Math.round(value)}%</span>
-      </div>
-      <div
-        style={{
-          background: "#e8efed",
-          borderRadius: "0.25rem",
-          height: "0.5rem",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            background: color,
-            width: `${Math.max(2, value)}%`,
-            height: "100%",
-            borderRadius: "0.25rem",
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
+import {
+  CoverageNotice,
+  EmptyState,
+  PriceRange,
+  PricingDisclaimer,
+  QualityRating,
+  SourceAttribution,
+} from "../../components/ui";
 export default async function FacilityPage({
   params,
 }: {
@@ -71,140 +23,191 @@ export default async function FacilityPage({
     const [facility, quality, prices] = await Promise.all([
       apiGet<Facility>(`/api/v1/facilities/${id}`),
       apiGet<QualityPage>(`/api/v1/facilities/${id}/quality?page_size=100`),
-      apiGet<PricePage>(`/api/v1/facilities/${id}/prices?page_size=10`),
+      apiGet<PricePage>(`/api/v1/facilities/${id}/prices?page_size=25`),
     ]);
-
-    let pricingHealth: PricingHealth | null = null;
-    try {
-      pricingHealth = await apiGet<PricingHealth>(
-        `/api/v1/facilities/${id}/pricing-health`,
-      );
-    } catch {
-      // Pricing health may not be available for all facilities
-    }
-
     const location = facility.locations[0];
-    const rating = quality.items.find(
-      (item) => item.cms_measure_id === "OVERALL_RATING",
+    const overall = quality.items.find(
+      (q) => q.cms_measure_id === "OVERALL_RATING",
     );
+    const groups = Object.groupBy(quality.items, (q) => q.category);
     return (
       <main>
-        <Link href="/">← All facilities</Link>
-        <p className="eyebrow">NEW HAMPSHIRE FACILITY</p>
-        <h1>{facility.display_name}</h1>
-        {location && (
-          <p>
-            {location.address_line_1}, {location.city}, {location.state}{" "}
-            {location.postal_code}
+        <nav className="breadcrumbs">
+          <Link href="/">Home</Link>
+          <span>/</span>
+          <Link href="/hospitals">Hospitals</Link>
+          <span>/</span>
+          <span>{facility.display_name}</span>
+        </nav>
+        <div className="page-heading">
+          <p className="eyebrow">{facility.facility_type ?? "Hospital"}</p>
+          <h1>{facility.display_name}</h1>
+          <p className="lede">
+            {location
+              ? `${location.city}, ${location.state}`
+              : "Location not published"}{" "}
+            · <QualityRating value={overall?.score} />
           </p>
-        )}
-
-        {pricingHealth && (
-          <section className="card" style={{ marginBottom: "1.5rem" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "1rem",
-              }}
-            >
-              <h2 style={{ margin: 0 }}>Pricing data health</h2>
-              <ScoreBadge score={pricingHealth.overall_score} />
-            </div>
-            <ScoreBar
-              label="Source discovery"
-              value={pricingHealth.source_discovery_score}
-            />
-            <ScoreBar label="Download" value={pricingHealth.download_score} />
-            <ScoreBar label="Parse" value={pricingHealth.parse_score} />
-            <ScoreBar label="Mapping" value={pricingHealth.mapping_score} />
-            <ScoreBar
-              label="Payer normalization"
-              value={pricingHealth.payer_normalization_score}
-            />
-            <ScoreBar label="Anomaly" value={pricingHealth.anomaly_score} />
-            <ScoreBar label="Freshness" value={pricingHealth.freshness_score} />
-            <ScoreBar
-              label="Price coverage"
-              value={pricingHealth.price_coverage_score}
-            />
-            <p
-              style={{
-                fontSize: "0.8rem",
-                color: "#526862",
-                margin: "0.5rem 0 0",
-              }}
-            >
-              Last evaluated{" "}
-              {new Date(pricingHealth.calculated_at).toLocaleDateString(
-                "en-US",
+        </div>
+        <div className="toolbar" aria-label="Page sections">
+          <div className="toolbar-group">
+            <a href="#overview">Overview</a>
+            <a href="#prices">Prices</a>
+            <a href="#quality">Quality</a>
+            <a href="#sources">Data sources</a>
+          </div>
+        </div>
+        <section id="overview" className="section" style={{ paddingInline: 0 }}>
+          <div className="section-heading">
+            <p className="eyebrow">Overview</p>
+            <h2>Facility information</h2>
+          </div>
+          <div className="feature-grid">
+            <article className="card">
+              <h3>Address</h3>
+              <p>
+                {location
+                  ? `${location.address_line_1}, ${location.city}, ${location.state} ${location.postal_code}`
+                  : "Not available"}
+              </p>
+            </article>
+            <article className="card">
+              <h3>Contact</h3>
+              <p>{facility.phone ?? "Phone not available"}</p>
+              {facility.website_url && (
+                <a href={facility.website_url}>Facility website</a>
               )}
-            </p>
-          </section>
-        )}
-
-        <section className="rating" aria-label="Overall CMS rating">
-          <h2>Overall CMS rating</h2>
-          <strong>
-            {rating?.score ?? "Not available"}
-            {rating?.score ? " out of 5" : ""}
-          </strong>
-          {rating?.footnote_code && <p>CMS footnote: {rating.footnote_code}</p>}
+            </article>
+            <article className="card">
+              <h3>Facility details</h3>
+              <p>
+                {facility.facility_type ?? "Type not listed"}
+                <br />
+                {facility.ownership_type ?? "Ownership not listed"}
+              </p>
+            </article>
+          </div>
         </section>
-        <h2>Available quality measures</h2>
-        {quality.items.length === 0 ? (
-          <p>
-            No CMS quality measures are currently available for this facility.
-          </p>
-        ) : (
-          <ul className="measures">
-            {quality.items.map((item) => (
-              <li key={item.id}>
-                <span>{item.measure_name}</span>
-                <strong>{item.score ?? "Not available"}</strong>
-              </li>
-            ))}
-          </ul>
-        )}
-        <h2>Published prices</h2>
-        {!prices?.items?.length ? (
-          <p>No reviewed, publishable prices are currently available.</p>
-        ) : (
-          <ul className="measures">
-            {prices.items.map((item) => (
-              <li key={item.id}>
-                <Link href={`/procedures/${item.procedure_slug}/prices`}>
-                  {item.procedure_name}
-                </Link>
-                <strong>
-                  {item.cash_price_min
-                    ? `$${Number(item.cash_price_min).toLocaleString()}`
-                    : "Negotiated rate available"}
-                </strong>
-              </li>
-            ))}
-          </ul>
-        )}
-        <p>
-          Hospital transparency prices may not equal your final bill. Other
-          professional and ancillary charges may be separate; verify network
-          status and benefits.
-        </p>
-        <p className="source">
-          Source: Centers for Medicare &amp; Medicaid Services. Facility record
-          last updated{" "}
-          {new Date(facility.updated_at).toLocaleDateString("en-US")}.
-        </p>
+        <section id="prices" className="section" style={{ paddingInline: 0 }}>
+          <div className="section-heading">
+            <p className="eyebrow">Published prices</p>
+            <h2>Available procedures</h2>
+          </div>
+          {prices.items.length ? (
+            <>
+              <CoverageNotice>
+                {prices.total} publishable procedure price summaries are
+                currently available for this facility.
+              </CoverageNotice>
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Procedure</th>
+                      <th scope="col">Cash price</th>
+                      <th scope="col">Negotiated range</th>
+                      <th scope="col">Setting</th>
+                      <th scope="col">Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prices.items.map((p) => (
+                      <tr key={p.id}>
+                        <td>
+                          <Link href={`/procedures/${p.procedure_slug}/prices`}>
+                            {p.procedure_name}
+                          </Link>
+                        </td>
+                        <td>
+                          <PriceRange
+                            min={p.cash_price_min}
+                            max={p.cash_price_max}
+                          />
+                        </td>
+                        <td>
+                          <PriceRange
+                            min={p.negotiated_price_min}
+                            max={p.negotiated_price_max}
+                          />
+                        </td>
+                        <td>{p.service_setting?.replaceAll("_", " ")}</td>
+                        <td>
+                          <SourceAttribution
+                            updated={p.last_updated}
+                            url={p.source_url}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <EmptyState title="Pricing data is not currently available for this facility">
+              Hospital transparency data may still be processing or may not meet
+              publication safety rules. The facility remains listed so the
+              coverage gap is visible.
+            </EmptyState>
+          )}
+        </section>
+        <section id="quality" className="section" style={{ paddingInline: 0 }}>
+          <div className="section-heading">
+            <p className="eyebrow">CMS quality</p>
+            <h2>Quality measures</h2>
+            <p>
+              These measures provide context and should not be interpreted as a
+              complete judgment of care.
+            </p>
+          </div>
+          <article className="rating">
+            <h3>Overall rating</h3>
+            <QualityRating value={overall?.score} />
+          </article>
+          {quality.items.length ? (
+            <div className="cards">
+              {Object.entries(groups).map(([category, values]) => (
+                <article className="card" key={category}>
+                  <h3>{category.replaceAll("_", " ")}</h3>
+                  <ul className="measures">
+                    {values?.slice(0, 5).map((q) => (
+                      <li key={q.id}>
+                        <span>{q.measure_name}</span>
+                        <strong>{q.score ?? "Not available"}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <EmptyState title="CMS quality measures are unavailable">
+              No quality records are currently available for this facility.
+            </EmptyState>
+          )}
+        </section>
+        <section id="sources" className="section" style={{ paddingInline: 0 }}>
+          <div className="section-heading">
+            <p className="eyebrow">Data sources</p>
+            <h2>Where this information comes from</h2>
+          </div>
+          <SourceAttribution quality updated={facility.updated_at} />
+          {prices.items[0] && (
+            <SourceAttribution
+              updated={prices.items[0].last_updated}
+              url={prices.items[0].source_url}
+            />
+          )}
+        </section>
+        <PricingDisclaimer />
       </main>
     );
-  } catch (error) {
+  } catch {
     return (
       <main>
-        <h1>Facility</h1>
+        <h1>Hospital information unavailable</h1>
         <p className="error" role="alert">
-          Unable to load this facility:{" "}
-          {error instanceof Error ? error.message : "Unknown error"}
+          We couldn’t load this facility right now.
         </p>
       </main>
     );

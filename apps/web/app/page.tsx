@@ -1,51 +1,131 @@
 import Link from "next/link";
-import { apiGet, type FacilityPage } from "../lib/api";
+import { CareSearch } from "./components/CareSearch";
+import { CoverageNotice } from "./components/ui";
+import { apiGet } from "../lib/api";
+
+interface Coverage {
+  nh_facilities: number;
+  facilities_with_publishable_prices: number;
+  publishable_procedures: number;
+}
+const popular = [
+  "MRI",
+  "CT scan",
+  "colonoscopy",
+  "mammogram",
+  "knee replacement",
+  "hip replacement",
+  "childbirth",
+  "lab tests",
+];
 
 export default async function Home() {
+  let coverage: Coverage | null = null;
   try {
-    const data = await apiGet<FacilityPage>(
-      "/api/v1/facilities?state=NH&page_size=100",
-    );
-    return (
-      <main>
-        <p className="eyebrow">NEW HAMPSHIRE HEALTHCARE</p>
-        <h1>Find a New Hampshire hospital.</h1>
-        <p>
-          Explore official CMS facility and quality information. Pricing
-          comparison is coming later.
-        </p>
-        <h2>{data.total} facilities</h2>
-        {data.items.length === 0 ? (
-          <p>No facilities are currently available.</p>
-        ) : (
-          <ul className="directory">
-            {data.items.map((facility) => (
-              <li key={facility.id}>
-                <Link href={`/facilities/${facility.id}`}>
-                  {facility.display_name}
-                </Link>
-                <span>
-                  {facility.locations[0]?.city ?? "New Hampshire"} ·{" "}
-                  {facility.facility_type ?? "Hospital"}
-                </span>
-              </li>
+    coverage = await apiGet<Coverage>("/api/v1/pricing/coverage");
+  } catch {}
+  return (
+    <>
+      <main className="hero">
+        <div className="hero-inner">
+          <p className="eyebrow">Clear information for confident choices</p>
+          <h1>Compare healthcare costs near you</h1>
+          <p className="lede">
+            Explore published hospital prices and CMS quality information in one
+            straightforward place.
+          </p>
+          <CareSearch />
+          <div className="popular">
+            <span>Popular:</span>
+            {popular.map((term) => (
+              <Link
+                className="chip"
+                key={term}
+                href={`/search?q=${encodeURIComponent(term)}`}
+              >
+                {term}
+              </Link>
             ))}
-          </ul>
-        )}
-        <p className="source">
-          Source: Centers for Medicare &amp; Medicaid Services (CMS).
-        </p>
+          </div>
+        </div>
       </main>
-    );
-  } catch (error) {
-    return (
-      <main>
-        <h1>New Hampshire facilities</h1>
-        <p className="error" role="alert">
-          Unable to load the facility directory:{" "}
-          {error instanceof Error ? error.message : "Unknown error"}
-        </p>
-      </main>
-    );
-  }
+      <section className="section">
+        <div className="section-heading">
+          <p className="eyebrow">How it works</p>
+          <h2>A clearer path to comparing care</h2>
+          <p>No billing-code knowledge required.</p>
+        </div>
+        <div className="feature-grid steps">
+          {[
+            [
+              "Search for care",
+              "Use everyday language, like “knee MRI” or “mammogram.”",
+            ],
+            [
+              "Compare facilities",
+              "Review published prices, distance, setting, and quality information.",
+            ],
+            [
+              "Verify your choice",
+              "Confirm your benefits and expected charges with the provider and insurer.",
+            ],
+          ].map(([title, body]) => (
+            <article className="card feature-card" key={title}>
+              <h3>{title}</h3>
+              <p>{body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <div className="trust-strip">
+        <section className="section">
+          <div>
+            <h2>Know where the information comes from</h2>
+            <p>
+              Hospital machine-readable files for prices. CMS Care Compare for
+              quality.
+            </p>
+          </div>
+          <Link className="button secondary" href="/procedures">
+            Explore procedures
+          </Link>
+        </section>
+      </div>
+      <section className="section">
+        <div className="section-heading">
+          <p className="eyebrow">Built for trust</p>
+          <h2>Real published data, with gaps shown clearly</h2>
+        </div>
+        <div className="feature-grid">
+          {[
+            [
+              "Public pricing data",
+              "We show reviewed, publishable hospital data—not generated estimates.",
+            ],
+            [
+              "Quality in context",
+              "CMS measures are presented without declaring a “best” hospital.",
+            ],
+            [
+              "Source dates included",
+              "Meaningful price views identify their source and latest update.",
+            ],
+          ].map(([title, body]) => (
+            <article className="card feature-card" key={title}>
+              <span className="icon" aria-hidden="true">
+                ✓
+              </span>
+              <h3>{title}</h3>
+              <p>{body}</p>
+            </article>
+          ))}
+        </div>
+        <CoverageNotice>
+          {coverage
+            ? `Published prices are currently available for ${coverage.facilities_with_publishable_prices} of ${coverage.nh_facilities} active hospitals in the launch region, covering ${coverage.publishable_procedures} procedures.`
+            : "Coverage is incomplete and varies by hospital and procedure. Availability is always shown with each result."}
+        </CoverageNotice>
+      </section>
+    </>
+  );
 }
