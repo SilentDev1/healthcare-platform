@@ -140,6 +140,19 @@ def test_partial_synonym_match() -> None:
     engine.dispose()
 
 
+def test_common_imaging_language_returns_catalog_results() -> None:
+    engine = _engine()
+    with Session(engine) as session:
+        _seed_base_data(session)
+        session.commit()
+
+        knee_titles = {item.title for item in search(session, "knee scan")}
+        cat_titles = {item.title for item in search(session, "CAT scan")}
+        assert "MRI knee without contrast" in knee_titles
+        assert any(title.startswith("CT scan") for title in cat_titles)
+    engine.dispose()
+
+
 def test_search_without_synonyms_still_works() -> None:
     """Non-synonym queries still produce normal results."""
     engine = _engine()

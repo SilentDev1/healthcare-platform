@@ -440,6 +440,28 @@ class ProcedureComparisonResponse(BaseModel):
     items: list[ProcedureComparisonItem]
 
 
+class FacilityProcedureOverviewItem(BaseModel):
+    procedure_slug: str
+    procedure_name: str
+    facility_location_id: uuid.UUID
+    location_name: str | None
+    city: str
+    service_settings: list[str]
+    cash_price_min: Decimal | None
+    cash_price_max: Decimal | None
+    negotiated_price_min: Decimal | None
+    negotiated_price_max: Decimal | None
+    summary_count: int
+    latest_updated: datetime
+    source_url: str
+
+
+class FacilityProcedureOverviewResponse(BaseModel):
+    facility_id: uuid.UUID
+    procedure_count: int
+    items: list[FacilityProcedureOverviewItem]
+
+
 class PricingCoverageResponse(BaseModel):
     nh_facilities: int
     facilities_with_sources: int

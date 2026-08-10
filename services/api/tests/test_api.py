@@ -231,6 +231,14 @@ def test_phase_4_pricing_endpoints_are_filtered_and_paginated() -> None:
     assert comparison.json()["items"][0]["price_available"] is True
     facility_prices = client.get("/api/v1/facilities/00000000-0000-0000-0000-000000000001/prices")
     assert facility_prices.status_code == 200
+    overview = client.get(
+        "/api/v1/facilities/00000000-0000-0000-0000-000000000001/procedure-overview"
+    )
+    assert overview.status_code == 200
+    assert overview.json()["procedure_count"] >= 1
+    assert len(overview.json()["items"]) >= overview.json()["procedure_count"]
+    assert overview.json()["items"][0]["summary_count"] >= 1
+    assert "raw_payload" not in overview.text
     assert client.get("/api/v1/pricing/payers").status_code == 200
     assert client.get("/api/v1/pricing/plans").status_code == 200
     for path in (

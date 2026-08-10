@@ -52,6 +52,7 @@ from services.api.app.schemas import (
     DataHealthPage,
     FacilityHealthPage,
     FacilityPage,
+    FacilityProcedureOverviewResponse,
     FacilityQualityPage,
     FacilityResponse,
     FacilityScorePage,
@@ -194,8 +195,11 @@ def facilities_map_data(
 
     publishable_facilities = set(
         session.scalars(
-            select(func.distinct(FacilityProcedurePriceSummary.facility_id)).where(
-                FacilityProcedurePriceSummary.publication_status == "publishable"
+            select(func.distinct(FacilityProcedurePriceSummary.facility_id))
+            .join(SourceFile, SourceFile.id == FacilityProcedurePriceSummary.source_file_id)
+            .where(
+                FacilityProcedurePriceSummary.publication_status == "publishable",
+                SourceFile.source_url.not_like("file://%"),
             )
         )
     )
@@ -219,7 +223,11 @@ def facilities_map_data(
             session.scalar(
                 select(func.count(func.distinct(FacilityProcedurePriceSummary.procedure_id))).where(
                     FacilityProcedurePriceSummary.facility_id == facility.id,
+                    FacilityProcedurePriceSummary.facility_location_id == location.id,
                     FacilityProcedurePriceSummary.publication_status == "publishable",
+                    FacilityProcedurePriceSummary.source_file_id.in_(
+                        select(SourceFile.id).where(SourceFile.source_url.not_like("file://%"))
+                    ),
                 )
             )
             or 0
@@ -1430,6 +1438,85 @@ def procedure_comparison(
 
 
 @app.get(
+    "/api/v1/facilities/{facility_id}/procedure-overview",
+    response_model=FacilityProcedureOverviewResponse,
+    tags=["pricing"],
+)
+def facility_procedure_overview(
+    facility_id: uuid.UUID,
+    session: Annotated[Session, Depends(get_session)],
+) -> FacilityProcedureOverviewResponse:
+    facility = session.scalar(
+        select(Facility).where(Facility.id == facility_id, Facility.active.is_(True))
+    )
+    if facility is None:
+        raise HTTPException(status_code=404, detail="facility not found")
+    rows = session.execute(
+        select(FacilityProcedurePriceSummary, Procedure, SourceFile, FacilityLocation)
+        .join(Procedure, Procedure.id == FacilityProcedurePriceSummary.procedure_id)
+        .join(SourceFile, SourceFile.id == FacilityProcedurePriceSummary.source_file_id)
+        .join(
+            FacilityLocation,
+            FacilityLocation.id == FacilityProcedurePriceSummary.facility_location_id,
+        )
+        .where(
+            FacilityProcedurePriceSummary.facility_id == facility_id,
+            FacilityProcedurePriceSummary.publication_status == "publishable",
+            SourceFile.source_url.not_like("file://%"),
+            FacilityLocation.active.is_(True),
+        )
+    ).all()
+    grouped: dict[
+        tuple[uuid.UUID, uuid.UUID],
+        list[tuple[FacilityProcedurePriceSummary, Procedure, SourceFile, FacilityLocation]],
+    ] = {}
+    for summary, procedure, source, location in rows:
+        grouped.setdefault((procedure.id, location.id), []).append(
+            (summary, procedure, source, location)
+        )
+    items: list[dict[str, object]] = []
+    for summaries in grouped.values():
+        procedure = summaries[0][1]
+        location = summaries[0][3]
+        cash = [
+            value
+            for summary, *_ in summaries
+            for value in (summary.cash_price_min, summary.cash_price_max)
+            if value is not None
+        ]
+        negotiated = [
+            value
+            for summary, *_ in summaries
+            for value in (summary.negotiated_price_min, summary.negotiated_price_max)
+            if value is not None
+        ]
+        latest = max(summaries, key=lambda row: row[0].calculated_at)
+        items.append(
+            {
+                "procedure_slug": procedure.slug,
+                "procedure_name": procedure.consumer_name,
+                "facility_location_id": location.id,
+                "location_name": location.location_name,
+                "city": location.city,
+                "service_settings": sorted({row[0].service_setting for row in summaries}),
+                "cash_price_min": min(cash) if cash else None,
+                "cash_price_max": max(cash) if cash else None,
+                "negotiated_price_min": min(negotiated) if negotiated else None,
+                "negotiated_price_max": max(negotiated) if negotiated else None,
+                "summary_count": len(summaries),
+                "latest_updated": latest[0].calculated_at,
+                "source_url": latest[2].source_url,
+            }
+        )
+    items.sort(key=lambda item: (str(item["procedure_name"]), str(item["city"])))
+    return FacilityProcedureOverviewResponse(
+        facility_id=facility_id,
+        procedure_count=len({item["procedure_slug"] for item in items}),
+        items=items,
+    )
+
+
+@app.get(
     "/api/v1/facilities/{facility_id}/prices",
     response_model=PublicPriceSummaryPage,
     tags=["pricing"],
@@ -1623,6 +1710,7 @@ def facility_pricing_health(
 
 @app.get("/api/v1/pricing/coverage", response_model=PricingCoverageResponse, tags=["pricing"])
 def pricing_coverage(session: Annotated[Session, Depends(get_session)]) -> PricingCoverageResponse:
+    public_summary_source = SourceFile.source_url.not_like("file://%")
     return PricingCoverageResponse(
         nh_facilities=len(active_consumer_facility_ids(session, "NH")),
         facilities_with_sources=session.scalar(
@@ -1640,16 +1728,26 @@ def pricing_coverage(session: Annotated[Session, Depends(get_session)]) -> Prici
         )
         or 0,
         facilities_with_publishable_prices=session.scalar(
-            select(func.count(func.distinct(FacilityProcedurePriceSummary.facility_id))).where(
-                FacilityProcedurePriceSummary.publication_status == "publishable"
+            select(func.count(func.distinct(FacilityProcedurePriceSummary.facility_id)))
+            .join(SourceFile, SourceFile.id == FacilityProcedurePriceSummary.source_file_id)
+            .where(
+                FacilityProcedurePriceSummary.publication_status == "publishable",
+                public_summary_source,
             )
         )
         or 0,
         publishable_procedures=session.scalar(
-            select(func.count(func.distinct(FacilityProcedurePriceSummary.procedure_id))).where(
-                FacilityProcedurePriceSummary.publication_status == "publishable"
+            select(func.count(func.distinct(FacilityProcedurePriceSummary.procedure_id)))
+            .join(SourceFile, SourceFile.id == FacilityProcedurePriceSummary.source_file_id)
+            .where(
+                FacilityProcedurePriceSummary.publication_status == "publishable",
+                public_summary_source,
             )
         )
         or 0,
-        last_updated=session.scalar(select(func.max(FacilityProcedurePriceSummary.calculated_at))),
+        last_updated=session.scalar(
+            select(func.max(FacilityProcedurePriceSummary.calculated_at))
+            .join(SourceFile, SourceFile.id == FacilityProcedurePriceSummary.source_file_id)
+            .where(public_summary_source)
+        ),
     )

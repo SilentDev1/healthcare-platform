@@ -32,6 +32,7 @@ SYNONYMS: dict[str, list[str]] = {
     "ekg": ["electrocardiogram", "ecg"],
     "ecg": ["electrocardiogram", "ekg"],
     "mri": ["magnetic resonance imaging"],
+    "knee scan": ["knee mri", "mri knee"],
     "ct scan": ["computed tomography", "cat scan"],
     "cat scan": ["computed tomography", "ct scan"],
     "x-ray": ["radiograph", "x ray", "xray"],
@@ -220,6 +221,13 @@ def search(
 ) -> list[SearchResult]:
     started = time.perf_counter()
     normalized = normalize_name(query)
+    query_lower = query.lower().strip()
+    synonym_targets = SYNONYMS.get(query_lower, [])
+    if not synonym_targets:
+        for syn_key, syn_values in SYNONYMS.items():
+            if query_lower in syn_key or syn_key in query_lower:
+                synonym_targets = syn_values
+                break
     statement = select(SearchDocument).where(SearchDocument.active.is_(True))
     if entity_type:
         statement = statement.where(SearchDocument.entity_type == entity_type)
@@ -230,9 +238,10 @@ def search(
     if postal_code:
         statement = statement.where(SearchDocument.postal_code == postal_code)
     if session.bind and session.bind.dialect.name == "postgresql":
+        searchable_terms = [normalized, *(normalize_name(term) for term in synonym_targets)]
         statement = statement.where(
             or_(
-                SearchDocument.normalized_text.ilike(f"%{normalized}%"),
+                *(SearchDocument.normalized_text.ilike(f"%{term}%") for term in searchable_terms),
                 func.similarity(SearchDocument.normalized_text, normalized) >= 0.15,
                 func.to_tsvector("english", SearchDocument.normalized_text).op("@@")(
                     func.plainto_tsquery("english", normalized)
@@ -283,14 +292,6 @@ def search(
                 )
             )
     # Synonym expansion: check if query matches a synonym and add results for expanded terms
-    query_lower = query.lower().strip()
-    synonym_targets = SYNONYMS.get(query_lower, [])
-    if not synonym_targets:
-        # Check if any synonym key partially matches
-        for syn_key, syn_values in SYNONYMS.items():
-            if query_lower in syn_key or syn_key in query_lower:
-                synonym_targets = syn_values
-                break
     if synonym_targets:
         seen_ids = {(r.entity_type, r.entity_id) for r in results}
         for synonym_term in synonym_targets:
