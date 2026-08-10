@@ -6,6 +6,7 @@ from pathlib import Path
 from collectors.cms_quality.config import quality_settings
 from collectors.cms_quality.importer import run_quality_imports
 from packages.database import session_factory
+from packages.runtime.safety import require_fixture_safe
 from services.api.app.logging import configure_logging
 
 
@@ -15,6 +16,7 @@ def main() -> None:
     args = parser.parse_args()
     fixtures = None
     if args.fixtures_dir:
+        require_fixture_safe("CMS quality fixture import", args.fixtures_dir)
         fixtures = {
             dataset.key: args.fixtures_dir / f"{dataset.key}.csv"
             for dataset in quality_settings.datasets()

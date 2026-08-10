@@ -4,9 +4,11 @@ import argparse
 from pathlib import Path
 
 from collectors.hospital_prices.fixture_generator import generate_cms_wide_fixture
+from packages.runtime.safety import require_fixture_safe
 
 
 def main() -> None:
+    require_fixture_safe("pricing fixture generation")
     parser = argparse.ArgumentParser(description="Generate synthetic CMS 3.0 wide CSV fixture")
     parser.add_argument("--rows", type=int, default=100_000, help="Number of rows")
     parser.add_argument("--payers", type=int, default=10, help="Number of payers")

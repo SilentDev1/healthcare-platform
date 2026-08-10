@@ -1,0 +1,14 @@
+.git
+.github
+.env*
+.venv
+node_modules
+**/.next
+**/__pycache__
+data/raw
+data/rejected
+data/generated
+*.log
+*.sql
+*.dump
+*.tfstate*

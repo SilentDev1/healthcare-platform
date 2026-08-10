@@ -1,0 +1,27 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file
+      - infrastructure/docker/web.Dockerfile
+      - --build-arg
+      - NEXT_PUBLIC_API_URL=${_API_PUBLIC_URL}
+      - --build-arg
+      - NEXT_PUBLIC_SITE_URL=${_PUBLIC_APP_URL}
+      - --build-arg
+      - APP_ENV=beta
+      - --build-arg
+      - SEO_INDEXING_ENABLED=false
+      - --tag
+      - ${_IMAGE_URI}:${_IMAGE_TAG}
+      - .
+images:
+  - ${_IMAGE_URI}:${_IMAGE_TAG}
+options:
+  logging: CLOUD_LOGGING_ONLY
+substitutions:
+  _IMAGE_URI: us-east4-docker.pkg.dev/carecompare-development/carevero/web
+  _IMAGE_TAG: dev
+  _API_PUBLIC_URL: https://replace-before-build.invalid
+  _PUBLIC_APP_URL: https://replace-before-build.invalid
+timeout: 1200s

@@ -5,6 +5,12 @@ COPY pyproject.toml uv.lock* ./
 RUN uv sync --frozen --no-dev
 COPY packages packages
 COPY services services
+COPY collectors collectors
+COPY scripts scripts
+COPY data/fixtures/nh_hospital_inventory.json data/fixtures/nh_hospital_inventory.json
+RUN useradd --create-home --uid 10001 carevero && chown -R carevero:carevero /app
+USER carevero
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONUNBUFFERED=1 PORT=8080
+EXPOSE 8080
 CMD ["uvicorn", "services.api.app.main:app", "--host", "0.0.0.0", "--port", "8080"]
-

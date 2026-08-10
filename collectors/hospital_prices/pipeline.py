@@ -13,6 +13,7 @@ from collectors.hospital_prices.importer import PriceImportSummary, import_price
 from collectors.hospital_prices.projections import evaluate_pricing_health, rebuild_price_summaries
 from collectors.hospital_prices.self_healing import check_source_health
 from packages.database import Facility, FacilityLocation, FacilityPriceSource
+from packages.runtime.safety import require_fixture_safe
 from scripts.seed_price_mappings import seed_price_mappings
 
 logger = logging.getLogger(__name__)
@@ -38,6 +39,7 @@ class PricingPipelineSummary:
 def run_fixture_pipeline(
     session: Session, fixtures_dir: Path = Path("data/fixtures/hospital_prices")
 ) -> PricingPipelineSummary:
+    require_fixture_safe("hospital price fixture pipeline", fixtures_dir)
     seed_price_mappings(session)
     session.commit()
     summary = PricingPipelineSummary()

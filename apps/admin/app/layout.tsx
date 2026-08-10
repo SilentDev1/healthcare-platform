@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./styles.css";
 
-export const metadata: Metadata = { title: "CareCompare Admin" };
+export const metadata: Metadata = {
+  title: "Carevero Admin",
+  robots: { index: false, follow: false },
+};
 
 export default function Layout({
   children,
@@ -11,7 +14,7 @@ export default function Layout({
     <html lang="en">
       <body>
         <header>
-          <Link href="/">CareCompare operations</Link>
+          <Link href="/">Carevero operations</Link>
           <nav aria-label="Admin navigation">
             <Link href="/">Dashboard</Link>
             <Link href="/facilities">Facilities</Link>

@@ -1,15 +1,18 @@
 import time
 import uuid
+from collections import defaultdict, deque
 from collections.abc import Awaitable, Callable
 from typing import Annotated, Any
 
 import structlog
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy import case, desc, func, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.sql.elements import ColumnElement
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from collectors.hospital_prices.scope import active_consumer_facility_ids
 from packages.database import (
@@ -81,17 +84,39 @@ from services.api.app.schemas import (
 from services.api.app.settings import api_settings
 
 configure_logging(api_settings.log_level)
-logger = structlog.get_logger()
+logger = structlog.get_logger(service="api", environment=api_settings.app_env.value)
 app = FastAPI(title=api_settings.api_title, version=api_settings.api_version)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=api_settings.hosts)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        origin.strip() for origin in api_settings.cors_origins.split(",") if origin.strip()
-    ],
+    allow_origins=[origin for origin in api_settings.origins],
     allow_credentials=False,
     allow_methods=["GET", "OPTIONS"],
     allow_headers=["*"],
 )
+
+_rate_windows: dict[str, deque[float]] = defaultdict(deque)
+_RATE_LIMITED_PREFIXES = (
+    "/api/v1/search",
+    "/api/v1/procedures/",
+    "/api/v1/facilities/map-data",
+    "/api/v1/pricing/",
+)
+
+
+def _client_key(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "").split(",", 1)[0].strip()
+    return forwarded or (request.client.host if request.client else "unknown")
+
+
+def _security_headers(response: Response) -> None:
+    response.headers["x-content-type-options"] = "nosniff"
+    response.headers["x-frame-options"] = "DENY"
+    response.headers["referrer-policy"] = "strict-origin-when-cross-origin"
+    response.headers["permissions-policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["content-security-policy"] = "default-src 'none'; frame-ancestors 'none'"
+    if api_settings.is_deployed:
+        response.headers["strict-transport-security"] = "max-age=31536000; includeSubDomains"
 
 
 @app.middleware("http")
@@ -100,14 +125,66 @@ async def request_logging(
 ) -> Response:
     started = time.perf_counter()
     request_id = request.headers.get("x-request-id", str(uuid.uuid4()))
+    if len(request.scope.get("query_string", b"")) > api_settings.max_query_string_bytes:
+        return JSONResponse(
+            status_code=414,
+            content={"detail": "query string too large", "request_id": request_id},
+            headers={"x-request-id": request_id},
+        )
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > api_settings.max_request_body_bytes:
+        return JSONResponse(
+            status_code=413,
+            content={"detail": "request body too large", "request_id": request_id},
+            headers={"x-request-id": request_id},
+        )
+    if request.url.path.startswith("/api/v1/admin"):
+        supplied = request.headers.get("x-carevero-admin-key")
+        if not api_settings.admin_api_enabled:
+            return JSONResponse(status_code=404, content={"detail": "not found"})
+        if api_settings.admin_shared_secret and supplied != api_settings.admin_shared_secret:
+            return JSONResponse(status_code=404, content={"detail": "not found"})
+    if not api_settings.public_pricing_enabled and (
+        "/prices" in request.url.path
+        or "/comparison" in request.url.path
+        or "/procedure-overview" in request.url.path
+        or request.url.path.startswith("/api/v1/pricing")
+    ):
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "pricing is temporarily unavailable", "request_id": request_id},
+            headers={"x-request-id": request_id, "retry-after": "300"},
+        )
+    if request.method == "GET" and request.url.path.startswith(_RATE_LIMITED_PREFIXES):
+        now = time.monotonic()
+        key = f"{_client_key(request)}:{request.url.path}"
+        window = _rate_windows[key]
+        cutoff = now - api_settings.rate_limit_window_seconds
+        while window and window[0] < cutoff:
+            window.popleft()
+        if len(window) >= api_settings.rate_limit_requests:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "request rate limit exceeded", "request_id": request_id},
+                headers={"x-request-id": request_id, "retry-after": "60"},
+            )
+        window.append(now)
     try:
         response = await call_next(request)
-    except Exception:
+    except Exception as exc:
         logger.exception(
-            "request_failed", method=request.method, path=request.url.path, request_id=request_id
+            "request_failed",
+            method=request.method,
+            path=request.url.path,
+            request_id=request_id,
+            error_category=type(exc).__name__,
         )
-        raise
+        response = JSONResponse(
+            status_code=500,
+            content={"detail": "internal server error", "request_id": request_id},
+        )
     response.headers["x-request-id"] = request_id
+    _security_headers(response)
     logger.info(
         "request_completed",
         method=request.method,
@@ -122,6 +199,16 @@ async def request_logging(
 @app.get("/health", response_model=StatusResponse, tags=["system"])
 def health() -> StatusResponse:
     return StatusResponse(status="ok")
+
+
+@app.get("/version", tags=["system"])
+def version() -> dict[str, str]:
+    return {
+        "service": "api",
+        "version": api_settings.api_version,
+        "build": api_settings.app_version,
+        "environment": api_settings.app_env.value,
+    }
 
 
 @app.get("/ready", response_model=StatusResponse, tags=["system"])

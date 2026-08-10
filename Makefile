@@ -1,4 +1,4 @@
-.PHONY: setup dev db-up db-down migrate test lint typecheck import-cms-hospitals import-cms-quality import-nppes-organizations seed-facility-identity seed-procedure-catalog rebuild-search-index evaluate-data-health discover-hospital-price-sources download-hospital-price-files import-hospital-prices normalize-hospital-prices map-price-procedures evaluate-pricing-health rebuild-price-summaries pricing-pipeline api admin web build verify-phase-2 verify-phase-3 verify-phase-4 benchmark-pricing-import generate-large-pricing-fixture resume-price-import restart-price-import verify-phase-4-1 pipeline-discover-nh pipeline-download-nh pipeline-import-nh pipeline-postprocess-nh pipeline-full-nh audit-nh-hospitals statewide-scorecard procedure-coverage geocode-nh verify-phase-4-2 enhanced-scorecard benchmark-coverage final-classification discover-pricing import-pricing verify-coverage
+.PHONY: setup dev db-up db-down migrate test lint typecheck build beta-gate migrate-deployment beta-data-smoke secret-scan import-cms-hospitals import-cms-quality import-nppes-organizations seed-facility-identity seed-procedure-catalog rebuild-search-index evaluate-data-health discover-hospital-price-sources download-hospital-price-files import-hospital-prices normalize-hospital-prices map-price-procedures evaluate-pricing-health rebuild-price-summaries pricing-pipeline api admin web verify-phase-2 verify-phase-3 verify-phase-4 benchmark-pricing-import generate-large-pricing-fixture resume-price-import restart-price-import verify-phase-4-1 pipeline-discover-nh pipeline-download-nh pipeline-import-nh pipeline-postprocess-nh pipeline-full-nh audit-nh-hospitals statewide-scorecard procedure-coverage geocode-nh verify-phase-4-2 enhanced-scorecard benchmark-coverage final-classification discover-pricing import-pricing verify-coverage
 
 setup:
 	command -v uv >/dev/null || (echo "Install uv: https://docs.astral.sh/uv/" && exit 1)
@@ -33,6 +33,18 @@ typecheck:
 
 build:
 	npm run build
+
+secret-scan:
+	uv run python -m scripts.secret_scan
+
+beta-data-smoke:
+	uv run python -m scripts.beta_data_smoke
+
+migrate-deployment:
+	uv run python -m scripts.migrate_deployment
+
+beta-gate: test lint typecheck build secret-scan
+	npm audit --audit-level=high
 
 import-cms-hospitals:
 	uv run python -m collectors.cms_hospitals

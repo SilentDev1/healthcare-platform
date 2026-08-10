@@ -1,0 +1,17 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file
+      - infrastructure/docker/api.Dockerfile
+      - --tag
+      - ${_IMAGE_URI}:${_IMAGE_TAG}
+      - .
+images:
+  - ${_IMAGE_URI}:${_IMAGE_TAG}
+options:
+  logging: CLOUD_LOGGING_ONLY
+substitutions:
+  _IMAGE_URI: us-east4-docker.pkg.dev/carecompare-development/carevero/api
+  _IMAGE_TAG: dev
+timeout: 1200s

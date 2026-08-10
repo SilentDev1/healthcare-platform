@@ -23,7 +23,8 @@ from packages.database.models import ImportStatus, SourceStatus
 from packages.database.session import get_session
 from packages.search import rebuild_index
 from scripts.seed_procedure_catalog import seed_catalog
-from services.api.app.main import app
+from services.api.app.main import _rate_windows, app
+from services.api.app.settings import api_settings
 
 engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
 TestingSession = sessionmaker(bind=engine, expire_on_commit=False)
@@ -39,6 +40,7 @@ client = TestClient(app)
 
 
 def setup_function() -> None:
+    _rate_windows.clear()
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     with TestingSession.begin() as session:
@@ -339,3 +341,44 @@ def test_phase_4_2_price_filtering() -> None:
         "/api/v1/procedures/mri-brain-without-contrast/prices?state=NH&billing_class=facility"
     )
     assert prices_class.status_code == 200
+
+
+def test_operational_headers_and_version_are_safe() -> None:
+    response = client.get("/health", headers={"x-request-id": "qa-request"})
+    assert response.status_code == 200
+    assert response.headers["x-request-id"] == "qa-request"
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["x-frame-options"] == "DENY"
+    version = client.get("/version").json()
+    assert set(version) == {"service", "version", "build", "environment"}
+
+
+def test_admin_can_be_removed_from_public_service(monkeypatch: object) -> None:
+    from pytest import MonkeyPatch
+
+    assert isinstance(monkeypatch, MonkeyPatch)
+    monkeypatch.setattr(api_settings, "admin_api_enabled", False)
+    response = client.get("/api/v1/admin/dashboard")
+    assert response.status_code == 404
+
+
+def test_public_pricing_emergency_disable(monkeypatch: object) -> None:
+    from pytest import MonkeyPatch
+
+    assert isinstance(monkeypatch, MonkeyPatch)
+    monkeypatch.setattr(api_settings, "public_pricing_enabled", False)
+    response = client.get("/api/v1/pricing/coverage")
+    assert response.status_code == 503
+    assert response.json()["detail"] == "pricing is temporarily unavailable"
+
+
+def test_rate_limit_rejects_abuse_without_affecting_health(monkeypatch: object) -> None:
+    from pytest import MonkeyPatch
+
+    assert isinstance(monkeypatch, MonkeyPatch)
+    monkeypatch.setattr(api_settings, "rate_limit_requests", 1)
+    first = client.get("/api/v1/search?q=MRI")
+    second = client.get("/api/v1/search?q=MRI")
+    assert first.status_code == 200
+    assert second.status_code == 429
+    assert client.get("/health").status_code == 200

@@ -41,18 +41,18 @@ have at least one official-source publishable summary.
 
 ## Automated verification
 
-| Check | Result |
-| --- | --- |
-| Ruff formatting and lint | PASS — 127 files formatted, no lint findings |
-| strict MyPy | PASS — 119 source files |
-| pytest | PASS — 89 tests, 64% aggregate measured coverage |
-| ESLint | PASS — public and admin |
-| Prettier | PASS |
-| TypeScript | PASS — all workspaces |
-| Vitest | PASS — 16 tests across 11 files/workspaces |
-| Public production build | PASS |
-| Admin production build | PASS |
-| npm audit | PASS — 0 vulnerabilities |
+| Check                    | Result                                           |
+| ------------------------ | ------------------------------------------------ |
+| Ruff formatting and lint | PASS — 127 files formatted, no lint findings     |
+| strict MyPy              | PASS — 119 source files                          |
+| pytest                   | PASS — 89 tests, 64% aggregate measured coverage |
+| ESLint                   | PASS — public and admin                          |
+| Prettier                 | PASS                                             |
+| TypeScript               | PASS — all workspaces                            |
+| Vitest                   | PASS — 16 tests across 11 files/workspaces       |
+| Public production build  | PASS                                             |
+| Admin production build   | PASS                                             |
+| npm audit                | PASS — 0 vulnerabilities                         |
 
 ## Accessibility and trust assessment
 

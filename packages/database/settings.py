@@ -1,11 +1,8 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from packages.runtime import runtime_settings
 
 
-class DatabaseSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-    database_url: str = (
-        "postgresql+psycopg://carecompare:carecompare_local_only@localhost:5432/carecompare"
-    )
+class DatabaseSettings:
+    database_url = runtime_settings.database_url
 
 
 database_settings = DatabaseSettings()

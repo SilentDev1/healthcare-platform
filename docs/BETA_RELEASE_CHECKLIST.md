@@ -1,0 +1,26 @@
+# Executable private-beta release checklist
+
+- [ ] Owner explicitly authorizes Phase 4.6 deployment and approved monthly budget
+- [ ] Cloud project, billing, region, canonical domain, feedback email, and noindex posture confirmed
+- [ ] `main` clean/synchronized; immutable SHA and release record selected
+- [ ] Manual GitHub beta environment approval and release-gate workflow pass
+- [ ] Python tests/coverage, Ruff, strict MyPy pass
+- [ ] ESLint, Prettier, TypeScript, Vitest, public/admin builds pass
+- [ ] npm audit and tracked-file secret scan pass
+- [ ] API/web/job container builds pass and images are SHA/digest identified
+- [ ] Terraform format/validate/plan reviewed; remote state and no secret values confirmed
+- [ ] `.env.beta.example` contract validates; CORS/hosts/HTTPS/security headers reviewed
+- [ ] Admin app absent publicly; admin API returns 404 without protected access
+- [ ] Cloud SQL separate/non-public; connection cap and credentials verified
+- [ ] Latest backup successful; manual pre-migration backup ID recorded
+- [ ] Active imports = 0; dedicated migration succeeds and reaches head
+- [ ] Official-only initial DB process complete; no local paths/test sources/credentials promoted
+- [ ] Private versioned source bucket, generic keys, lifecycle, checksum metadata verified
+- [ ] Refresh job isolated, state-scoped, locked, bounded, resumable; scheduler initially paused
+- [ ] Uptime checks, alerts, JSON logs, error reporting, retention, and budget alerts verified
+- [ ] Privacy, Terms, disclaimers, About, How It Works, feedback route all pass; legal review flagged
+- [ ] Beta noindex is intentional; canonical/DNS/TLS plan reviewed without premature changes
+- [ ] API/web revision smoke, data smoke, location hierarchy, insurance wording pass
+- [ ] 10–25 user load and abuse-rate test pass; DB pool/slow queries reviewed
+- [ ] Rollback revisions, emergency pricing disable, scheduler pause, incident owners verified
+- [ ] Traffic enablement explicitly approved and post-cutover smoke/log review complete

@@ -21,6 +21,10 @@ export const metadata: Metadata = {
 export default function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const betaMode = process.env.BETA_MODE === "true";
+  const feedbackEmail = process.env.BETA_FEEDBACK_EMAIL;
+  const feedbackEnabled =
+    process.env.FEEDBACK_ENABLED === "true" && feedbackEmail;
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body>
@@ -33,6 +37,7 @@ export default function Layout({
               +
             </span>
             {brand.logoText}
+            {betaMode && <span className="beta-badge">Private Beta</span>}
           </Link>
           <nav aria-label="Main navigation">
             <Link href="/search">Find care</Link>
@@ -52,7 +57,24 @@ export default function Layout({
                 <Link href="/how-it-works">How it works</Link>
                 <Link href="/hospitals">Hospitals</Link>
                 <Link href="/procedures">Procedures</Link>
+                <Link href="/privacy">Privacy</Link>
+                <Link href="/terms">Terms &amp; disclaimers</Link>
+                {feedbackEnabled && (
+                  <a
+                    href={`mailto:${feedbackEmail}?subject=Carevero beta feedback&body=Please don't include private medical information.%0A%0APage: `}
+                  >
+                    Send beta feedback
+                  </a>
+                )}
               </nav>
+              {betaMode && (
+                <p>Carevero is in beta and expanding hospital coverage.</p>
+              )}
+              {feedbackEnabled && (
+                <p>
+                  Please don’t include private medical information in feedback.
+                </p>
+              )}
             </div>
             <p>
               Published hospital prices are estimates for comparison, not a

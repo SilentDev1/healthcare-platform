@@ -1,0 +1,46 @@
+name: Beta release gate
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Exact reviewed Git SHA
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    environment: beta
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ inputs.release_sha }}" }
+      - uses: astral-sh/setup-uv@v6
+        with: { version: "0.8.13", enable-cache: true }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: npm }
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "1.9.8" }
+      - run: uv sync --frozen --all-groups && npm ci
+      - run: make beta-gate
+      - run: docker build -f infrastructure/docker/api.Dockerfile -t carevero-api:${{ inputs.release_sha }} .
+      - run: docker build -f infrastructure/docker/job.Dockerfile -t carevero-job:${{ inputs.release_sha }} .
+      - run: docker build -f infrastructure/docker/web.Dockerfile --build-arg NEXT_PUBLIC_API_URL=https://api-beta.example.invalid --build-arg NEXT_PUBLIC_SITE_URL=https://beta.example.invalid -t carevero-web:${{ inputs.release_sha }} .
+      - working-directory: infrastructure/terraform
+        run: terraform fmt -check -recursive && terraform init -backend=false && terraform validate
+      - name: Validate beta environment contract
+        env:
+          APP_ENV: beta
+          PUBLIC_APP_URL: https://beta.example.invalid
+          API_PUBLIC_URL: https://api-beta.example.invalid
+          DATABASE_URL: postgresql+psycopg://user:placeholder@db.example.invalid/carevero
+          ALLOWED_ORIGINS: https://beta.example.invalid
+          TRUSTED_HOSTS: beta.example.invalid,api-beta.example.invalid
+          SOURCE_STORAGE_BUCKET: carevero-beta-example
+          ADMIN_API_ENABLED: "false"
+          SEO_INDEXING_ENABLED: "false"
+        run: uv run python -m scripts.verify_environment
+      - run: echo "Dry run only. No images pushed and no infrastructure applied."

@@ -24,6 +24,7 @@ jobs:
       - run: uv run mypy services collectors packages scripts
       - run: uv run pytest --cov=services --cov=collectors --cov=packages
       - run: uv run alembic upgrade head --sql > /tmp/migration.sql
+      - run: uv run python -m scripts.secret_scan
 
   typescript:
     runs-on: ubuntu-latest
@@ -39,3 +40,4 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - run: npm audit --audit-level=high
