@@ -16,13 +16,12 @@ function SearchContent() {
   const [loading, setLoading] = useState(Boolean(q));
   const [error, setError] = useState(false);
   useEffect(() => {
-    if (q.length < 2) {
-      setLoading(false);
-      return;
-    }
+    if (q.length < 2) return;
     const controller = new AbortController();
-    setLoading(true);
-    setError(false);
+    const reset = setTimeout(() => {
+      setLoading(true);
+      setError(false);
+    }, 0);
     const query = new URLSearchParams({ q });
     if (/^\d{5}$/.test(location)) query.set("postal_code", location);
     fetch(`${API_URL}/api/v1/search?${query}`, { signal: controller.signal })
@@ -35,7 +34,10 @@ function SearchContent() {
         if (e.name !== "AbortError") setError(true);
       })
       .finally(() => setLoading(false));
-    return () => controller.abort();
+    return () => {
+      clearTimeout(reset);
+      controller.abort();
+    };
   }, [q, location]);
   return (
     <main>

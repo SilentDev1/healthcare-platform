@@ -26,7 +26,6 @@ export function CareSearch({
   useEffect(() => {
     clearTimeout(timer.current);
     if (care.trim().length < 2) {
-      setItems([]);
       return;
     }
     timer.current = setTimeout(async () => {
@@ -79,7 +78,12 @@ export function CareSearch({
           id={`${listId}-care`}
           value={care}
           onChange={(e) => {
-            setCare(e.target.value);
+            const nextCare = e.target.value;
+            setCare(nextCare);
+            if (nextCare.trim().length < 2) {
+              setItems([]);
+              setOpen(false);
+            }
             setActive(-1);
           }}
           onKeyDown={keyDown}

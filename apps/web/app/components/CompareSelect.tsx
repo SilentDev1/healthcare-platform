@@ -1,15 +1,15 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 export function CompareSelect({ id, name }: { id: string; name: string }) {
-  const [selected, setSelected] = useState<string[]>([]);
-  useEffect(() => {
+  const [selected, setSelected] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
     try {
-      setSelected(
-        JSON.parse(sessionStorage.getItem("compareFacilities") ?? "[]"),
-      );
-    } catch {}
-  }, []);
+      return JSON.parse(sessionStorage.getItem("compareFacilities") ?? "[]");
+    } catch {
+      return [];
+    }
+  });
   const active = selected.includes(id);
   function toggle() {
     const next = active

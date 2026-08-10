@@ -5,12 +5,12 @@ and critical-access hospitals; the two state psychiatric hospitals remain explic
 
 ## Outcome
 
-| Metric | Phase 4.2.1 | Phase 4.2.2 | Phase 4.2.3 |
-|---|---:|---:|---:|
-| Active consumer hospitals | 26 | 26 | 26 |
-| Publishable hospitals | 6 | 12 | 12 |
-| Normalized records | 361,000+ | 1,197,796 | 1,208,694 |
-| Publishable summaries | — | 4,173 | 4,173 |
+| Metric                    | Phase 4.2.1 | Phase 4.2.2 | Phase 4.2.3 |
+| ------------------------- | ----------: | ----------: | ----------: |
+| Active consumer hospitals |          26 |          26 |          26 |
+| Publishable hospitals     |           6 |          12 |          12 |
+| Normalized records        |    361,000+ |   1,197,796 |   1,208,694 |
+| Publishable summaries     |           — |       4,173 |       4,173 |
 
 Phase 4.2.3 added three verified official sources. Exeter, Upper Connecticut Valley, and
 Weeks were downloaded; Exeter and UCVH produced 10,898 additional normalized records.
@@ -20,34 +20,34 @@ but it is concentrated in a minority of hospitals and is not statewide facility 
 
 ## Complete active-hospital matrix
 
-| Hospital | CCN | Classification | Exact state/blocker |
-|---|---|---|---|
-| Alice Peck Day Memorial Hospital | 301305 | PUBLISHABLE | 7 publishable summaries |
-| Androscoggin Valley Hospital | 301310 | PUBLISHABLE | 5 publishable summaries |
-| Catholic Medical Center | 300034 | PUBLISHABLE | 2 publishable summaries |
-| Cheshire Medical Center | 300019 | PUBLISHABLE | 2 publishable summaries |
-| Concord Hospital | 300001 | PUBLISHABLE | 624 publishable summaries |
-| Concord Hospital–Franklin | 301306 | PUBLISHABLE | 645 publishable summaries |
-| Concord Hospital–Laconia | 300005 | SOURCE_FOUND_DOWNLOAD_FAILED | Three discovered entries; none has a downloaded source file |
-| Cottage Hospital | 301301 | SOURCE_NOT_FOUND | Official page exposes old chargemaster/price-transparency content, but no current verified MRF was captured |
-| Elliot Hospital | 300012 | SOURCE_FOUND_DOWNLOAD_FAILED | Stored source is the Southern NH landing page, not an MRF |
-| Exeter Hospital | 300023 | PARSED_NOT_PUBLISHABLE | Official BILH-linked CMS 3.0 JSON; 5,925 records, zero reviewed procedure mappings |
-| Frisbie Memorial Hospital | 300014 | PUBLISHABLE | 974 publishable summaries |
-| Huggins Hospital | 301312 | SOURCE_FOUND_DOWNLOAD_FAILED | Stored URL is an HTML chargemaster landing page |
-| Littleton Regional Healthcare | 301302 | PARSED_NOT_PUBLISHABLE | 20,586 legacy/CDM-dominant records; mapping score 0.74% |
-| Mary Hitchcock Memorial Hospital | 300003 | SOURCE_FOUND_DOWNLOAD_FAILED | Only fixture `file://` entries are stored; no production MRF assigned |
-| Memorial Hospital, The | 301307 | PUBLISHABLE | 128 publishable summaries |
-| Monadnock Community Hospital | 301309 | SOURCE_NOT_FOUND | Official site links a consumer estimator and insurer TiC directory, not an accepted hospital MRF |
-| New London Hospital | 301304 | SOURCE_FOUND_DOWNLOAD_FAILED | Only fixture `file://` entries are stored; no production MRF assigned |
-| Parkland Medical Center | 300017 | PUBLISHABLE | 866 publishable summaries |
-| Portsmouth Regional Hospital | 300029 | PUBLISHABLE | 853 publishable summaries |
-| Southern NH Medical Center | 300020 | SOURCE_FOUND_DOWNLOAD_FAILED | Stored URL is its HTML price-transparency landing page |
-| Speare Memorial Hospital | 301311 | SOURCE_FOUND_DOWNLOAD_FAILED | Stored URL is an unrelated 340B article, not an MRF |
-| St Joseph Hospital | 300011 | PUBLISHABLE | 23 publishable summaries |
-| Upper Connecticut Valley Hospital | 301300 | PARSED_NOT_PUBLISHABLE | Official CMS 3.0 CSV; 4,973 records, zero reviewed procedure mappings |
-| Valley Regional Hospital | 301308 | SOURCE_NOT_FOUND | No verified current MRF captured from the official/Dartmouth system pages |
-| Weeks Medical Center | 301303 | DOWNLOADED_NOT_PARSED | Official CMS 3.0 CSV downloaded; the latest database attempt still has zero records |
-| Wentworth-Douglass Hospital | 300018 | PUBLISHABLE | 44 publishable summaries |
+| Hospital                          | CCN    | Classification               | Exact state/blocker                                                                                         |
+| --------------------------------- | ------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Alice Peck Day Memorial Hospital  | 301305 | PUBLISHABLE                  | 7 publishable summaries                                                                                     |
+| Androscoggin Valley Hospital      | 301310 | PUBLISHABLE                  | 5 publishable summaries                                                                                     |
+| Catholic Medical Center           | 300034 | PUBLISHABLE                  | 2 publishable summaries                                                                                     |
+| Cheshire Medical Center           | 300019 | PUBLISHABLE                  | 2 publishable summaries                                                                                     |
+| Concord Hospital                  | 300001 | PUBLISHABLE                  | 624 publishable summaries                                                                                   |
+| Concord Hospital–Franklin         | 301306 | PUBLISHABLE                  | 645 publishable summaries                                                                                   |
+| Concord Hospital–Laconia          | 300005 | SOURCE_FOUND_DOWNLOAD_FAILED | Three discovered entries; none has a downloaded source file                                                 |
+| Cottage Hospital                  | 301301 | SOURCE_NOT_FOUND             | Official page exposes old chargemaster/price-transparency content, but no current verified MRF was captured |
+| Elliot Hospital                   | 300012 | SOURCE_FOUND_DOWNLOAD_FAILED | Stored source is the Southern NH landing page, not an MRF                                                   |
+| Exeter Hospital                   | 300023 | PARSED_NOT_PUBLISHABLE       | Official BILH-linked CMS 3.0 JSON; 5,925 records, zero reviewed procedure mappings                          |
+| Frisbie Memorial Hospital         | 300014 | PUBLISHABLE                  | 974 publishable summaries                                                                                   |
+| Huggins Hospital                  | 301312 | SOURCE_FOUND_DOWNLOAD_FAILED | Stored URL is an HTML chargemaster landing page                                                             |
+| Littleton Regional Healthcare     | 301302 | PARSED_NOT_PUBLISHABLE       | 20,586 legacy/CDM-dominant records; mapping score 0.74%                                                     |
+| Mary Hitchcock Memorial Hospital  | 300003 | SOURCE_FOUND_DOWNLOAD_FAILED | Only fixture `file://` entries are stored; no production MRF assigned                                       |
+| Memorial Hospital, The            | 301307 | PUBLISHABLE                  | 128 publishable summaries                                                                                   |
+| Monadnock Community Hospital      | 301309 | SOURCE_NOT_FOUND             | Official site links a consumer estimator and insurer TiC directory, not an accepted hospital MRF            |
+| New London Hospital               | 301304 | SOURCE_FOUND_DOWNLOAD_FAILED | Only fixture `file://` entries are stored; no production MRF assigned                                       |
+| Parkland Medical Center           | 300017 | PUBLISHABLE                  | 866 publishable summaries                                                                                   |
+| Portsmouth Regional Hospital      | 300029 | PUBLISHABLE                  | 853 publishable summaries                                                                                   |
+| Southern NH Medical Center        | 300020 | SOURCE_FOUND_DOWNLOAD_FAILED | Stored URL is its HTML price-transparency landing page                                                      |
+| Speare Memorial Hospital          | 301311 | SOURCE_FOUND_DOWNLOAD_FAILED | Stored URL is an unrelated 340B article, not an MRF                                                         |
+| St Joseph Hospital                | 300011 | PUBLISHABLE                  | 23 publishable summaries                                                                                    |
+| Upper Connecticut Valley Hospital | 301300 | PARSED_NOT_PUBLISHABLE       | Official CMS 3.0 CSV; 4,973 records, zero reviewed procedure mappings                                       |
+| Valley Regional Hospital          | 301308 | SOURCE_NOT_FOUND             | No verified current MRF captured from the official/Dartmouth system pages                                   |
+| Weeks Medical Center              | 301303 | DOWNLOADED_NOT_PARSED        | Official CMS 3.0 CSV downloaded; the latest database attempt still has zero records                         |
+| Wentworth-Douglass Hospital       | 300018 | PUBLISHABLE                  | 44 publishable summaries                                                                                    |
 
 Hampstead Hospital (CCN 304001) and New Hampshire Hospital (CCN 304000) are excluded
 psychiatric facilities and are not part of the 26-hospital consumer denominator.

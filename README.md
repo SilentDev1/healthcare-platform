@@ -7,18 +7,18 @@ dashboard, and FastAPI backend — all backed by PostgreSQL 17 and Alembic migra
 
 ## Current status (Phase 4.2.2)
 
-| Metric                                 | Value            |
-| -------------------------------------- | ---------------- |
-| NH facilities in database              | 28               |
-| Facilities with discovered MRF sources | 22 (79%)         |
-| Facilities with downloaded files       | 13 (46%)         |
-| Facilities with parsed records         | 13 (46%)         |
-| Facilities with publishable pricing    | 12 (43%)         |
-| Consumer procedures in catalog         | 50               |
-| Total price records                    | 1,197,796        |
-| Publishable summaries                  | 4,173            |
-| Average pricing health score           | 49.07            |
-| Safety invariants                      | All clear        |
+| Metric                                 | Value     |
+| -------------------------------------- | --------- |
+| NH facilities in database              | 28        |
+| Facilities with discovered MRF sources | 22 (79%)  |
+| Facilities with downloaded files       | 13 (46%)  |
+| Facilities with parsed records         | 13 (46%)  |
+| Facilities with publishable pricing    | 12 (43%)  |
+| Consumer procedures in catalog         | 50        |
+| Total price records                    | 1,197,796 |
+| Publishable summaries                  | 4,173     |
+| Average pricing health score           | 49.07     |
+| Safety invariants                      | All clear |
 
 Phase 4.2.2 achieved a major coverage recovery: from 6 publishable facilities (21%) to
 12 (43%), with total records growing from 361K to 1.2M. Key unlocks included CMS HPT JSON
@@ -126,12 +126,12 @@ Phase 4.2 extends the pricing pipeline to all 28 NH acute-care hospitals:
 
 All checks pass as of the latest commit:
 
-| Check              | Result                   |
-| ------------------ | ------------------------ |
-| mypy (strict)      | 0 errors, 109 files      |
-| pytest             | 78 passed                |
-| Ruff format + lint | Clean                    |
-| Safety invariants  | 0 AI / 0 fuzzy / 0 PHI   |
+| Check              | Result                 |
+| ------------------ | ---------------------- |
+| mypy (strict)      | 0 errors, 109 files    |
+| pytest             | 78 passed              |
+| Ruff format + lint | Clean                  |
+| Safety invariants  | 0 AI / 0 fuzzy / 0 PHI |
 
 ### Remaining gaps
 
