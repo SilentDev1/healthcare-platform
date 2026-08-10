@@ -1,6 +1,6 @@
 from enum import StrEnum
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -71,10 +71,15 @@ class RuntimeSettings(BaseSettings):
         if not self.is_deployed:
             return self
         errors: list[str] = []
-        db_host = (
-            urlparse(self.database_url.replace("postgresql+psycopg", "postgresql")).hostname or ""
-        ).lower()
-        if db_host in {"", "localhost", "127.0.0.1", "::1", "test", "postgres"}:
+        parsed_database_url = urlparse(
+            self.database_url.replace("postgresql+psycopg", "postgresql")
+        )
+        db_host = (parsed_database_url.hostname or "").lower()
+        db_socket = parse_qs(parsed_database_url.query).get("host", [""])[0]
+        uses_cloud_sql_socket = db_socket.startswith("/cloudsql/")
+        if db_host in {"", "localhost", "127.0.0.1", "::1", "test", "postgres"} and not (
+            db_host == "" and uses_cloud_sql_socket
+        ):
             errors.append("DATABASE_URL must reference an isolated non-local database")
         for name, value in (
             ("PUBLIC_APP_URL", self.public_app_url),

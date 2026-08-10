@@ -35,6 +35,16 @@ def test_beta_configuration_requires_isolation_and_https() -> None:
         deployed_settings(allowed_origins="*")
 
 
+def test_beta_configuration_accepts_cloud_sql_socket() -> None:
+    settings = deployed_settings(
+        database_url=(
+            "postgresql+psycopg://carevero:secret@/carevero?host=/cloudsql/project:region:instance"
+        )
+    )
+
+    assert settings.is_deployed
+
+
 def test_fixture_operations_are_refused_in_beta(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(global_runtime_settings, "app_env", AppEnvironment.BETA)
     with pytest.raises(RuntimeError, match="disabled in beta"):
