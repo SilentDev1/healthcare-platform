@@ -1,6 +1,6 @@
 export const brand = {
-  name: "ClearCare",
-  logoText: "ClearCare",
+  name: "Carevero",
+  logoText: "Carevero",
   tagline: "Healthcare prices, made clearer.",
   description: "Compare published hospital prices and quality information.",
 } as const;

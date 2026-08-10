@@ -10,15 +10,23 @@ export function CareSearch({
   compact = false,
   initialCare = "",
   initialLocation = "",
+  initialPayer = "",
+  showInsurance = false,
 }: {
   compact?: boolean;
   initialCare?: string;
   initialLocation?: string;
+  initialPayer?: string;
+  showInsurance?: boolean;
 }) {
   const router = useRouter();
   const listId = useId();
   const [care, setCare] = useState(initialCare);
   const [location, setLocation] = useState(initialLocation);
+  const [payer, setPayer] = useState(initialPayer);
+  const [payers, setPayers] = useState<Array<{ slug: string; name: string }>>(
+    [],
+  );
   const [items, setItems] = useState<SearchSuggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
@@ -43,11 +51,19 @@ export function CareSearch({
     }, 200);
     return () => clearTimeout(timer.current);
   }, [care]);
+  useEffect(() => {
+    if (!showInsurance) return;
+    fetch(`${API_URL}/api/v1/pricing/payers`)
+      .then((response) => (response.ok ? response.json() : []))
+      .then((value: Array<{ slug: string; name: string }>) => setPayers(value))
+      .catch(() => setPayers([]));
+  }, [showInsurance]);
   function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!care.trim()) return;
     const params = new URLSearchParams({ q: care.trim() });
     if (location.trim()) params.set("location", location.trim());
+    if (payer) params.set("payer", payer);
     router.push(`/search?${params}`);
   }
   function keyDown(event: React.KeyboardEvent) {
@@ -126,6 +142,23 @@ export function CareSearch({
           placeholder="ZIP or city"
         />
       </div>
+      {showInsurance && (
+        <div className="field insurance-field">
+          <label htmlFor={`${listId}-payer`}>Insurance (optional)</label>
+          <select
+            id={`${listId}-payer`}
+            value={payer}
+            onChange={(event) => setPayer(event.target.value)}
+          >
+            <option value="">Any published rates</option>
+            {payers.map((item) => (
+              <option key={item.slug} value={item.slug}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <button className="button search-button" type="submit">
         Compare prices <span aria-hidden="true">→</span>
       </button>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./styles.css";
+import "leaflet/dist/leaflet.css";
 import { brand } from "../lib/brand";
 export const metadata: Metadata = {
   metadataBase: new URL(

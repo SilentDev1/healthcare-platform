@@ -12,6 +12,7 @@ function SearchContent() {
   const params = useSearchParams();
   const q = params.get("q") ?? "";
   const location = params.get("location") ?? "";
+  const payer = params.get("payer") ?? "";
   const [items, setItems] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(Boolean(q));
   const [error, setError] = useState(false);
@@ -49,7 +50,12 @@ function SearchContent() {
           language.
         </p>
       </div>
-      <CareSearch compact initialCare={q} initialLocation={location} />
+      <CareSearch
+        compact
+        initialCare={q}
+        initialLocation={location}
+        initialPayer={payer}
+      />
       {q && (
         <div className="toolbar">
           <strong>
@@ -90,7 +96,7 @@ function SearchContent() {
                   item.entity_type === "facility"
                     ? `/hospitals/${item.entity_id}`
                     : item.entity_type === "procedure"
-                      ? `/procedures/${item.metadata.slug}/prices?location=${encodeURIComponent(location)}`
+                      ? `/procedures/${item.metadata.slug}/prices?location=${encodeURIComponent(location)}${payer ? `&payer=${encodeURIComponent(payer)}` : ""}`
                       : `/procedures?category=${item.metadata.slug}`
                 }
               >

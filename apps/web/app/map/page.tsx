@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { MapData, MapFeature } from "../../lib/api";
+import { EmptyState, LoadingSkeleton } from "../components/ui";
 
 const API_URL =
   process.env.NEXT_PUBLIC_CARECOMPARE_API_URL ?? "http://127.0.0.1:8000";
@@ -49,17 +50,6 @@ export default function MapPage() {
       })
       .catch(() => setError("Unable to load map data."));
   }, [filter]);
-
-  useEffect(() => {
-    // Leaflet CSS
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    document.head.appendChild(link);
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, []);
 
   return (
     <main style={{ maxWidth: "100%", padding: "1.5rem" }}>
@@ -112,7 +102,14 @@ export default function MapPage() {
         </div>
       </div>
       {error && <p className="error">{error}</p>}
-      {loaded && (
+      {!loaded && !error && <LoadingSkeleton />}
+      {loaded && data.length === 0 && (
+        <EmptyState title="No mapped hospitals match this filter">
+          Try another price-availability filter. Hospitals without coordinates
+          remain available in the directory.
+        </EmptyState>
+      )}
+      {loaded && data.length > 0 && (
         <div className="map-shell">
           <section
             className={`map-list ${view === "map" ? "desktop-only" : ""}`}
@@ -125,14 +122,20 @@ export default function MapPage() {
                   <span className="badge neutral">
                     {feature.properties.pricing_status.replaceAll("_", " ")}
                   </span>
-                  <h2>{feature.properties.name}</h2>
+                  <h2>
+                    {feature.properties.location_name ??
+                      feature.properties.name}
+                  </h2>
+                  {feature.properties.location_name && (
+                    <p className="facility-parent">{feature.properties.name}</p>
+                  )}
                   <p>
                     {feature.properties.city} ·{" "}
                     {feature.properties.procedure_count} published procedures
                   </p>
                   <Link
                     className="button secondary"
-                    href={`/hospitals/${feature.properties.id}`}
+                    href={`/hospitals/${feature.properties.facility_id}`}
                   >
                     View details
                   </Link>
@@ -171,13 +174,16 @@ export default function MapPage() {
                   }}
                 >
                   <Popup>
-                    <strong>{feature.properties.name}</strong>
+                    <strong>
+                      {feature.properties.location_name ??
+                        feature.properties.name}
+                    </strong>
                     <br />
                     {feature.properties.city}
                     <br />
                     {feature.properties.procedure_count} procedures
                     <br />
-                    <Link href={`/hospitals/${feature.properties.id}`}>
+                    <Link href={`/hospitals/${feature.properties.facility_id}`}>
                       View details →
                     </Link>
                   </Popup>

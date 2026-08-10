@@ -5,6 +5,7 @@ from typing import Annotated, Any
 
 import structlog
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response, status
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import case, desc, func, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, selectinload
@@ -65,6 +66,7 @@ from services.api.app.schemas import (
     PricingHealthResponse,
     PricingSourcePage,
     ProcedureCategoryResponse,
+    ProcedureComparisonResponse,
     ProcedurePage,
     ProcedureResponse,
     PublicPriceSummaryPage,
@@ -80,6 +82,15 @@ from services.api.app.settings import api_settings
 configure_logging(api_settings.log_level)
 logger = structlog.get_logger()
 app = FastAPI(title=api_settings.api_title, version=api_settings.api_version)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        origin.strip() for origin in api_settings.cors_origins.split(",") if origin.strip()
+    ],
+    allow_credentials=False,
+    allow_methods=["GET", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 
 @app.middleware("http")
@@ -132,13 +143,24 @@ def list_facilities(
     state_code: Annotated[str | None, Query(alias="state", min_length=2, max_length=2)] = None,
 ) -> FacilityPage:
     filters: list[ColumnElement[bool]] = [Facility.active.is_(True)]
-    query = select(Facility).options(selectinload(Facility.locations))
-    count_query = select(func.count(Facility.id))
+    query = (
+        select(Facility)
+        .distinct()
+        .options(selectinload(Facility.locations.and_(FacilityLocation.active.is_(True))))
+    )
+    count_query = select(func.count(func.distinct(Facility.id)))
     if state_code:
         normalized_state = state_code.upper()
+        consumer_facility_ids = active_consumer_facility_ids(session, normalized_state)
         query = query.join(FacilityLocation)
         count_query = count_query.join(FacilityLocation)
-        filters.append(FacilityLocation.state == normalized_state)
+        filters.extend(
+            [
+                Facility.id.in_(consumer_facility_ids),
+                FacilityLocation.state == normalized_state,
+                FacilityLocation.active.is_(True),
+            ]
+        )
     items = session.scalars(
         query.where(*filters)
         .order_by(Facility.display_name, Facility.id)
@@ -153,13 +175,17 @@ def list_facilities(
 def facilities_map_data(
     session: Annotated[Session, Depends(get_session)],
     pricing_status: Annotated[str | None, Query(max_length=30)] = None,
+    state_code: Annotated[str, Query(alias="state", min_length=2, max_length=2)] = "NH",
 ) -> MapDataResponse:
+    facility_ids = active_consumer_facility_ids(session, state_code)
     rows = session.execute(
         select(Facility, FacilityLocation)
         .join(FacilityLocation)
         .where(
             Facility.active.is_(True),
-            FacilityLocation.state == "NH",
+            Facility.id.in_(facility_ids),
+            FacilityLocation.state == state_code.upper(),
+            FacilityLocation.active.is_(True),
             FacilityLocation.latitude.is_not(None),
             FacilityLocation.longitude.is_not(None),
         )
@@ -207,8 +233,10 @@ def facilities_map_data(
                     "coordinates": [float(location.longitude), float(location.latitude)],
                 },
                 "properties": {
-                    "id": str(facility.id),
+                    "id": str(location.id),
+                    "facility_id": str(facility.id),
                     "name": facility.display_name,
+                    "location_name": location.location_name,
                     "city": location.city,
                     "pricing_status": fac_status,
                     "procedure_count": procedure_count,
@@ -224,7 +252,7 @@ def get_facility(
 ) -> Facility:
     facility = session.scalar(
         select(Facility)
-        .options(selectinload(Facility.locations))
+        .options(selectinload(Facility.locations.and_(FacilityLocation.active.is_(True))))
         .where(Facility.id == facility_id, Facility.active.is_(True))
     )
     if facility is None:
@@ -1183,7 +1211,11 @@ def _public_price_page(
             InsurancePlanEntity.id == FacilityProcedurePriceSummary.insurance_plan_entity_id,
         )
         .join(SourceFile, SourceFile.id == FacilityProcedurePriceSummary.source_file_id)
-        .where(FacilityProcedurePriceSummary.publication_status == "publishable", *filters)
+        .where(
+            FacilityProcedurePriceSummary.publication_status == "publishable",
+            SourceFile.source_url.not_like("file://%"),
+            *filters,
+        )
     )
     rows = session.execute(
         base.order_by(
@@ -1258,6 +1290,143 @@ def procedure_prices(
     if setting:
         filters.append(FacilityProcedurePriceSummary.service_setting == setting)
     return _public_price_page(session, filters, page, page_size)
+
+
+@app.get(
+    "/api/v1/procedures/{slug}/comparison",
+    response_model=ProcedureComparisonResponse,
+    tags=["pricing"],
+)
+def procedure_comparison(
+    slug: str,
+    session: Annotated[Session, Depends(get_session)],
+    state_code: Annotated[str, Query(alias="state", min_length=2, max_length=2)] = "NH",
+    city: Annotated[str | None, Query(max_length=100)] = None,
+    postal_code: Annotated[str | None, Query(min_length=5, max_length=10)] = None,
+    payer: Annotated[str | None, Query(max_length=150)] = None,
+    setting: Annotated[str | None, Query(max_length=40)] = None,
+) -> ProcedureComparisonResponse:
+    """Return one honest consumer comparison row per physical service location."""
+    procedure = session.scalar(
+        select(Procedure).where(Procedure.slug == slug, Procedure.active.is_(True))
+    )
+    if procedure is None:
+        raise HTTPException(status_code=404, detail="procedure not found")
+
+    facility_ids = active_consumer_facility_ids(session, state_code)
+    location_filters: list[ColumnElement[bool]] = [
+        FacilityLocation.facility_id.in_(facility_ids),
+        FacilityLocation.state == state_code.upper(),
+        FacilityLocation.active.is_(True),
+    ]
+    if city:
+        location_filters.append(FacilityLocation.city.ilike(city))
+    if postal_code:
+        location_filters.append(FacilityLocation.postal_code == postal_code)
+    locations = session.execute(
+        select(Facility, FacilityLocation)
+        .join(FacilityLocation, FacilityLocation.facility_id == Facility.id)
+        .where(*location_filters)
+        .order_by(Facility.display_name, FacilityLocation.city, FacilityLocation.id)
+    ).all()
+
+    price_filters: list[ColumnElement[bool]] = [
+        FacilityProcedurePriceSummary.procedure_id == procedure.id,
+        FacilityProcedurePriceSummary.publication_status == "publishable",
+        FacilityProcedurePriceSummary.facility_id.in_(facility_ids),
+        SourceFile.source_url.not_like("file://%"),
+    ]
+    if payer:
+        price_filters.append(PayerEntity.slug == payer)
+    if setting:
+        price_filters.append(FacilityProcedurePriceSummary.service_setting == setting)
+    price_rows = session.execute(
+        select(FacilityProcedurePriceSummary, SourceFile)
+        .join(SourceFile, SourceFile.id == FacilityProcedurePriceSummary.source_file_id)
+        .outerjoin(PayerEntity, PayerEntity.id == FacilityProcedurePriceSummary.payer_entity_id)
+        .where(*price_filters)
+    ).all()
+
+    grouped: dict[
+        tuple[uuid.UUID, uuid.UUID], list[tuple[FacilityProcedurePriceSummary, SourceFile]]
+    ] = {}
+    for summary, source in price_rows:
+        if summary.facility_location_id is not None:
+            grouped.setdefault((summary.facility_id, summary.facility_location_id), []).append(
+                (summary, source)
+            )
+
+    rating_rows = session.execute(
+        select(FacilityQualityMeasureObservation)
+        .join(QualityMeasureDefinition)
+        .where(
+            FacilityQualityMeasureObservation.facility_id.in_(facility_ids),
+            QualityMeasureDefinition.cms_measure_id == "OVERALL_RATING",
+        )
+        .order_by(desc(FacilityQualityMeasureObservation.reporting_period_end))
+    ).scalars()
+    ratings: dict[uuid.UUID, str | None] = {}
+    for observation in rating_rows:
+        ratings.setdefault(observation.facility_id, observation.score)
+
+    items: list[dict[str, object]] = []
+    priced_facilities: set[uuid.UUID] = set()
+    for facility, location in locations:
+        summaries = grouped.get((facility.id, location.id), [])
+        if summaries:
+            priced_facilities.add(facility.id)
+        cash_values = [
+            value
+            for summary, _source in summaries
+            for value in (summary.cash_price_min, summary.cash_price_max)
+            if value is not None
+        ]
+        negotiated_values = [
+            value
+            for summary, _source in summaries
+            for value in (summary.negotiated_price_min, summary.negotiated_price_max)
+            if value is not None
+        ]
+        latest = max((summary.calculated_at for summary, _source in summaries), default=None)
+        latest_source = max(
+            summaries,
+            key=lambda pair: pair[0].calculated_at,
+            default=None,
+        )
+        items.append(
+            {
+                "facility_id": facility.id,
+                "facility_name": facility.display_name,
+                "facility_location_id": location.id,
+                "location_name": location.location_name,
+                "location_type": location.location_type,
+                "address_line_1": location.address_line_1,
+                "city": location.city,
+                "state": location.state,
+                "postal_code": location.postal_code,
+                "facility_type": facility.facility_type,
+                "cms_overall_rating": ratings.get(facility.id),
+                "price_available": bool(summaries),
+                "cash_price_min": min(cash_values) if cash_values else None,
+                "cash_price_max": max(cash_values) if cash_values else None,
+                "negotiated_price_min": min(negotiated_values) if negotiated_values else None,
+                "negotiated_price_max": max(negotiated_values) if negotiated_values else None,
+                "service_settings": sorted({summary.service_setting for summary, _ in summaries}),
+                "summary_count": len(summaries),
+                "source_count": len({source.id for _summary, source in summaries}),
+                "latest_updated": latest,
+                "source_url": latest_source[1].source_url if latest_source else None,
+            }
+        )
+    return ProcedureComparisonResponse(
+        procedure_slug=procedure.slug,
+        procedure_name=procedure.consumer_name,
+        state=state_code.upper(),
+        active_facilities=len(facility_ids),
+        facilities_with_prices=len(priced_facilities),
+        service_locations=len(items),
+        items=items,
+    )
 
 
 @app.get(

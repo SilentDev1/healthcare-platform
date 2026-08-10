@@ -1,9 +1,8 @@
 import Link from "next/link";
 import {
   apiGet,
-  type Facility,
-  type PricePage,
-  type QualityPage,
+  type ProcedureComparison,
+  type ProcedureComparisonItem,
 } from "../../lib/api";
 import {
   PriceRange,
@@ -11,46 +10,76 @@ import {
   QualityRating,
   SourceAttribution,
 } from "../components/ui";
-type Item = { facility: Facility; quality: QualityPage; prices: PricePage };
+import { launchRegion } from "../../lib/brand";
+
 export default async function ComparePage({
   searchParams,
 }: {
-  searchParams: Promise<{ ids?: string }>;
+  searchParams: Promise<{ items?: string; procedure?: string }>;
 }) {
-  const ids =
-    (await searchParams).ids?.split(",").filter(Boolean).slice(0, 3) ?? [];
-  const results = await Promise.allSettled(
-    ids.map(async (id) => ({
-      facility: await apiGet<Facility>(`/api/v1/facilities/${id}`),
-      quality: await apiGet<QualityPage>(
-        `/api/v1/facilities/${id}/quality?page_size=100`,
-      ),
-      prices: await apiGet<PricePage>(
-        `/api/v1/facilities/${id}/prices?page_size=25`,
-      ),
-    })),
-  );
-  const items = results
-    .filter((r): r is PromiseFulfilledResult<Item> => r.status === "fulfilled")
-    .map((r) => r.value);
-  if (items.length < 2)
+  const values = await searchParams;
+  const procedure = values.procedure ?? "";
+  const selected = (values.items ?? "").split(",").filter(Boolean).slice(0, 3);
+  if (!procedure || selected.length < 2) {
     return (
-      <main>
-        <h1>Compare hospitals</h1>
-        <p>
-          Select two or three facilities from a procedure price results page to
-          compare them side by side.
+      <main className="narrow">
+        <p className="eyebrow">Side-by-side comparison</p>
+        <h1>Choose two or three service locations</h1>
+        <p className="lede">
+          Start from a procedure price page so every price in the comparison
+          refers to the same service.
         </p>
         <Link className="button" href="/procedures">
           Find a procedure
         </Link>
       </main>
     );
-  const row = (label: string, render: (item: Item) => React.ReactNode) => (
+  }
+
+  let data: ProcedureComparison;
+  try {
+    data = await apiGet<ProcedureComparison>(
+      `/api/v1/procedures/${encodeURIComponent(procedure)}/comparison?state=${launchRegion.state}`,
+    );
+  } catch {
+    return (
+      <main>
+        <h1>Comparison unavailable</h1>
+        <p className="error" role="alert">
+          We couldn’t load these published prices right now.
+        </p>
+      </main>
+    );
+  }
+  const byKey = new Map(
+    data.items.map((item) => [
+      `${item.facility_id}~${item.facility_location_id}`,
+      item,
+    ]),
+  );
+  const items = selected
+    .map((key) => byKey.get(key))
+    .filter((item): item is ProcedureComparisonItem => Boolean(item));
+  if (items.length < 2) {
+    return (
+      <main className="narrow">
+        <h1>Comparison selections expired</h1>
+        <p>Select the hospitals again from the procedure results page.</p>
+        <Link className="button" href={`/procedures/${procedure}/prices`}>
+          Return to results
+        </Link>
+      </main>
+    );
+  }
+
+  const row = (
+    label: string,
+    render: (item: ProcedureComparisonItem) => React.ReactNode,
+  ) => (
     <tr>
       <th scope="row">{label}</th>
       {items.map((item) => (
-        <td data-label={label} key={item.facility.id}>
+        <td data-label={label} key={item.facility_location_id}>
           {render(item)}
         </td>
       ))}
@@ -58,27 +87,39 @@ export default async function ComparePage({
   );
   return (
     <main>
-      <nav className="breadcrumbs">
+      <nav className="breadcrumbs" aria-label="Breadcrumb">
         <Link href="/">Home</Link>
+        <span>/</span>
+        <Link href={`/procedures/${procedure}/prices`}>
+          {data.procedure_name}
+        </Link>
         <span>/</span>
         <span>Compare</span>
       </nav>
       <p className="eyebrow">Side-by-side comparison</p>
-      <h1>Compare hospitals</h1>
+      <h1>Compare {data.procedure_name}</h1>
       <p className="lede">
-        Review published facts and differences. Lower price does not mean better
-        clinical care.
+        Review published differences without treating price or a single quality
+        measure as a “best hospital” ranking.
       </p>
-      <div className="table-wrap">
+      <div className="comparison-key" role="note">
+        <strong>Price label:</strong> “Lowest published price” describes this
+        dataset only. It is not a recommendation or a personalized estimate.
+      </div>
+      <div className="table-wrap compare-wrap">
         <table className="compare-table">
           <thead>
             <tr>
               <th>Measure</th>
-              {items.map((i) => (
-                <th scope="col" key={i.facility.id}>
-                  {i.facility.display_name}
-                  <br />
-                  <Link href={`/hospitals/${i.facility.id}`}>View details</Link>
+              {items.map((item) => (
+                <th scope="col" key={item.facility_location_id}>
+                  <span className="compare-location-name">
+                    {item.location_name ?? item.facility_name}
+                  </span>
+                  {item.location_name && <small>{item.facility_name}</small>}
+                  <Link href={`/hospitals/${item.facility_id}`}>
+                    View details
+                  </Link>
                 </th>
               ))}
             </tr>
@@ -86,61 +127,50 @@ export default async function ComparePage({
           <tbody>
             {row(
               "Location",
-              (i) =>
-                `${i.facility.locations[0]?.city ?? "—"}, ${i.facility.locations[0]?.state ?? ""}`,
+              (item) => `${item.city}, ${item.state} ${item.postal_code}`,
             )}
-            {row(
-              "Facility type",
-              (i) => i.facility.facility_type ?? "Not listed",
-            )}
-            {row("CMS overall rating", (i) => (
-              <QualityRating
-                value={
-                  i.quality.items.find(
-                    (q) => q.cms_measure_id === "OVERALL_RATING",
-                  )?.score
-                }
+            {row("CMS overall rating", (item) => (
+              <QualityRating value={item.cms_overall_rating} />
+            ))}
+            {row("Published cash price", (item) => (
+              <PriceRange min={item.cash_price_min} max={item.cash_price_max} />
+            ))}
+            {row("Published negotiated range", (item) => (
+              <PriceRange
+                min={item.negotiated_price_min}
+                max={item.negotiated_price_max}
               />
             ))}
-            {row("Published cash prices", (i) =>
-              i.prices.items.length ? (
-                <PriceRange
-                  min={i.prices.items[0].cash_price_min}
-                  max={i.prices.items[0].cash_price_max}
-                />
-              ) : (
-                "Not currently available"
-              ),
+            {row("Service setting", (item) =>
+              item.service_settings.length
+                ? item.service_settings.join(", ").replaceAll("_", " ")
+                : "Not available",
             )}
-            {row("Negotiated price range", (i) =>
-              i.prices.items.length ? (
-                <PriceRange
-                  min={i.prices.items[0].negotiated_price_min}
-                  max={i.prices.items[0].negotiated_price_max}
-                />
-              ) : (
-                "Not currently available"
-              ),
+            {row("Facility type", (item) => item.facility_type ?? "Not listed")}
+            {row("Price coverage", (item) =>
+              item.price_available
+                ? `${item.summary_count} publishable rate summaries`
+                : "Price not currently available",
             )}
-            {row(
-              "Price coverage",
-              (i) => `${i.prices.total} publishable summaries`,
-            )}
-            {row(
-              "Service setting",
-              (i) =>
-                i.prices.items[0]?.service_setting?.replaceAll("_", " ") ??
-                "Not available",
-            )}
-            {row("Source updated", (i) =>
-              i.prices.items[0] ? (
+            {row("Quality measures", (item) => (
+              <Link href={`/hospitals/${item.facility_id}#quality`}>
+                Review CMS measures
+              </Link>
+            ))}
+            {row("Source and freshness", (item) =>
+              item.price_available ? (
                 <SourceAttribution
-                  updated={i.prices.items[0].last_updated}
-                  url={i.prices.items[0].source_url}
+                  updated={item.latest_updated ?? undefined}
+                  url={item.source_url ?? undefined}
                 />
               ) : (
-                "No publishable source"
+                "No publishable source for this procedure"
               ),
+            )}
+            {row("Important notes", (item) =>
+              item.price_available
+                ? "Published hospital rate; separately billed services may apply."
+                : "The hospital may offer this service even though no price is publishable.",
             )}
           </tbody>
         </table>

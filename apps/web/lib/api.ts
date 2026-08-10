@@ -7,6 +7,10 @@ export async function apiGet<T>(path: string): Promise<T> {
 }
 
 export interface Location {
+  id: string;
+  location_name: string | null;
+  location_type: string;
+  active: boolean;
   address_line_1: string;
   city: string;
   state: string;
@@ -95,6 +99,40 @@ export interface PricePage {
   page_size: number;
 }
 
+export interface ProcedureComparisonItem {
+  facility_id: string;
+  facility_name: string;
+  facility_location_id: string;
+  location_name: string | null;
+  location_type: string;
+  address_line_1: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  facility_type: string | null;
+  cms_overall_rating: string | null;
+  price_available: boolean;
+  cash_price_min: string | null;
+  cash_price_max: string | null;
+  negotiated_price_min: string | null;
+  negotiated_price_max: string | null;
+  service_settings: string[];
+  summary_count: number;
+  source_count: number;
+  latest_updated: string | null;
+  source_url: string | null;
+}
+
+export interface ProcedureComparison {
+  procedure_slug: string;
+  procedure_name: string;
+  state: string;
+  active_facilities: number;
+  facilities_with_prices: number;
+  service_locations: number;
+  items: ProcedureComparisonItem[];
+}
+
 export interface PricingHealth {
   facility_id: string;
   overall_score: number;
@@ -115,7 +153,9 @@ export interface MapFeature {
   geometry: { type: string; coordinates: [number, number] };
   properties: {
     id: string;
+    facility_id: string;
     name: string;
+    location_name: string | null;
     city: string;
     pricing_status: string;
     procedure_count: number;

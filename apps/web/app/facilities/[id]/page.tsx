@@ -8,11 +8,11 @@ import {
 import {
   CoverageNotice,
   EmptyState,
-  PriceRange,
   PricingDisclaimer,
   QualityRating,
   SourceAttribution,
 } from "../../components/ui";
+import { FacilityPrices } from "../../components/FacilityPrices";
 export default async function FacilityPage({
   params,
 }: {
@@ -23,7 +23,7 @@ export default async function FacilityPage({
     const [facility, quality, prices] = await Promise.all([
       apiGet<Facility>(`/api/v1/facilities/${id}`),
       apiGet<QualityPage>(`/api/v1/facilities/${id}/quality?page_size=100`),
-      apiGet<PricePage>(`/api/v1/facilities/${id}/prices?page_size=25`),
+      apiGet<PricePage>(`/api/v1/facilities/${id}/prices?page_size=50`),
     ]);
     const location = facility.locations[0];
     const overall = quality.items.find(
@@ -64,12 +64,22 @@ export default async function FacilityPage({
           </div>
           <div className="feature-grid">
             <article className="card">
-              <h3>Address</h3>
-              <p>
-                {location
-                  ? `${location.address_line_1}, ${location.city}, ${location.state} ${location.postal_code}`
-                  : "Not available"}
-              </p>
+              <h3>Service locations</h3>
+              {facility.locations.length ? (
+                <ul className="plain-list">
+                  {facility.locations.map((item) => (
+                    <li key={item.id}>
+                      {item.location_name && (
+                        <strong>{item.location_name}: </strong>
+                      )}
+                      {item.address_line_1}, {item.city}, {item.state}{" "}
+                      {item.postal_code}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>Not available</p>
+              )}
             </article>
             <article className="card">
               <h3>Contact</h3>
@@ -99,49 +109,7 @@ export default async function FacilityPage({
                 {prices.total} publishable procedure price summaries are
                 currently available for this facility.
               </CoverageNotice>
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th scope="col">Procedure</th>
-                      <th scope="col">Cash price</th>
-                      <th scope="col">Negotiated range</th>
-                      <th scope="col">Setting</th>
-                      <th scope="col">Source</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {prices.items.map((p) => (
-                      <tr key={p.id}>
-                        <td>
-                          <Link href={`/procedures/${p.procedure_slug}/prices`}>
-                            {p.procedure_name}
-                          </Link>
-                        </td>
-                        <td>
-                          <PriceRange
-                            min={p.cash_price_min}
-                            max={p.cash_price_max}
-                          />
-                        </td>
-                        <td>
-                          <PriceRange
-                            min={p.negotiated_price_min}
-                            max={p.negotiated_price_max}
-                          />
-                        </td>
-                        <td>{p.service_setting?.replaceAll("_", " ")}</td>
-                        <td>
-                          <SourceAttribution
-                            updated={p.last_updated}
-                            url={p.source_url}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <FacilityPrices items={prices.items} />
             </>
           ) : (
             <EmptyState title="Pricing data is not currently available for this facility">

@@ -1,27 +1,63 @@
 "use client";
+
 import Link from "next/link";
-import { useState } from "react";
-export function CompareSelect({ id, name }: { id: string; name: string }) {
-  const [selected, setSelected] = useState<string[]>(() => {
-    if (typeof window === "undefined") return [];
-    try {
-      return JSON.parse(sessionStorage.getItem("compareFacilities") ?? "[]");
-    } catch {
-      return [];
-    }
-  });
-  const active = selected.includes(id);
-  function toggle() {
-    const next = active
-      ? selected.filter((x) => x !== id)
-      : selected.length < 3
-        ? [...selected, id]
-        : selected;
-    setSelected(next);
-    sessionStorage.setItem("compareFacilities", JSON.stringify(next));
+import { useEffect, useState } from "react";
+
+interface CompareChoice {
+  key: string;
+  facilityId: string;
+  locationId: string;
+  name: string;
+}
+
+function readChoices(): CompareChoice[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const value: unknown = JSON.parse(
+      sessionStorage.getItem("careveroCompareV1") ?? "[]",
+    );
+    return Array.isArray(value) ? (value as CompareChoice[]).slice(0, 3) : [];
+  } catch {
+    return [];
   }
+}
+
+export function CompareSelect({
+  facilityId,
+  locationId,
+  name,
+}: {
+  facilityId: string;
+  locationId: string;
+  name: string;
+}) {
+  const key = `${facilityId}~${locationId}`;
+  const [selected, setSelected] = useState<CompareChoice[]>(readChoices);
+  const active = selected.some((choice) => choice.key === key);
+
+  useEffect(() => {
+    function synchronize() {
+      setSelected(readChoices());
+    }
+    window.addEventListener("carevero:selection", synchronize);
+    return () => window.removeEventListener("carevero:selection", synchronize);
+  }, []);
+
+  function toggle() {
+    const current = readChoices();
+    const currentlyActive = current.some((choice) => choice.key === key);
+    const next = currentlyActive
+      ? current.filter((choice) => choice.key !== key)
+      : current.length < 3
+        ? [...current, { key, facilityId, locationId, name }]
+        : current;
+    setSelected(next);
+    sessionStorage.setItem("careveroCompareV1", JSON.stringify(next));
+    window.dispatchEvent(new Event("carevero:selection"));
+  }
+
   return (
-    <>
+    <div className="compare-actions">
       <button
         type="button"
         className="button secondary"
@@ -31,16 +67,38 @@ export function CompareSelect({ id, name }: { id: string; name: string }) {
       >
         {active ? "✓ Selected" : "+ Compare"}
       </button>
-      {selected.length >= 2 && (
-        <Link className="button" href={`/compare?ids=${selected.join(",")}`}>
+    </div>
+  );
+}
+
+export function CompareTray({ procedureSlug }: { procedureSlug: string }) {
+  const [selected, setSelected] = useState<CompareChoice[]>(readChoices);
+
+  useEffect(() => {
+    function synchronize() {
+      setSelected(readChoices());
+    }
+    window.addEventListener("carevero:selection", synchronize);
+    return () => window.removeEventListener("carevero:selection", synchronize);
+  }, []);
+
+  if (selected.length === 0) return null;
+  const compareHref = `/compare?items=${selected.map((choice) => choice.key).join(",")}&procedure=${encodeURIComponent(procedureSlug)}`;
+  return (
+    <aside className="compare-tray" aria-live="polite">
+      <div>
+        <strong>
+          {selected.length} location{selected.length === 1 ? "" : "s"} selected
+        </strong>
+        <span>Select up to 3 locations.</span>
+      </div>
+      {selected.length >= 2 ? (
+        <Link className="button" href={compareHref}>
           Compare {selected.length}
         </Link>
+      ) : (
+        <span className="muted">Choose one more to compare</span>
       )}
-      {!active && selected.length === 3 && (
-        <span className="muted" role="status">
-          3 facility limit
-        </span>
-      )}
-    </>
+    </aside>
   );
 }

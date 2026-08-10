@@ -7,6 +7,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class FacilityLocationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+    id: uuid.UUID
+    location_name: str | None
+    location_type: str
+    active: bool
     address_line_1: str
     address_line_2: str | None
     city: str
@@ -400,6 +404,40 @@ class PublicPriceSummaryResponse(BaseModel):
 
 class PublicPriceSummaryPage(PageMetadata):
     items: list[PublicPriceSummaryResponse]
+
+
+class ProcedureComparisonItem(BaseModel):
+    facility_id: uuid.UUID
+    facility_name: str
+    facility_location_id: uuid.UUID
+    location_name: str | None
+    location_type: str
+    address_line_1: str
+    city: str
+    state: str
+    postal_code: str
+    facility_type: str | None
+    cms_overall_rating: str | None
+    price_available: bool
+    cash_price_min: Decimal | None
+    cash_price_max: Decimal | None
+    negotiated_price_min: Decimal | None
+    negotiated_price_max: Decimal | None
+    service_settings: list[str]
+    summary_count: int
+    source_count: int
+    latest_updated: datetime | None
+    source_url: str | None
+
+
+class ProcedureComparisonResponse(BaseModel):
+    procedure_slug: str
+    procedure_name: str
+    state: str
+    active_facilities: int
+    facilities_with_prices: int
+    service_locations: int
+    items: list[ProcedureComparisonItem]
 
 
 class PricingCoverageResponse(BaseModel):

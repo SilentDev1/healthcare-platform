@@ -2,7 +2,7 @@ import uuid
 from collections.abc import Generator
 
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, update
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -130,6 +130,12 @@ def setup_function() -> None:
         evaluate_data_health(session)
     with TestingSession() as session:
         run_fixture_pipeline(session)
+        session.execute(
+            update(SourceFile)
+            .where(SourceFile.source_url.like("file://%"))
+            .values(source_url="https://hospital.example.test/standardcharges.csv")
+        )
+        session.commit()
 
 
 def teardown_module() -> None:
@@ -217,6 +223,12 @@ def test_phase_4_pricing_endpoints_are_filtered_and_paginated() -> None:
     assert prices.json()["total"] >= 1
     assert "raw_payload" not in prices.text
     assert "final bill" in prices.json()["items"][0]["disclaimer"]
+    comparison = client.get("/api/v1/procedures/mri-brain-without-contrast/comparison?state=NH")
+    assert comparison.status_code == 200
+    assert comparison.json()["active_facilities"] == 1
+    assert comparison.json()["facilities_with_prices"] == 1
+    assert comparison.json()["items"][0]["cms_overall_rating"] == "4"
+    assert comparison.json()["items"][0]["price_available"] is True
     facility_prices = client.get("/api/v1/facilities/00000000-0000-0000-0000-000000000001/prices")
     assert facility_prices.status_code == 200
     assert client.get("/api/v1/pricing/payers").status_code == 200

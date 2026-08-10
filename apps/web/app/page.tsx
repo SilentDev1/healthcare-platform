@@ -34,7 +34,7 @@ export default async function Home() {
             Explore published hospital prices and CMS quality information in one
             straightforward place.
           </p>
-          <CareSearch />
+          <CareSearch showInsurance />
           <div className="popular">
             <span>Popular:</span>
             {popular.map((term) => (
@@ -63,7 +63,11 @@ export default async function Home() {
             ],
             [
               "Compare facilities",
-              "Review published prices, distance, setting, and quality information.",
+              "Review published prices, locations, and service settings.",
+            ],
+            [
+              "Review quality",
+              "Use CMS measures as context—not as a single best-hospital score.",
             ],
             [
               "Verify your choice",

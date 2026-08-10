@@ -5,8 +5,8 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../../../lib/api", () => ({
   apiGet: vi.fn().mockImplementation((path: string) =>
-    path.endsWith("/prices?page_size=25")
-      ? Promise.resolve({ items: [], total: 0, page: 1, page_size: 25 })
+    path.endsWith("/prices?page_size=50")
+      ? Promise.resolve({ items: [], total: 0, page: 1, page_size: 50 })
       : path.endsWith("/quality?page_size=100")
         ? Promise.resolve({
             items: [
@@ -27,6 +27,10 @@ vi.mock("../../../lib/api", () => ({
             updated_at: "2026-08-06T12:00:00Z",
             locations: [
               {
+                id: "location-1",
+                location_name: "Main campus",
+                location_type: "hospital_campus",
+                active: true,
                 address_line_1: "1 Main St",
                 city: "Concord",
                 state: "NH",

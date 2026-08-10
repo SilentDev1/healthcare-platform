@@ -756,3 +756,294 @@ th {
     flex-direction: column;
   }
 }
+
+/* Phase 4.3 consumer comparison experience */
+@media (min-width: 801px) {
+  .steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.care-search:has(.insurance-field) {
+  grid-template-columns:
+    minmax(230px, 1.35fr) minmax(150px, 0.7fr) minmax(180px, 0.8fr)
+    auto;
+}
+.badge.unavailable {
+  background: #f3f4f4;
+  color: #5f6f6b;
+  align-self: flex-start;
+  white-space: nowrap;
+}
+.facility-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-top: 0.8rem;
+}
+.no-price {
+  border-style: dashed;
+}
+.no-price-message {
+  background: #f4f6f5;
+  border-radius: 0.65rem;
+  padding: 1rem;
+  margin: 1.2rem 0;
+}
+.no-price-message p {
+  margin: 0.3rem 0 0;
+  font-size: 0.86rem;
+}
+.compare-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.compare-tray {
+  position: fixed;
+  z-index: 70;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: 0 0.7rem 2rem rgb(15 54 47 / 18%);
+}
+.compare-tray div {
+  display: grid;
+  gap: 0.15rem;
+}
+.compare-tray span {
+  font-size: 0.78rem;
+}
+.field-help {
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin: 0.4rem 0 0;
+}
+.filter-form {
+  display: grid;
+}
+.text-link {
+  display: inline-block;
+  margin-top: 0.8rem;
+  font-size: 0.84rem;
+  text-align: center;
+}
+.responsive-filters > summary {
+  display: none;
+}
+.responsive-filters:not([open]) > .responsive-filter-body {
+  display: block;
+}
+.sort-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.sort-form label {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.comparison-key {
+  border-left: 4px solid var(--brand);
+  background: var(--brand-soft);
+  padding: 0.8rem 1rem;
+  margin: 1rem 0 1.5rem;
+  color: #34524b;
+  font-size: 0.88rem;
+}
+.compare-location-name {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.compare-table thead small {
+  display: block;
+  color: var(--muted);
+  font-weight: 500;
+  text-transform: none;
+  margin: 0.25rem 0 0.5rem;
+}
+.price-overview {
+  margin: 2rem 0;
+  border-block: 1px solid var(--line);
+  padding: 2rem 0;
+}
+.price-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+}
+.price-overview-grid article {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1rem;
+}
+.price-overview-grid span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.price-overview-grid strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 1.25rem;
+}
+.plain-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.plain-list li + li {
+  margin-top: 0.65rem;
+}
+.table-search {
+  max-width: 480px;
+  margin: 1rem 0;
+}
+.price-table td:first-child small {
+  display: block;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+.price-table .source-attribution {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.inline-empty {
+  padding: 1rem;
+  background: #fff;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+.facility-parent {
+  margin: -0.5rem 0 0.5rem;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 800px) {
+  body {
+    padding-bottom: 62px;
+  }
+  .site-header nav {
+    position: fixed;
+    inset: auto 0 0;
+    height: 62px;
+    background: #fff;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    z-index: 60;
+  }
+  .site-header nav a,
+  .site-header nav a:not(:last-child) {
+    display: grid;
+    place-items: center;
+    font-size: 0.74rem;
+    text-align: center;
+    padding: 0.5rem 0.2rem;
+  }
+  .care-search:has(.insurance-field) {
+    grid-template-columns: 1fr;
+  }
+  .responsive-filters {
+    display: block;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    grid-column: 1 / -1;
+    padding: 0;
+  }
+  .responsive-filters > summary {
+    display: block;
+    cursor: pointer;
+    padding: 1rem;
+    font-weight: 750;
+  }
+  .responsive-filter-body {
+    padding: 0 1rem 1rem;
+  }
+  .compare-tray {
+    right: 0.75rem;
+    bottom: 4.5rem;
+    left: 0.75rem;
+    justify-content: space-between;
+  }
+  .responsive-filters:not([open]) > .responsive-filter-body {
+    display: none;
+  }
+  .price-overview-grid {
+    grid-template-columns: 1fr;
+  }
+  .compare-wrap {
+    margin-inline: -1rem;
+    border-radius: 0;
+  }
+  .compare-table {
+    display: table;
+    min-width: 760px;
+  }
+  .compare-table thead,
+  .compare-table tbody {
+    display: table-row-group;
+  }
+  .compare-table thead {
+    display: table-header-group;
+  }
+  .compare-table tr {
+    display: table-row;
+  }
+  .compare-table th,
+  .compare-table td {
+    display: table-cell;
+  }
+  .compare-table thead th:first-child {
+    display: table-cell;
+  }
+  .compare-table td::before {
+    display: none;
+  }
+  .comparison-toolbar,
+  .sort-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .price-table thead {
+    display: none;
+  }
+  .price-table,
+  .price-table tbody,
+  .price-table tr,
+  .price-table td {
+    display: block;
+  }
+  .price-table tr {
+    padding: 0.7rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .price-table td {
+    border: 0;
+    padding: 0.45rem;
+  }
+  .price-table td::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 750;
+    text-transform: uppercase;
+  }
+}

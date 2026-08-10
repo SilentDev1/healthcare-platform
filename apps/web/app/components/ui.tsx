@@ -1,5 +1,6 @@
 import Link from "next/link";
-import type { PriceSummary } from "../../lib/api";
+import type { PriceSummary, ProcedureComparisonItem } from "../../lib/api";
+import { CompareSelect } from "./CompareSelect";
 
 export function Money({ value }: { value: string | null }) {
   if (value === null) return <span className="muted">Not available</span>;
@@ -32,17 +33,18 @@ export function PriceRange({
 }
 
 export function QualityRating({ value }: { value?: string | null }) {
+  const rating = value && /^[1-5](?:\.0+)?$/.test(value) ? Number(value) : null;
   return (
     <span
       className="quality-rating"
       aria-label={
-        value
-          ? `CMS overall rating: ${value} out of 5`
+        rating
+          ? `CMS overall rating: ${rating} out of 5`
           : "CMS overall rating not available"
       }
     >
       <span aria-hidden="true">★</span>{" "}
-      {value ? `${value}/5 CMS` : "CMS rating unavailable"}
+      {rating ? `${rating}/5 CMS` : "CMS rating unavailable"}
     </span>
   );
 }
@@ -211,5 +213,98 @@ export function FacilityPriceCard({
         )}
       </div>
     </article>
+  );
+}
+
+export function ComparisonFacilityCard({
+  item,
+}: {
+  item: ProcedureComparisonItem;
+}) {
+  const locationLabel = item.location_name
+    ? `${item.location_name} · ${item.city}, ${item.state}`
+    : `${item.city}, ${item.state}`;
+  return (
+    <article
+      className={`facility-card ${item.price_available ? "" : "no-price"}`}
+    >
+      <div className="facility-card-top">
+        <div>
+          <span className="badge neutral">
+            {item.location_type.replaceAll("_", " ")}
+          </span>
+          <h2>{item.facility_name}</h2>
+          <p className="location">{locationLabel}</p>
+        </div>
+        {item.price_available ? (
+          <span className="verified">
+            <span aria-hidden="true">✓</span> Verified published source
+          </span>
+        ) : (
+          <span className="badge unavailable">No published price</span>
+        )}
+      </div>
+      <div className="facility-facts" aria-label="Facility facts">
+        <QualityRating value={item.cms_overall_rating} />
+        <span>{item.facility_type ?? "Hospital"}</span>
+        <span>
+          {item.service_settings.length
+            ? item.service_settings.join(", ").replaceAll("_", " ")
+            : "Service setting unavailable"}
+        </span>
+      </div>
+      {item.price_available ? (
+        <div className="price-grid">
+          <div>
+            <span>Published cash price</span>
+            <strong>
+              <PriceRange min={item.cash_price_min} max={item.cash_price_max} />
+            </strong>
+          </div>
+          <div>
+            <span>Published negotiated range</span>
+            <strong>
+              <PriceRange
+                min={item.negotiated_price_min}
+                max={item.negotiated_price_max}
+              />
+            </strong>
+          </div>
+        </div>
+      ) : (
+        <div className="no-price-message">
+          <strong>Price not currently available</strong>
+          <p>
+            This hospital remains visible because missing data is different from
+            the service being unavailable.
+          </p>
+        </div>
+      )}
+      {item.price_available && (
+        <SourceAttribution
+          updated={item.latest_updated ?? undefined}
+          url={item.source_url ?? undefined}
+        />
+      )}
+      <div className="card-actions">
+        <Link className="button" href={`/hospitals/${item.facility_id}`}>
+          View details
+        </Link>
+        <CompareSelect
+          facilityId={item.facility_id}
+          locationId={item.facility_location_id}
+          name={locationLabel}
+        />
+      </div>
+    </article>
+  );
+}
+
+export function FilterPanel({ children }: { children: React.ReactNode }) {
+  return (
+    <details className="filters responsive-filters">
+      <summary>Filter results</summary>
+      <div className="responsive-filter-body">{children}</div>
+    </details>
   );
 }
