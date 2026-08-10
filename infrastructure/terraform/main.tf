@@ -360,6 +360,18 @@ resource "google_cloud_run_v2_job" "refresh" {
           value = var.environment
         }
         env {
+          name  = "PUBLIC_APP_URL"
+          value = var.public_app_url
+        }
+        env {
+          name  = "API_PUBLIC_URL"
+          value = var.api_public_url
+        }
+        env {
+          name  = "ADMIN_API_ENABLED"
+          value = "false"
+        }
+        env {
           name  = "SCHEDULER_ENABLED"
           value = "true"
         }
