@@ -10,6 +10,7 @@ from collectors.hospital_prices.config import hospital_price_settings
 from collectors.hospital_prices.importer import import_price_source
 from packages.database import (
     FacilityPriceSource,
+    FacilitySourceObservation,
     HospitalPriceRateDetail,
     HospitalPriceRecord,
     ImportCheckpoint,
@@ -90,6 +91,11 @@ def restart(source_file_id: uuid.UUID) -> None:
     )
     if run_ids:
         session.execute(delete(ImportCheckpoint).where(ImportCheckpoint.import_run_id.in_(run_ids)))
+        session.execute(
+            delete(FacilitySourceObservation).where(
+                FacilitySourceObservation.import_run_id.in_(run_ids)
+            )
+        )
 
     # Delete import runs
     session.execute(delete(ImportRun).where(ImportRun.source_file_id == source_file_id))

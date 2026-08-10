@@ -12,6 +12,7 @@ from collectors.hospital_prices.downloader import (
     detect_container,
     validate_downloaded_file,
 )
+from collectors.hospital_prices.parsers import inspect_format, iter_rows, normalized_record
 
 
 def test_stream_checksum_matches_direct(tmp_path: Path) -> None:
@@ -122,3 +123,30 @@ def test_config_limits_raised() -> None:
     assert settings.hospital_price_max_expanded_bytes == 1_500_000_000
     assert settings.hospital_price_read_timeout_seconds == 300
     assert settings.hospital_price_part_file_suffix == ".part"
+
+
+def test_cms_3_csv_accepts_spaces_around_pipe_headers(tmp_path: Path) -> None:
+    source = tmp_path / "cms3.csv"
+    source.write_text(
+        "hospital_name,last_updated_on,version,,,,\n"
+        "Example Hospital,1/1/2026,3.0.0,,,,\n"
+        "description,code | 1,code | 1 | type,code | 2,code | 2 | type,"
+        "code | 3,code | 3 | type,standard_charge | gross,"
+        "standard_charge | discounted_cash,payer_name,plan_name,"
+        "standard_charge | negotiated_dollar,standard_charge | min,"
+        "standard_charge | max,billing_class\n"
+        "MRI BRAIN,40282170,CDM,0610,RC,70551,CPT,1500,900,Aetna,Gold,700,650,800,facility\n",
+        encoding="utf-8",
+    )
+
+    match, _, _ = inspect_format(source)
+    assert match is not None
+    assert match.parser_name == "cms_hpt_csv"
+    row = next(iter_rows(source, match))
+    normalized = normalized_record(row)
+    assert normalized["code"] == "70551"
+    assert normalized["code_type"] == "CPT"
+    assert normalized["gross_charge"] == "1500"
+    assert normalized["cash_price"] == "900"
+    assert normalized["minimum"] == "650"
+    assert normalized["maximum"] == "800"

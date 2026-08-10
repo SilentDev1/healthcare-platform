@@ -365,7 +365,15 @@ def _extract_downloadable_urls(html: str, page_url: str, hostname: str) -> list[
         # Must be same domain (or subdomain)
         if not (host == hostname or host.endswith(f".{hostname}")) and not any(
             vendor in host
-            for vendor in ("turquoise", "cleverley", "medicopy", "amazonaws.com", "blob.core")
+            for vendor in (
+                "turquoise",
+                "cleverley",
+                "medicopy",
+                "hospitalpricetransparencyfiles.com",
+                "hospitalpricedisclosure.com",
+                "amazonaws.com",
+                "blob.core",
+            )
         ):
             continue
         relevant = any(token in candidate_lower for token in MRF_KEYWORDS)
@@ -491,9 +499,7 @@ def discover_sources(session: Session, client: httpx.Client | None = None) -> Di
                                     if found:
                                         urls.extend(found)
                                         method = "transparency_candidate_probe"
-                                        summary.strategies_used[
-                                            "transparency_candidate_probe"
-                                        ] = (
+                                        summary.strategies_used["transparency_candidate_probe"] = (
                                             summary.strategies_used.get(
                                                 "transparency_candidate_probe", 0
                                             )

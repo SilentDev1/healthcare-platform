@@ -8,6 +8,7 @@ any state uses the same parser as one from any other state.
 import csv
 import io
 import json
+import re
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -88,7 +89,8 @@ MAX_METADATA_LINES = 20
 
 
 def _normalized_key(value: str) -> str:
-    return value.strip().lower().replace(" ", "_").replace("-", "_")
+    compact_pipes = re.sub(r"\s*\|\s*", "|", value.strip().lower())
+    return compact_pipes.replace(" ", "_").replace("-", "_")
 
 
 @dataclass(frozen=True)
@@ -191,9 +193,7 @@ def _inspect_csv(path: Path, text: str) -> tuple[ParserMatch | None, list[str], 
     # Expanded header search: skip up to MAX_METADATA_LINES of metadata
     # Generate tokens with both underscores and spaces for raw-text matching
     _desc_variants = set(CSV_DESCRIPTION) | {d.replace("_", " ") for d in CSV_DESCRIPTION}
-    description_tokens = tuple(
-        d + sep for d in _desc_variants for sep in (",", "|", "\t")
-    )
+    description_tokens = tuple(d + sep for d in _desc_variants for sep in (",", "|", "\t"))
 
     header_index = 0
     for index, line in enumerate(lines):
@@ -208,7 +208,8 @@ def _inspect_csv(path: Path, text: str) -> tuple[ParserMatch | None, list[str], 
             header_index = index
             break
         # Also check for CMS 3.0 wide-format markers
-        if "standard_charge|" in lowered or "billing_code_value" in lowered:
+        compact_pipes = re.sub(r"\s*\|\s*", "|", lowered)
+        if "standard_charge|" in compact_pipes or "billing_code_value" in lowered:
             header_index = index
             break
 
@@ -225,7 +226,7 @@ def _inspect_csv(path: Path, text: str) -> tuple[ParserMatch | None, list[str], 
     has_desc = bool(normalized & set(CSV_DESCRIPTION))
 
     # CMS 3.0 wide-format detection
-    has_wide_format = any("standard_charge|" in h.lower() for h in headers)
+    has_wide_format = any("standard_charge|" in _normalized_key(h) for h in headers)
 
     if has_desc and (has_code or has_wide_format):
         cms_overlap = len(normalized & CMS_FIELDS)
@@ -270,8 +271,16 @@ def _inspect_xml(path: Path, text: str) -> tuple[ParserMatch | None, list[str], 
         if "}" in root_tag:
             root_tag = root_tag.split("}")[-1]
         xml_keywords = (
-            "charge", "price", "standard", "hospital", "transparency",
-            "mrf", "services", "billing", "rate", "fee",
+            "charge",
+            "price",
+            "standard",
+            "hospital",
+            "transparency",
+            "mrf",
+            "services",
+            "billing",
+            "rate",
+            "fee",
         )
         if any(kw in root_tag for kw in xml_keywords) or len(tree) > 0:
             child_tags = [child.tag for child in tree[:5]]
@@ -344,12 +353,15 @@ def iter_rows(path: Path, match: ParserMatch) -> Iterator[dict[str, Any]]:
                 lowered = line.lower()
                 # Expanded header detection (both underscore and space variants)
                 _variants = set(CSV_DESCRIPTION) | {d.replace("_", " ") for d in CSV_DESCRIPTION}
-                desc_tokens = tuple(
-                    d + sep
-                    for d in _variants
-                    for sep in (",", "|", "\t")
-                ) + ("billing_code_value", "standard_charge|")
-                if any(token in lowered for token in desc_tokens):
+                desc_tokens = tuple(d + sep for d in _variants for sep in (",", "|", "\t")) + (
+                    "billing_code_value",
+                    "standard_charge|",
+                )
+                compact_pipes = re.sub(r"\s*\|\s*", "|", lowered)
+                if (
+                    any(token in lowered for token in desc_tokens)
+                    or "standard_charge|" in compact_pipes
+                ):
                     break
                 if len(metadata_lines) >= MAX_METADATA_LINES:
                     raise ValueError("CSV header not found within bounded metadata rows")
@@ -405,8 +417,32 @@ def normalized_record(row: Mapping[str, Any]) -> dict[str, Any]:
     description = value(row, *CSV_DESCRIPTION)
     code = value(row, *CSV_CODES)
     code_type = value(row, "code_type", "billing_code_type", "billing/accounting_code_type")
-    code = code or value(row, "code|1", "code_1")
-    code_type = code_type or value(row, "code|1|type", "code_1_type")
+    if not code:
+        source_codes = [
+            (
+                value(row, f"code|{index}", f"code_{index}"),
+                value(row, f"code|{index}|type", f"code_{index}_type"),
+            )
+            for index in range(1, 7)
+        ]
+        preferred_types = {"CPT", "HCPCS", "MS-DRG", "MS_DRG", "APC"}
+        preferred = next(
+            (
+                (candidate_code, candidate_type)
+                for candidate_code, candidate_type in source_codes
+                if candidate_code and str(candidate_type or "").strip().upper() in preferred_types
+            ),
+            None,
+        )
+        fallback = next(
+            (
+                (candidate_code, candidate_type)
+                for candidate_code, candidate_type in source_codes
+                if candidate_code
+            ),
+            (None, None),
+        )
+        code, code_type = preferred or fallback
 
     # CMS HPT JSON 3.0: extract code from code_information array
     code_info = row.get("code_information") or row.get("billing_code_information")
@@ -447,12 +483,14 @@ def normalized_record(row: Mapping[str, Any]) -> dict[str, Any]:
                 for pi in payers_info:
                     if isinstance(pi, dict):
                         methodology = str(pi.get("methodology") or "dollar")[:30]
-                        rates.append({
-                            "payer_name": pi.get("payer_name"),
-                            "plan_name": pi.get("plan_name"),
-                            "negotiated_rate": pi.get("standard_charge_dollar"),
-                            "negotiated_rate_type": methodology,
-                        })
+                        rates.append(
+                            {
+                                "payer_name": pi.get("payer_name"),
+                                "plan_name": pi.get("plan_name"),
+                                "negotiated_rate": pi.get("standard_charge_dollar"),
+                                "negotiated_rate_type": methodology,
+                            }
+                        )
 
     if not isinstance(rates, list):
         payer = value(row, "payer_name", "payer")

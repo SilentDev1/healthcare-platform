@@ -1,0 +1,35 @@
+{
+  "version": "1.0.0",
+  "sources": [
+    {
+      "ccn": "301300",
+      "facility_name": "UPPER CONNECTICUT VALLEY HOSPITAL",
+      "source_page_url": "https://www.ucvh.org/patients-visitors/financial-information/",
+      "machine_readable_file_url": "https://hospitalpricetransparencyfiles.com/upper-connecticut-valley-hospital/020276210_Upper-Connecticut-Valley-Hospital_standardcharges.csv",
+      "declared_format": "csv",
+      "vendor_name": "Hospital Price Transparency Files",
+      "health_system_name": "North Country Healthcare",
+      "evidence": "Direct Hospital Chargemaster link on the official hospital financial-information page"
+    },
+    {
+      "ccn": "301303",
+      "facility_name": "WEEKS MEDICAL CENTER",
+      "source_page_url": "https://weeksmedical.org/patients-visitors/financial-information/",
+      "machine_readable_file_url": "https://hospitalpricetransparencyfiles.com/weeks-medical-center/020222242_Weeks-Medical-Center_standardcharges.csv",
+      "declared_format": "csv",
+      "vendor_name": "Hospital Price Transparency Files",
+      "health_system_name": "North Country Healthcare",
+      "evidence": "Direct Hospital Chargemaster link on the official hospital financial-information page"
+    },
+    {
+      "ccn": "300023",
+      "facility_name": "EXETER HOSPITAL INC",
+      "source_page_url": "https://bilh.org/billing-financial-services/price-transparency",
+      "machine_readable_file_url": "https://exeterhospital.org/222674014_exeter-hospital-standardcharges.json",
+      "declared_format": "json",
+      "vendor_name": null,
+      "health_system_name": "Beth Israel Lahey Health",
+      "evidence": "Hospital Charge Data link for Exeter Hospital on the official BILH price-transparency directory"
+    }
+  ]
+}
