@@ -42,7 +42,7 @@ def main() -> None:
         require(web, f"/hospitals/{args.facility_id}", "Data sources")
         require(web, f"/hospitals/{args.missing_price_facility_id}", "not currently available")
         require(web, f"/compare?procedure={args.procedure}&items={compare_items}", "Compare")
-        require(web, "/map", "Hospital price coverage")
+        require(web, "/map", "Hospital map")
         require(web, "/privacy", "Privacy at Carevero")
         require(web, "/terms", "informational comparison tool")
     print("beta smoke: PASS")

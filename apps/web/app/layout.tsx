@@ -3,6 +3,13 @@ import Link from "next/link";
 import "./styles.css";
 import "leaflet/dist/leaflet.css";
 import { brand } from "../lib/brand";
+export function seoRobots(
+  indexingEnabled = process.env.SEO_INDEXING_ENABLED,
+): Metadata["robots"] {
+  return indexingEnabled === "false"
+    ? { index: false, follow: false, nocache: true }
+    : undefined;
+}
 export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
@@ -12,6 +19,7 @@ export const metadata: Metadata = {
     template: `%s | ${brand.name}`,
   },
   description: brand.description,
+  robots: seoRobots(),
   openGraph: {
     title: brand.name,
     description: brand.description,

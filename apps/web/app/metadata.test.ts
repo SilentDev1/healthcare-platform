@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { metadata as rootMetadata } from "./layout";
+import { metadata as rootMetadata, seoRobots } from "./layout";
 import robots from "./robots";
 import { brand } from "../lib/brand";
 
@@ -14,5 +14,14 @@ describe("public brand and SEO safety", () => {
     const rules = robots().rules;
     expect(JSON.stringify(rules)).toContain("/compare");
     expect(JSON.stringify(rules)).toContain("/search?");
+  });
+
+  it("marks every page noindex during private beta", () => {
+    expect(seoRobots("false")).toEqual({
+      index: false,
+      follow: false,
+      nocache: true,
+    });
+    expect(seoRobots("true")).toBeUndefined();
   });
 });
