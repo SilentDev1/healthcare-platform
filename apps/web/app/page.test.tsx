@@ -18,13 +18,15 @@ describe("Home", () => {
     render(await Home());
     expect(
       screen.getByRole("heading", {
-        name: "Compare healthcare costs near you",
+        name: "Compare healthcare prices near you.",
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("combobox", { name: "What do you need?" }),
+      screen.getByRole("combobox", { name: "1. Procedure or service" }),
     ).toBeInTheDocument();
     expect(screen.getByText(/12 of 26 active hospitals/)).toBeInTheDocument();
-    expect(screen.getByText(/not generated estimates/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Missing data stays visibly missing/),
+    ).toBeInTheDocument();
   });
 });

@@ -103,17 +103,26 @@ export function CompareTray({
   });
   if (payer) compareQuery.set("payer", payer);
   const compareHref = `/compare?${compareQuery}`;
+  function clear() {
+    sessionStorage.removeItem(storageKey(procedureSlug));
+    window.dispatchEvent(new Event("carevero:selection"));
+  }
   return (
     <aside className="compare-tray" aria-live="polite">
       <div>
-        <strong>
-          {selected.length} location{selected.length === 1 ? "" : "s"} selected
-        </strong>
-        <span>Select up to 3 locations.</span>
+        <strong>Compare hospitals · {selected.length} of 3 selected</strong>
+        <ul aria-label="Selected locations">
+          {selected.map((choice) => (
+            <li key={choice.key}>{choice.name}</li>
+          ))}
+        </ul>
       </div>
+      <button className="text-button" type="button" onClick={clear}>
+        Clear
+      </button>
       {selected.length >= 2 ? (
         <Link className="button" href={compareHref}>
-          Compare {selected.length}
+          Compare now <span aria-hidden="true">→</span>
         </Link>
       ) : (
         <span className="muted">Choose one more to compare</span>

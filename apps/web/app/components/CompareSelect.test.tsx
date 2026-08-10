@@ -28,7 +28,7 @@ describe("anonymous comparison state", () => {
     );
     fireEvent.click(screen.getByLabelText(/Add Main campus/));
     fireEvent.click(screen.getByLabelText(/Add Downtown campus/));
-    const link = screen.getByRole("link", { name: "Compare 2" });
+    const link = screen.getByRole("link", { name: /Compare now/ });
     expect(link).toHaveAttribute(
       "href",
       expect.stringContaining("payer=aetna"),

@@ -48,10 +48,13 @@ export default function Layout({
             {betaMode && <span className="beta-badge">Private Beta</span>}
           </Link>
           <nav aria-label="Main navigation">
-            <Link href="/search">Find care</Link>
+            <Link className="nav-primary" href="/search">
+              Find prices
+            </Link>
             <Link href="/hospitals">Hospitals</Link>
             <Link href="/procedures">Procedures</Link>
             <Link href="/map">Map</Link>
+            <Link href="/how-it-works">How it works</Link>
           </nav>
         </header>
         <div id="main-content">{children}</div>

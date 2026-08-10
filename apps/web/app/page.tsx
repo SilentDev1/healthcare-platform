@@ -26,18 +26,58 @@ export default async function Home() {
   } catch {}
   return (
     <>
-      <main className="hero">
-        <div className="hero-inner">
-          <p className="eyebrow">Clear information for confident choices</p>
-          <h1>Compare healthcare costs near you</h1>
-          <p className="lede">
-            Explore published hospital prices and CMS quality information in one
-            straightforward place.
-          </p>
-          <p className="hero-assurance">
-            Free to use. No account required. Carevero provides comparison
-            information—not medical advice or a guaranteed bill.
-          </p>
+      <main className="hero product-hero">
+        <div className="hero-grid">
+          <div className="hero-copy">
+            <p className="eyebrow">Clear information for confident choices</p>
+            <h1>
+              Compare healthcare <span>prices</span> near you.
+            </h1>
+            <p className="lede">
+              Compare published prices for procedures and services at New
+              Hampshire hospitals. Review pricing, location, and available CMS
+              quality information before choosing care.
+            </p>
+            <p className="hero-assurance">
+              <strong>Free to use</strong> <i aria-hidden="true">•</i> No
+              account required <i aria-hidden="true">•</i> Published hospital
+              data
+            </p>
+          </div>
+          <div
+            className="coverage-visual"
+            aria-label="New Hampshire launch region"
+          >
+            <div className="region-label">
+              <span>New Hampshire</span>
+              <strong>Carevero launch region</strong>
+            </div>
+            <span className="map-marker marker-one" aria-hidden="true">
+              +
+            </span>
+            <span className="map-marker marker-two" aria-hidden="true">
+              +
+            </span>
+            <span className="map-marker marker-three" aria-hidden="true">
+              +
+            </span>
+            <div className="trust-card trust-card-top">
+              <span aria-hidden="true">✓</span>
+              <div>
+                <strong>Published pricing</strong>
+                <small>Hospital machine-readable files</small>
+              </div>
+            </div>
+            <div className="trust-card trust-card-bottom">
+              <span aria-hidden="true">○</span>
+              <div>
+                <strong>No account required</strong>
+                <small>Search and compare anonymously</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="hero-search-panel">
           <CareSearch showInsurance />
           <div className="popular">
             <span>Popular:</span>
@@ -53,28 +93,23 @@ export default async function Home() {
           </div>
         </div>
       </main>
-      <section className="section">
+      <section className="section product-intro">
         <div className="section-heading">
           <p className="eyebrow">How it works</p>
-          <h2>A clearer path to comparing care</h2>
-          <p>No billing-code knowledge required.</p>
+          <h2>Search, compare, then verify</h2>
         </div>
-        <div className="feature-grid steps">
+        <div className="feature-grid steps product-steps">
           {[
             [
-              "Search for care",
+              "Search",
               "Use everyday language, like “knee MRI” or “mammogram.”",
             ],
             [
-              "Compare facilities",
+              "Compare",
               "Review published prices, locations, and service settings.",
             ],
             [
-              "Review quality",
-              "Use CMS measures as context—not as a single best-hospital score.",
-            ],
-            [
-              "Verify your choice",
+              "Verify",
               "Confirm your benefits and expected charges with the provider and insurer.",
             ],
           ].map(([title, body]) => (
@@ -85,54 +120,23 @@ export default async function Home() {
           ))}
         </div>
       </section>
-      <div className="trust-strip">
-        <section className="section">
-          <div>
-            <h2>Know where the information comes from</h2>
-            <p>
-              Hospital machine-readable files for prices. CMS Care Compare for
-              quality.
-            </p>
-          </div>
-          <Link className="button secondary" href="/procedures">
-            Explore procedures
-          </Link>
-        </section>
-      </div>
-      <section className="section">
-        <div className="section-heading">
-          <p className="eyebrow">Built for trust</p>
-          <h2>Real published data, with gaps shown clearly</h2>
-        </div>
-        <div className="feature-grid">
-          {[
-            [
-              "Public pricing data",
-              "We show reviewed, publishable hospital data—not generated estimates.",
-            ],
-            [
-              "Quality in context",
-              "CMS measures are presented without declaring a “best” hospital.",
-            ],
-            [
-              "Source dates included",
-              "Meaningful price views identify their source and latest update.",
-            ],
-          ].map(([title, body]) => (
-            <article className="card feature-card" key={title}>
-              <span className="icon" aria-hidden="true">
-                ✓
-              </span>
-              <h3>{title}</h3>
-              <p>{body}</p>
-            </article>
-          ))}
+      <section className="section compact-trust">
+        <div>
+          <p className="eyebrow">Real published data</p>
+          <h2>Prices with sources and limitations attached</h2>
+          <p>
+            Hospital files provide pricing. CMS Care Compare provides applicable
+            quality information. Missing data stays visibly missing.
+          </p>
         </div>
         <CoverageNotice>
           {coverage
             ? `Published prices are currently available for ${coverage.facilities_with_publishable_prices} of ${coverage.nh_facilities} active hospitals in the launch region, covering ${coverage.publishable_procedures} procedures.`
             : "Coverage is incomplete and varies by hospital and procedure. Availability is always shown with each result."}
         </CoverageNotice>
+        <Link className="button secondary" href="/about-data">
+          View coverage and methodology
+        </Link>
       </section>
     </>
   );

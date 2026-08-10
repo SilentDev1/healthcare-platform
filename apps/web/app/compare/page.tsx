@@ -90,14 +90,30 @@ export default async function ComparePage({
     );
   }
 
+  const settingSignature = (item: ProcedureComparisonItem) =>
+    [...item.service_settings].sort().join("|");
+  const cashPricesAreComparable =
+    items.every((item) => item.cash_price_min !== null) &&
+    items.every(
+      (item) => settingSignature(item) === settingSignature(items[0]),
+    );
+  const lowestComparableCash = cashPricesAreComparable
+    ? Math.min(...items.map((item) => Number(item.cash_price_min)))
+    : null;
+
   const row = (
     label: string,
     render: (item: ProcedureComparisonItem) => React.ReactNode,
+    cellClass?: (item: ProcedureComparisonItem) => string | undefined,
   ) => (
     <tr>
       <th scope="row">{label}</th>
       {items.map((item) => (
-        <td data-label={label} key={item.facility_location_id}>
+        <td
+          className={cellClass?.(item)}
+          data-label={label}
+          key={item.facility_location_id}
+        >
           {render(item)}
         </td>
       ))}
@@ -154,9 +170,28 @@ export default async function ComparePage({
             {row("CMS overall rating", (item) => (
               <QualityRating value={item.cms_overall_rating} />
             ))}
-            {row("Published cash price", (item) => (
-              <PriceRange min={item.cash_price_min} max={item.cash_price_max} />
-            ))}
+            {row(
+              "Published cash price",
+              (item) => (
+                <>
+                  <PriceRange
+                    min={item.cash_price_min}
+                    max={item.cash_price_max}
+                  />
+                  {lowestComparableCash !== null &&
+                    Number(item.cash_price_min) === lowestComparableCash && (
+                      <span className="lowest-price-label">
+                        Lowest published comparable price
+                      </span>
+                    )}
+                </>
+              ),
+              (item) =>
+                lowestComparableCash !== null &&
+                Number(item.cash_price_min) === lowestComparableCash
+                  ? "highlight"
+                  : undefined,
+            )}
             {row(
               payer
                 ? "Published negotiated range for selected payer"

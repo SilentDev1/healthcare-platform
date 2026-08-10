@@ -237,10 +237,12 @@ export function FacilityPriceCard({
 
 export function ComparisonFacilityCard({
   item,
+  procedureName,
   procedureSlug,
   payerName,
 }: {
   item: ProcedureComparisonItem;
+  procedureName: string;
   procedureSlug: string;
   payerName?: string;
 }) {
@@ -307,10 +309,38 @@ export function ComparisonFacilityCard({
         </div>
       )}
       {item.price_available && (
-        <SourceAttribution
-          updated={item.latest_updated ?? undefined}
-          url={item.source_url ?? undefined}
-        />
+        <>
+          <details className="price-details">
+            <summary>Price details and source</summary>
+            <dl>
+              <div>
+                <dt>Procedure</dt>
+                <dd>{procedureName}</dd>
+              </div>
+              <div>
+                <dt>Service setting</dt>
+                <dd>
+                  {item.service_settings.length
+                    ? item.service_settings.join(", ").replaceAll("_", " ")
+                    : "Not published"}
+                </dd>
+              </div>
+              <div>
+                <dt>Published rate records</dt>
+                <dd>{item.summary_count}</dd>
+              </div>
+              <div>
+                <dt>Payer context</dt>
+                <dd>{payerName ?? "All available published payers"}</dd>
+              </div>
+            </dl>
+            <p>Published prices may not equal your final out-of-pocket cost.</p>
+          </details>
+          <SourceAttribution
+            updated={item.latest_updated ?? undefined}
+            url={item.source_url ?? undefined}
+          />
+        </>
       )}
       <div className="card-actions">
         <Link className="button" href={`/hospitals/${item.facility_id}`}>

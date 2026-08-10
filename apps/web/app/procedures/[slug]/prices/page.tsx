@@ -270,6 +270,7 @@ export default async function ProcedurePrices({
                 <ComparisonFacilityCard
                   key={`${item.facility_id}-${item.facility_location_id}`}
                   item={item}
+                  procedureName={procedure.consumer_name}
                   procedureSlug={slug}
                   payerName={payerName}
                 />

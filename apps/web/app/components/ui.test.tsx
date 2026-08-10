@@ -39,7 +39,11 @@ const baseItem: ProcedureComparisonItem = {
 describe("consumer pricing components", () => {
   it("renders honest published and unavailable price states", () => {
     const { rerender } = render(
-      <ComparisonFacilityCard item={baseItem} procedureSlug="mri-brain" />,
+      <ComparisonFacilityCard
+        item={baseItem}
+        procedureName="MRI brain"
+        procedureSlug="mri-brain"
+      />,
     );
     expect(screen.getByText("$825")).toBeInTheDocument();
     expect(screen.getByText(/\$640/)).toBeInTheDocument();
@@ -48,6 +52,7 @@ describe("consumer pricing components", () => {
 
     rerender(
       <ComparisonFacilityCard
+        procedureName="MRI brain"
         procedureSlug="mri-brain"
         item={{
           ...baseItem,

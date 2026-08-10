@@ -98,7 +98,9 @@ export function CareSearch({
       onSubmit={submit}
     >
       <div className="field autocomplete">
-        <label htmlFor={`${listId}-care`}>What do you need?</label>
+        <label htmlFor={`${listId}-care`}>
+          {compact ? "What do you need?" : "1. Procedure or service"}
+        </label>
         <input
           id={`${listId}-care`}
           value={care}
@@ -152,7 +154,9 @@ export function CareSearch({
         </span>
       </div>
       <div className="field">
-        <label htmlFor={`${listId}-location`}>Where?</label>
+        <label htmlFor={`${listId}-location`}>
+          {compact ? "Where?" : "2. Location"}
+        </label>
         <input
           id={`${listId}-location`}
           value={location}
@@ -171,7 +175,7 @@ export function CareSearch({
       </div>
       {showInsurance && (
         <div className="field insurance-field">
-          <label htmlFor={`${listId}-payer`}>Insurance (optional)</label>
+          <label htmlFor={`${listId}-payer`}>3. Published payer / rate</label>
           <select
             id={`${listId}-payer`}
             value={payer}
@@ -184,10 +188,13 @@ export function CareSearch({
               </option>
             ))}
           </select>
+          <span className="field-help">
+            Published rates do not confirm coverage or network status.
+          </span>
         </div>
       )}
       <button className="button search-button" type="submit">
-        Compare prices <span aria-hidden="true">→</span>
+        Search prices <span aria-hidden="true">→</span>
       </button>
     </form>
   );
