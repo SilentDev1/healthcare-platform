@@ -37,7 +37,7 @@ def main() -> None:
             f"{item['facility_id']}~{item['facility_location_id']}" for item in priced
         )
     with httpx.Client(base_url=args.web_url, timeout=20, follow_redirects=True) as web:
-        require(web, "/", "Compare healthcare costs")
+        require(web, "/", "Compare healthcare prices")
         require(web, f"/procedures/{args.procedure}/prices", "Published")
         require(web, f"/hospitals/{args.facility_id}", "Data sources")
         require(web, f"/hospitals/{args.missing_price_facility_id}", "not currently available")
