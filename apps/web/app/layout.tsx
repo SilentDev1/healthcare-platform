@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import "./styles.css";
 import "leaflet/dist/leaflet.css";
 import { brand } from "../lib/brand";
+import { localePath } from "../lib/i18n";
+import { requestLocale, requestMessages } from "../lib/i18n-server";
+import { LanguageSelector } from "./components/LanguageSelector";
 export function seoRobots(
   indexingEnabled = process.env.SEO_INDEXING_ENABLED,
 ): Metadata["robots"] {
@@ -26,35 +31,46 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
-export default function Layout({
+export default async function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const betaMode = process.env.BETA_MODE === "true";
   const feedbackEmail = process.env.BETA_FEEDBACK_EMAIL;
   const feedbackEnabled =
     process.env.FEEDBACK_ENABLED === "true" && feedbackEmail;
+  const locale = await requestLocale();
+  const t = await requestMessages();
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html lang={locale} data-scroll-behavior="smooth">
       <body>
         <a className="skip-link" href="#main-content">
-          Skip to main content
+          {t.skip}
         </a>
         <header className="site-header">
-          <Link className="brand" href="/">
-            <span className="brand-mark" aria-hidden="true">
-              +
-            </span>
-            {brand.logoText}
+          <Link className="brand" href={localePath(locale, "/")}>
+            <Image
+              className="brand-logo"
+              src="/brand/carevero-mark.svg"
+              alt=""
+              width="48"
+              height="48"
+            />
+            <span className="brand-name">{brand.logoText}</span>
             {betaMode && <span className="beta-badge">Private Beta</span>}
           </Link>
-          <nav aria-label="Main navigation">
-            <Link className="nav-primary" href="/search">
-              Find prices
+          <nav aria-label={t.mainNavigation}>
+            <Link className="nav-primary" href={localePath(locale, "/search")}>
+              {t.findPrices}
             </Link>
-            <Link href="/hospitals">Hospitals</Link>
-            <Link href="/procedures">Procedures</Link>
-            <Link href="/map">Map</Link>
-            <Link href="/how-it-works">How it works</Link>
+            <Link href={localePath(locale, "/hospitals")}>{t.hospitals}</Link>
+            <Link href={localePath(locale, "/procedures")}>{t.procedures}</Link>
+            <Link href={localePath(locale, "/map")}>{t.map}</Link>
+            <Link href={localePath(locale, "/how-it-works")}>
+              {t.howItWorks}
+            </Link>
+            <Suspense fallback={null}>
+              <LanguageSelector locale={locale} label={t.language} />
+            </Suspense>
           </nav>
         </header>
         <div id="main-content">{children}</div>
@@ -64,12 +80,20 @@ export default function Layout({
               <strong>{brand.name}</strong>
               <p>{brand.tagline}</p>
               <nav aria-label="Footer navigation">
-                <Link href="/about-data">About the data</Link>
-                <Link href="/how-it-works">How it works</Link>
-                <Link href="/hospitals">Hospitals</Link>
-                <Link href="/procedures">Procedures</Link>
-                <Link href="/privacy">Privacy</Link>
-                <Link href="/terms">Terms &amp; disclaimers</Link>
+                <Link href={localePath(locale, "/about-data")}>
+                  {t.aboutData}
+                </Link>
+                <Link href={localePath(locale, "/how-it-works")}>
+                  {t.howItWorks}
+                </Link>
+                <Link href={localePath(locale, "/hospitals")}>
+                  {t.hospitals}
+                </Link>
+                <Link href={localePath(locale, "/procedures")}>
+                  {t.procedures}
+                </Link>
+                <Link href={localePath(locale, "/privacy")}>{t.privacy}</Link>
+                <Link href={localePath(locale, "/terms")}>{t.terms}</Link>
                 {feedbackEnabled && (
                   <a
                     href={`mailto:${feedbackEmail}?subject=Carevero beta feedback&body=Please don't include private medical information.%0A%0APage: `}
@@ -87,11 +111,7 @@ export default function Layout({
                 </p>
               )}
             </div>
-            <p>
-              Published hospital prices are estimates for comparison, not a
-              quote or guarantee. Verify costs and network participation with
-              your hospital and insurer.
-            </p>
+            <p>{t.footerDisclaimer}</p>
           </div>
         </footer>
       </body>

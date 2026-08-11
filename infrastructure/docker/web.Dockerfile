@@ -25,6 +25,7 @@ ENV NODE_ENV=production PORT=8080 HOSTNAME=0.0.0.0
 RUN addgroup --system --gid 10001 carevero && adduser --system --uid 10001 --ingroup carevero carevero
 COPY --from=build --chown=carevero:carevero /app/apps/web/.next/standalone ./
 COPY --from=build --chown=carevero:carevero /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=build --chown=carevero:carevero /app/apps/web/public ./apps/web/public
 USER carevero
 EXPOSE 8080
 CMD ["node", "apps/web/server.js"]

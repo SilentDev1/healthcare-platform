@@ -61,6 +61,19 @@ def test_synonym_dict_has_entries() -> None:
     assert "flu shot" in SYNONYMS
 
 
+def test_active_beta_languages_have_reviewed_search_terms() -> None:
+    expected = {
+        "es": ["mamografía", "colonoscopia", "análisis de sangre", "parto"],
+        "vi": ["chụp nhũ ảnh", "nội soi đại tràng", "xét nghiệm máu", "sinh con"],
+        "zh-TW": ["乳房攝影", "大腸鏡", "血液檢查", "生產"],
+        "zh-CN": ["乳房摄影", "结肠镜检查", "血液检查", "分娩"],
+    }
+    for locale, terms in expected.items():
+        for term in terms:
+            assert term in SYNONYMS, f"missing {locale} synonym: {term}"
+            assert SYNONYMS[term]
+
+
 def test_synonym_values_are_lists() -> None:
     """Each synonym key maps to a list of strings."""
     for key, values in SYNONYMS.items():

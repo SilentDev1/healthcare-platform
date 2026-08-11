@@ -2,6 +2,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { SearchSuggestion } from "../../lib/api";
+import { localePath, type Locale } from "../../lib/i18n";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
@@ -11,12 +12,14 @@ export function CareSearch({
   initialLocation = "",
   initialPayer = "",
   showInsurance = false,
+  locale = "en",
 }: {
   compact?: boolean;
   initialCare?: string;
   initialLocation?: string;
   initialPayer?: string;
   showInsurance?: boolean;
+  locale?: Locale;
 }) {
   const router = useRouter();
   const listId = useId();
@@ -92,14 +95,19 @@ export function CareSearch({
           if (location.trim()) priceParams.set("location", location.trim());
           if (payer) priceParams.set("payer", payer);
           const query = priceParams.size ? `?${priceParams}` : "";
-          router.push(`/procedures/${procedure.metadata.slug}/prices${query}`);
+          router.push(
+            localePath(
+              locale,
+              `/procedures/${procedure.metadata.slug}/prices${query}`,
+            ),
+          );
           return;
         }
       }
     } catch {
       // The complete search page remains the resilient fallback.
     }
-    router.push(`/search?${params}`);
+    router.push(`${localePath(locale, "/search")}?${params}`);
   }
   function keyDown(event: React.KeyboardEvent) {
     if (!open || !items.length) return;

@@ -4,6 +4,8 @@ import { ComparisonFacilityCard, CoverageNotice } from "./components/ui";
 import { InlineComparePanel } from "./components/CompareSelect";
 import { apiGet } from "../lib/api";
 import type { ProcedureComparison } from "../lib/api";
+import { localePath } from "../lib/i18n";
+import { requestLocale, requestMessages } from "../lib/i18n-server";
 
 interface Coverage {
   nh_facilities: number;
@@ -22,6 +24,8 @@ const popular = [
 ];
 
 export default async function Home() {
+  const locale = await requestLocale();
+  const t = await requestMessages();
   let coverage: Coverage | null = null;
   let featured: ProcedureComparison | null = null;
   try {
@@ -39,67 +43,32 @@ export default async function Home() {
       <main className="hero product-hero">
         <div className="hero-grid">
           <div className="hero-copy">
-            <p className="eyebrow">Clear information for confident choices</p>
+            <p className="eyebrow">{t.eyebrow}</p>
             <h1>
-              Healthcare prices. <span>Clear. Local. Comparable.</span>
+              {t.heroTitle} <span>{t.heroAccent}</span>
             </h1>
-            <p className="lede">
-              Compare published prices for procedures and services at New
-              Hampshire hospitals. Review pricing, location, and available CMS
-              quality information before choosing care.
-            </p>
+            <p className="lede">{t.heroBody}</p>
             <p className="hero-assurance">
-              <strong>Free to use</strong> <i aria-hidden="true">•</i> No
-              account required <i aria-hidden="true">•</i> Published hospital
-              data
+              <strong>{t.free}</strong> <i aria-hidden="true">•</i>{" "}
+              {t.noAccount} <i aria-hidden="true">•</i> {t.publishedData}
             </p>
-          </div>
-          <div
-            className="coverage-visual"
-            aria-label="New Hampshire launch region"
-          >
-            <div className="region-label">
-              <span>New Hampshire</span>
-              <strong>Carevero launch region</strong>
-            </div>
-            <span className="map-marker marker-one" aria-hidden="true">
-              +
-            </span>
-            <span className="map-marker marker-two" aria-hidden="true">
-              +
-            </span>
-            <span className="map-marker marker-three" aria-hidden="true">
-              +
-            </span>
-            <div className="trust-card trust-card-top">
-              <span aria-hidden="true">✓</span>
-              <div>
-                <strong>Published pricing</strong>
-                <small>Hospital machine-readable files</small>
-              </div>
-            </div>
-            <div className="trust-card trust-card-bottom">
-              <span aria-hidden="true">○</span>
-              <div>
-                <strong>No account required</strong>
-                <small>Search and compare anonymously</small>
-              </div>
-            </div>
           </div>
         </div>
         <div className="hero-search-panel">
-          <CareSearch showInsurance />
+          <CareSearch showInsurance locale={locale} />
           <div className="popular">
-            <span>Popular:</span>
-            {popular.map((term) => (
-              <Link
-                className="chip"
-                key={term}
-                href={`/search?q=${encodeURIComponent(term)}`}
-              >
-                {term}
-              </Link>
-            ))}
+            <strong>{t.popular}</strong>
+            <div className="popular-links">
+              {popular.map((term) => (
+                <Link
+                  className="chip"
+                  key={term}
+                  href={`${localePath(locale, "/search")}?q=${encodeURIComponent(term)}`}
+                >
+                  {term}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </main>
@@ -116,7 +85,10 @@ export default async function Home() {
             </div>
             <Link
               className="button secondary"
-              href="/procedures/mri-knee-without-contrast/prices"
+              href={localePath(
+                locale,
+                "/procedures/mri-knee-without-contrast/prices",
+              )}
             >
               View all matching hospitals
             </Link>
@@ -181,7 +153,10 @@ export default async function Home() {
             ? `Published prices are currently available for ${coverage.facilities_with_publishable_prices} of ${coverage.nh_facilities} active hospitals in the launch region, covering ${coverage.publishable_procedures} procedures.`
             : "Coverage is incomplete and varies by hospital and procedure. Availability is always shown with each result."}
         </CoverageNotice>
-        <Link className="button secondary" href="/about-data">
+        <Link
+          className="button secondary"
+          href={localePath(locale, "/about-data")}
+        >
           View coverage and methodology
         </Link>
       </section>
