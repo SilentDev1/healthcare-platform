@@ -4,7 +4,7 @@ Completed: 2026-08-10
 
 ## Release gate
 
-- [x] PostgreSQL 17 healthy and migration head `0008`
+- [x] PostgreSQL 17 healthy and migration head `0009`
 - [x] No active imports during QA
 - [x] Anonymous homepage → search → results → compare journey works
 - [x] Everyday-language search works for MRI, knee scan, CAT scan, CT,

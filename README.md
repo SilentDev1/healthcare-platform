@@ -54,7 +54,7 @@ make secret-scan
 make beta-data-smoke
 ```
 
-The last UI release passed 96 Python tests, 17 workspace tests, strict MyPy, Ruff, ESLint,
+The Phase 4.7 release passed 106 Python tests, 18 workspace tests, strict MyPy, Ruff, ESLint,
 Prettier, TypeScript, both Next.js production builds, the secret scan, and an audit with
 zero npm vulnerabilities. Re-run the suite after changes; historical results are not a
 substitute for current verification.
@@ -77,7 +77,7 @@ apps/web/                    Next.js consumer search, prices, compare, facilitie
 apps/admin/                  Local/internal Next.js operational dashboard
 services/api/                FastAPI public and internal API boundaries
 collectors/                  CMS and hospital-price acquisition/parsing
-packages/database/           SQLAlchemy models and Alembic migrations (head: 0008)
+packages/database/           SQLAlchemy models and Alembic migrations (head: 0009)
 packages/search/             Consumer search index and synonyms
 packages/identity/           Deterministic facility and location identity resolution
 packages/shared_types/       Shared TypeScript contracts

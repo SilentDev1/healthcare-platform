@@ -536,6 +536,134 @@ class FacilityProcedurePriceSummarySource(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class PriceAuditRun(Base):
+    """A reproducible, append-only public-price audit execution."""
+
+    __tablename__ = "price_audit_runs"
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    state: Mapped[str] = mapped_column(String(2), index=True)
+    seed: Mapped[int] = mapped_column(default=4700)
+    requested_sample_size: Mapped[int] = mapped_column()
+    full_audit: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    filters: Mapped[dict[str, object]] = mapped_column(JSON)
+    status: Mapped[str] = mapped_column(String(30), index=True)
+    audit_version: Mapped[str] = mapped_column(String(30))
+    result_counts: Mapped[dict[str, object] | None] = mapped_column(JSON)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class PriceAuditResult(Base):
+    """Immutable evidence and outcome for one public observation audit."""
+
+    __tablename__ = "price_audit_results"
+    __table_args__ = (
+        UniqueConstraint("run_id", "observation_id", name="uq_price_audit_observation"),
+        Index("ix_price_audit_result_status", "audit_status", "audited_at"),
+    )
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    run_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("price_audit_runs.id", ondelete="CASCADE"), index=True
+    )
+    observation_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("facility_procedure_price_observations.id"), index=True
+    )
+    summary_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("facility_procedure_price_summaries.id"), index=True
+    )
+    record_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("hospital_price_records.id"), index=True
+    )
+    source_file_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("source_files.id"), index=True)
+    audit_status: Mapped[str] = mapped_column(String(40), index=True)
+    source_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
+    normalized_amount: Mapped[Decimal] = mapped_column(Numeric(18, 6))
+    difference: Mapped[Decimal | None] = mapped_column(Numeric(18, 6))
+    semantic_checks: Mapped[dict[str, object]] = mapped_column(JSON)
+    provenance_checks: Mapped[dict[str, object]] = mapped_column(JSON)
+    evidence: Mapped[dict[str, object]] = mapped_column(JSON)
+    audit_version: Mapped[str] = mapped_column(String(30))
+    audited_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class InsuranceNetworkEntity(TimestampMixin, Base):
+    """A payer network, distinct from a payer brand and insurance product."""
+
+    __tablename__ = "insurance_network_entities"
+    __table_args__ = (
+        UniqueConstraint("payer_entity_id", "normalized_name", name="uq_network_payer_name"),
+    )
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    payer_entity_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("payer_entities.id"), index=True)
+    canonical_name: Mapped[str] = mapped_column(String(500))
+    normalized_name: Mapped[str] = mapped_column(String(500), index=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+
+
+class ProviderDirectorySource(Base):
+    """Versioned official source metadata for network observations."""
+
+    __tablename__ = "provider_directory_sources"
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    payer_entity_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("payer_entities.id"), index=True
+    )
+    insurance_plan_entity_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("insurance_plan_entities.id"), index=True
+    )
+    insurance_network_entity_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("insurance_network_entities.id"), index=True
+    )
+    state: Mapped[str | None] = mapped_column(String(2), index=True)
+    source_name: Mapped[str] = mapped_column(String(255))
+    source_url: Mapped[str] = mapped_column(String(2048))
+    source_type: Mapped[str] = mapped_column(String(60))
+    machine_readable: Mapped[bool] = mapped_column(Boolean, default=False)
+    api_available: Mapped[bool] = mapped_column(Boolean, default=False)
+    authentication_required: Mapped[bool] = mapped_column(Boolean, default=False)
+    checksum_sha256: Mapped[str | None] = mapped_column(String(64))
+    observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    source_effective_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    freshness_days: Mapped[int] = mapped_column(default=30)
+    active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+
+
+class NetworkParticipationObservation(Base):
+    """Historical, plan/network-specific participation evidence; never an inferred claim."""
+
+    __tablename__ = "network_participation_observations"
+    __table_args__ = (
+        Index("ix_network_observation_lookup", "facility_id", "status", "observed_at"),
+    )
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    source_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("provider_directory_sources.id"), index=True
+    )
+    payer_entity_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("payer_entities.id"), index=True)
+    insurance_plan_entity_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("insurance_plan_entities.id"), index=True
+    )
+    insurance_network_entity_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("insurance_network_entities.id"), index=True
+    )
+    facility_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("facilities.id"), index=True)
+    facility_location_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("facility_locations.id"), index=True
+    )
+    state: Mapped[str] = mapped_column(String(2), index=True)
+    status: Mapped[str] = mapped_column(String(40), index=True)
+    source_provider_identifier: Mapped[str | None] = mapped_column(String(255))
+    identifier_match_evidence: Mapped[dict[str, object]] = mapped_column(JSON)
+    source_evidence: Mapped[dict[str, object]] = mapped_column(JSON)
+    normalized_evidence: Mapped[dict[str, object]] = mapped_column(JSON)
+    confidence: Mapped[Decimal] = mapped_column(Numeric(5, 4))
+    review_status: Mapped[str] = mapped_column(String(30), index=True)
+    observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    source_effective_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class PriceSourceOverlapAnalysis(Base):
     __tablename__ = "price_source_overlap_analyses"
     __table_args__ = (
