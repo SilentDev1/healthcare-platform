@@ -46,6 +46,9 @@ describe("consumer pricing components", () => {
       />,
     );
     expect(screen.getByText("$825")).toBeInTheDocument();
+    expect(
+      screen.getByText("MRI brain", { selector: ".card-procedure strong" }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/\$640/)).toBeInTheDocument();
     expect(screen.getByText(/\$1,110/)).toBeInTheDocument();
     expect(screen.getByText(/Verified published source/)).toBeInTheDocument();

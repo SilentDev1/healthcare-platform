@@ -260,6 +260,9 @@ export function ComparisonFacilityCard({
           </span>
           <h2>{item.facility_name}</h2>
           <p className="location">{locationLabel}</p>
+          <p className="card-procedure">
+            Comparing: <strong>{procedureName}</strong>
+          </p>
         </div>
         {item.price_available ? (
           <span className="verified">
@@ -360,7 +363,10 @@ export function ComparisonFacilityCard({
 export function FilterPanel({ children }: { children: React.ReactNode }) {
   return (
     <details className="filters responsive-filters">
-      <summary>Filter results</summary>
+      <summary>
+        <span>Filter results</span>
+        <small>Location, price availability, setting, payer, and rating</small>
+      </summary>
       <div className="responsive-filter-body">{children}</div>
     </details>
   );
