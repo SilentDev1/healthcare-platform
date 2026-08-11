@@ -54,10 +54,10 @@ make secret-scan
 make beta-data-smoke
 ```
 
-The Phase 4.7 release passed 106 Python tests, 18 workspace tests, strict MyPy, Ruff, ESLint,
-Prettier, TypeScript, both Next.js production builds, the secret scan, and an audit with
-zero npm vulnerabilities. Re-run the suite after changes; historical results are not a
-substitute for current verification.
+The Phase 4.7 pre-commit verification (prior session) passed 116 Python tests, 22 workspace
+tests, strict MyPy, Ruff, ESLint, Prettier, TypeScript, both Next.js production builds, the
+secret scan, and npm audit with zero vulnerabilities. Re-run the suite after changes;
+historical results are not a substitute for current verification.
 
 To smoke-test a deployed beta, use the checked-in command rather than ad hoc fixture
 fallbacks:
@@ -77,7 +77,7 @@ apps/web/                    Next.js consumer search, prices, compare, facilitie
 apps/admin/                  Local/internal Next.js operational dashboard
 services/api/                FastAPI public and internal API boundaries
 collectors/                  CMS and hospital-price acquisition/parsing
-packages/database/           SQLAlchemy models and Alembic migrations (head: 0009)
+packages/database/           SQLAlchemy models and Alembic migrations (head: 0011)
 packages/search/             Consumer search index and synonyms
 packages/identity/           Deterministic facility and location identity resolution
 packages/shared_types/       Shared TypeScript contracts

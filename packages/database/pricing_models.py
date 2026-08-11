@@ -334,7 +334,7 @@ class PriceServiceCode(Base):
     )
     code_system: Mapped[str] = mapped_column(String(40), index=True)
     code: Mapped[str] = mapped_column(String(100), index=True)
-    modifier: Mapped[str | None] = mapped_column(String(20))
+    modifier: Mapped[str | None] = mapped_column(String(255))
     raw_code_type: Mapped[str] = mapped_column(String(100))
     raw_code: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -447,6 +447,13 @@ class FacilityProcedurePriceObservation(TimestampMixin, Base):
             "price_type",
             name="uq_facility_procedure_price_observation",
         ),
+        Index(
+            "ix_price_observation_consumer_detail",
+            "procedure_id",
+            "facility_location_id",
+            "publication_status",
+            "price_type",
+        ),
     )
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
@@ -489,6 +496,14 @@ class FacilityProcedurePriceSummary(Base):
             name="uq_facility_procedure_price_summary",
         ),
         Index("ix_price_summary_public", "procedure_id", "publication_status", "service_setting"),
+        Index(
+            "ix_price_summary_consumer_insurance",
+            "procedure_id",
+            "facility_location_id",
+            "publication_status",
+            "payer_entity_id",
+            "insurance_plan_entity_id",
+        ),
     )
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), index=True)

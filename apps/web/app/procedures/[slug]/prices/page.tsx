@@ -14,6 +14,7 @@ import {
   PricingDisclaimer,
 } from "../../../components/ui";
 import { launchRegion } from "../../../../lib/brand";
+import { requestMessages } from "../../../../lib/i18n-server";
 import {
   CompareTray,
   InlineComparePanel,
@@ -23,6 +24,7 @@ interface Filters {
   location?: string;
   setting?: string;
   payer?: string;
+  plan?: string;
   facility_type?: string;
   availability?: string;
   rating?: string;
@@ -59,21 +61,28 @@ export default async function ProcedurePrices({
 }) {
   const { slug } = await params;
   const filters = await searchParams;
+  const messages = await requestMessages();
   const query = new URLSearchParams({ state: launchRegion.state });
   if (filters.setting) query.set("setting", filters.setting);
   if (filters.payer) query.set("payer", filters.payer);
+  if (filters.plan) query.set("plan", filters.plan);
   if (filters.location) {
     if (/^\d{5}$/.test(filters.location))
       query.set("postal_code", filters.location);
     else query.set("city", filters.location);
   }
   try {
-    const [data, procedure, payers] = await Promise.all([
+    const [data, procedure, payers, plans] = await Promise.all([
       apiGet<ProcedureComparison>(
         `/api/v1/procedures/${encodeURIComponent(slug)}/comparison?${query}`,
       ),
       apiGet<Procedure>(`/api/v1/procedures/${encodeURIComponent(slug)}`),
       apiGet<Array<{ slug: string; name: string }>>("/api/v1/pricing/payers"),
+      filters.payer
+        ? apiGet<Array<{ id: string; name: string; payer_slug: string }>>(
+            `/api/v1/pricing/plans?payer=${encodeURIComponent(filters.payer)}`,
+          )
+        : Promise.resolve([]),
     ]);
     let items = data.items.filter((item) => {
       if (filters.availability === "available" && !item.price_available)
@@ -100,6 +109,9 @@ export default async function ProcedurePrices({
     const payerName = filters.payer
       ? payers.find((payer) => payer.slug === filters.payer)?.name
       : undefined;
+    const planName = filters.plan
+      ? plans.find((plan) => plan.id === filters.plan)?.name
+      : undefined;
     const activeFilterCount = Object.entries(filters).filter(
       ([key, value]) => key !== "sort" && Boolean(value),
     ).length;
@@ -107,7 +119,7 @@ export default async function ProcedurePrices({
     const filterForm = (
       <form className="filter-form">
         <div className="filter-group">
-          <label htmlFor="location">City or ZIP</label>
+          <label htmlFor="location">{messages.location}: city or ZIP</label>
           <input
             id="location"
             name="location"
@@ -141,7 +153,7 @@ export default async function ProcedurePrices({
           </select>
         </div>
         <div className="filter-group">
-          <label htmlFor="payer">Insurance (published rates)</label>
+          <label htmlFor="payer">{messages.insurance}</label>
           <select id="payer" name="payer" defaultValue={filters.payer ?? ""}>
             <option value="">All available payers</option>
             {payers.map((payer) => (
@@ -150,9 +162,25 @@ export default async function ProcedurePrices({
               </option>
             ))}
           </select>
+          <p className="field-help">{messages.networkNotice}</p>
+        </div>
+        <div className="filter-group">
+          <label htmlFor="plan">{messages.planOptional}</label>
+          <select
+            id="plan"
+            name="plan"
+            defaultValue={filters.plan ?? ""}
+            disabled={!filters.payer}
+          >
+            <option value="">All published plans</option>
+            {plans.map((plan) => (
+              <option key={plan.id} value={plan.id}>
+                {plan.name}
+              </option>
+            ))}
+          </select>
           <p className="field-help">
-            A published negotiated rate does not guarantee network
-            participation.
+            Select a payer and apply filters before narrowing to a plan.
           </p>
         </div>
         <div className="filter-group">
@@ -203,13 +231,27 @@ export default async function ProcedurePrices({
           <span>Compare prices</span>
         </nav>
         <div className="page-heading comparison-heading">
-          <p className="eyebrow">Compare service locations</p>
+          <p className="eyebrow">{messages.compareServiceLocations}</p>
           <h1>{procedure.consumer_name}</h1>
           <p className="lede">
             Published hospital prices in {launchRegion.name}. These are not
             personalized estimates, and lower price does not mean better care.
           </p>
         </div>
+        <dl className="decision-context" aria-label="Comparison context">
+          <div>
+            <dt>{messages.location}</dt>
+            <dd>{filters.location || launchRegion.name}</dd>
+          </div>
+          <div>
+            <dt>{messages.coverage}</dt>
+            <dd>
+              {payerName
+                ? `${payerName}${planName ? ` · ${planName}` : ""}`
+                : `${messages.selfPay} · ${messages.chooseInsurance}`}
+            </dd>
+          </div>
+        </dl>
         <CoverageNotice>
           {filters.payer && data.facilities_with_prices === 0
             ? `No published negotiated rate found for ${payerName ?? "this payer"}. This does not mean the payer is not accepted, the hospital is out of network, or the service is not covered.`
@@ -276,6 +318,8 @@ export default async function ProcedurePrices({
                   procedureName={procedure.consumer_name}
                   procedureSlug={slug}
                   payerName={payerName}
+                  planName={planName}
+                  planId={filters.plan}
                 />
               ))
             )}
@@ -285,10 +329,15 @@ export default async function ProcedurePrices({
             procedureName={procedure.consumer_name}
             items={items}
             payer={filters.payer}
+            plan={filters.plan}
           />
         </div>
         <PricingDisclaimer />
-        <CompareTray procedureSlug={slug} payer={filters.payer} />
+        <CompareTray
+          procedureSlug={slug}
+          payer={filters.payer}
+          plan={filters.plan}
+        />
       </main>
     );
   } catch {

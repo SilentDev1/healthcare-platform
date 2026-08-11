@@ -13,7 +13,7 @@ beforeEach(() => sessionStorage.clear());
 afterEach(cleanup);
 
 describe("anonymous comparison state", () => {
-  it("is scoped to a procedure and preserves payer URL state", () => {
+  it("is scoped to a procedure and preserves payer and plan URL state", () => {
     render(
       <>
         <CompareSelect
@@ -28,7 +28,7 @@ describe("anonymous comparison state", () => {
           name="Downtown campus"
           procedureSlug="mri-knee"
         />
-        <CompareTray procedureSlug="mri-knee" payer="aetna" />
+        <CompareTray procedureSlug="mri-knee" payer="aetna" plan="plan-1" />
       </>,
     );
     fireEvent.click(screen.getByLabelText(/Add Main campus/));
@@ -37,6 +37,10 @@ describe("anonymous comparison state", () => {
     expect(link).toHaveAttribute(
       "href",
       expect.stringContaining("payer=aetna"),
+    );
+    expect(link).toHaveAttribute(
+      "href",
+      expect.stringContaining("plan=plan-1"),
     );
     expect(sessionStorage.getItem("careveroCompareV1:mri-knee")).toContain(
       "f1~l1",
@@ -125,6 +129,7 @@ describe("anonymous comparison state", () => {
     expect(screen.getByText("$700")).toBeInTheDocument();
     expect(screen.getByText("$800")).toBeInTheDocument();
     expect(screen.getByText("$900")).toBeInTheDocument();
+    expect(screen.queryByText("$500 – $900")).not.toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /View full comparison/ }),
     ).toHaveAttribute("href", expect.stringContaining("f3%7El3"));

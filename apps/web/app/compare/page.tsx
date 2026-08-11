@@ -22,11 +22,17 @@ export const metadata: Metadata = {
 export default async function ComparePage({
   searchParams,
 }: {
-  searchParams: Promise<{ items?: string; procedure?: string; payer?: string }>;
+  searchParams: Promise<{
+    items?: string;
+    procedure?: string;
+    payer?: string;
+    plan?: string;
+  }>;
 }) {
   const values = await searchParams;
   const procedure = values.procedure ?? "";
   const payer = values.payer ?? "";
+  const plan = values.plan ?? "";
   const selected = (values.items ?? "").split(",").filter(Boolean).slice(0, 3);
   if (!procedure || selected.length < 2) {
     return (
@@ -46,19 +52,26 @@ export default async function ComparePage({
 
   let data: ProcedureComparison;
   let payerName = "";
+  let planName = "";
   try {
-    const [comparison, payers] = await Promise.all([
+    const [comparison, payers, plans] = await Promise.all([
       apiGet<ProcedureComparison>(
-        `/api/v1/procedures/${encodeURIComponent(procedure)}/comparison?state=${launchRegion.state}${payer ? `&payer=${encodeURIComponent(payer)}` : ""}`,
+        `/api/v1/procedures/${encodeURIComponent(procedure)}/comparison?state=${launchRegion.state}${payer ? `&payer=${encodeURIComponent(payer)}` : ""}${plan ? `&plan=${encodeURIComponent(plan)}` : ""}`,
       ),
       payer
         ? apiGet<Array<{ slug: string; name: string }>>(
             "/api/v1/pricing/payers",
           )
         : Promise.resolve([]),
+      plan
+        ? apiGet<Array<{ id: string; name: string }>>(
+            `/api/v1/pricing/plans?payer=${encodeURIComponent(payer)}`,
+          )
+        : Promise.resolve([]),
     ]);
     data = comparison;
     payerName = payers.find((item) => item.slug === payer)?.name ?? payer;
+    planName = plans.find((item) => item.id === plan)?.name ?? plan;
   } catch {
     return (
       <main>
@@ -89,17 +102,6 @@ export default async function ComparePage({
       </main>
     );
   }
-
-  const settingSignature = (item: ProcedureComparisonItem) =>
-    [...item.service_settings].sort().join("|");
-  const cashPricesAreComparable =
-    items.every((item) => item.cash_price_min !== null) &&
-    items.every(
-      (item) => settingSignature(item) === settingSignature(items[0]),
-    );
-  const lowestComparableCash = cashPricesAreComparable
-    ? Math.min(...items.map((item) => Number(item.cash_price_min)))
-    : null;
 
   const row = (
     label: string,
@@ -140,8 +142,8 @@ export default async function ComparePage({
       <div className="comparison-key" role="note">
         <strong>Negotiated-price context:</strong>{" "}
         {payer
-          ? `Only negotiated rates published for the selected payer (${payerName}) are included.`
-          : "Negotiated ranges combine available published payers and plans."}{" "}
+          ? `Only rates published for ${payerName}${planName ? ` · ${planName}` : ""} are included.`
+          : "No insurance is selected; payer availability is shown without promoting a global range."}{" "}
         This does not guarantee network participation or coverage.
       </div>
       <div className="table-wrap compare-wrap">
@@ -170,38 +172,38 @@ export default async function ComparePage({
             {row("CMS overall rating", (item) => (
               <QualityRating value={item.cms_overall_rating} />
             ))}
-            {row(
-              "Published cash price",
-              (item) => (
-                <>
-                  <PriceRange
-                    min={item.cash_price_min}
-                    max={item.cash_price_max}
-                  />
-                  {lowestComparableCash !== null &&
-                    Number(item.cash_price_min) === lowestComparableCash && (
-                      <span className="lowest-price-label">
-                        Lowest published comparable price
-                      </span>
-                    )}
-                </>
-              ),
-              (item) =>
-                lowestComparableCash !== null &&
-                Number(item.cash_price_min) === lowestComparableCash
-                  ? "highlight"
-                  : undefined,
-            )}
+            {row("Published cash price", (item) => (
+              <>
+                <PriceRange
+                  min={item.cash_price_min}
+                  max={item.cash_price_max}
+                />
+                {item.cash_price_explanation && (
+                  <small>{item.cash_price_explanation}</small>
+                )}
+              </>
+            ))}
             {row(
               payer
-                ? "Published negotiated range for selected payer"
-                : "Published negotiated range across available payers",
-              (item) => (
-                <PriceRange
-                  min={item.negotiated_price_min}
-                  max={item.negotiated_price_max}
-                />
-              ),
+                ? "Published matching negotiated rates"
+                : "Published insurance rates",
+              (item) =>
+                payer ? (
+                  <>
+                    <PriceRange
+                      min={item.negotiated_price_min}
+                      max={item.negotiated_price_max}
+                    />
+                    <small>
+                      {item.matching_negotiated_rate_count ?? 0} matching
+                      records
+                    </small>
+                  </>
+                ) : item.distinct_payer_count ? (
+                  `${item.distinct_payer_count} payers publish negotiated rates`
+                ) : (
+                  "No normalized payer rates published"
+                ),
             )}
             {row("Service setting", (item) =>
               item.service_settings.length

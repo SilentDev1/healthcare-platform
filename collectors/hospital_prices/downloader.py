@@ -74,7 +74,8 @@ def detect_container(path: Path) -> str:
             return "html"
         return "xml"
     # JSON detection
-    if magic[:1] in {b"{", b"["}:
+    json_start = magic[3:] if magic.startswith(b"\xef\xbb\xbf") else magic
+    if json_start.lstrip()[:1] in {b"{", b"["}:
         return "json"
     # Default to CSV
     return "csv"

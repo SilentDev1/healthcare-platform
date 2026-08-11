@@ -29,6 +29,21 @@ const baseItem: ProcedureComparisonItem = {
   cash_price_max: "825",
   negotiated_price_min: "640",
   negotiated_price_max: "1110",
+  cash_price_value_count: 1,
+  matching_negotiated_rate_count: 3,
+  distinct_payer_count: 1,
+  distinct_plan_count: 2,
+  published_payers: [
+    {
+      slug: "example",
+      name: "Example Insurance",
+      rate_count: 3,
+      plan_count: 2,
+    },
+  ],
+  all_published_negotiated_min: "640",
+  all_published_negotiated_max: "1110",
+  data_completeness: "high_data_completeness",
   service_settings: ["outpatient"],
   summary_count: 5,
   source_count: 1,
@@ -49,8 +64,16 @@ describe("consumer pricing components", () => {
     expect(
       screen.getByText("MRI brain", { selector: ".card-procedure strong" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/\$640/)).toBeInTheDocument();
-    expect(screen.getByText(/\$1,110/)).toBeInTheDocument();
+    expect(screen.getByText("1 payer")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Your selected insurance"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText("All published negotiated rates"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "View price details" }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Verified published source/)).toBeInTheDocument();
 
     rerender(
@@ -73,6 +96,25 @@ describe("consumer pricing components", () => {
       screen.getByText("Price not currently available"),
     ).toBeInTheDocument();
     expect(screen.getByText(/service being unavailable/)).toBeInTheDocument();
+  });
+
+  it("prioritizes only explicitly selected insurance rates", () => {
+    render(
+      <ComparisonFacilityCard
+        item={baseItem}
+        procedureName="MRI brain"
+        procedureSlug="mri-brain"
+        payerName="Example Insurance"
+      />,
+    );
+    expect(screen.getByText("Your selected insurance")).toBeInTheDocument();
+    expect(screen.getAllByText(/\$640/).length).toBeGreaterThan(0);
+    expect(
+      screen.getByText(/3 matching published rate records/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/does not verify network participation/),
+    ).toBeInTheDocument();
   });
 
   it("renders coverage and expandable billing disclosures", () => {

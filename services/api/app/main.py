@@ -23,6 +23,7 @@ from packages.database import (
     FacilityIdentityCandidate,
     FacilityLocation,
     FacilityPriceSource,
+    FacilityProcedurePriceObservation,
     FacilityProcedurePriceSummary,
     FacilityQualityMeasureObservation,
     FacilitySourceObservation,
@@ -33,6 +34,7 @@ from packages.database import (
     PayerEntity,
     PipelineStatusSnapshot,
     PriceRecordProcedureCandidate,
+    PriceServiceCode,
     PriceSourceDiscoveryObservation,
     PriceSourceDiscoveryRun,
     PricingAnomaly,
@@ -47,11 +49,13 @@ from packages.database import (
     get_session,
 )
 from packages.search import search
+from services.api.app.coverage import consumer_pricing_status, pricing_status_matches
 from services.api.app.logging import configure_logging
 from services.api.app.schemas import (
     AdminDashboardResponse,
     AdminFacilityDetailResponse,
     AdminFacilityPage,
+    ConsumerPriceDetailResponse,
     DataHealthPage,
     FacilityHealthPage,
     FacilityPage,
@@ -280,32 +284,8 @@ def facilities_map_data(
         .order_by(Facility.display_name)
     ).all()
 
-    publishable_facilities = set(
-        session.scalars(
-            select(func.distinct(FacilityProcedurePriceSummary.facility_id))
-            .join(SourceFile, SourceFile.id == FacilityProcedurePriceSummary.source_file_id)
-            .where(
-                FacilityProcedurePriceSummary.publication_status == "publishable",
-                SourceFile.source_url.not_like("file://%"),
-            )
-        )
-    )
-    partial_facilities = set(
-        session.scalars(select(func.distinct(HospitalPriceRecord.facility_id)))
-    )
-
     features = []
     for facility, location in rows:
-        if facility.id in publishable_facilities:
-            fac_status = "publishable"
-        elif facility.id in partial_facilities:
-            fac_status = "partial"
-        else:
-            fac_status = "no_data"
-
-        if pricing_status and fac_status != pricing_status:
-            continue
-
         procedure_count = (
             session.scalar(
                 select(func.count(func.distinct(FacilityProcedurePriceSummary.procedure_id))).where(
@@ -319,6 +299,9 @@ def facilities_map_data(
             )
             or 0
         )
+        fac_status = consumer_pricing_status(procedure_count)
+        if not pricing_status_matches(fac_status, pricing_status):
+            continue
 
         features.append(
             {
@@ -1399,6 +1382,7 @@ def procedure_comparison(
     city: Annotated[str | None, Query(max_length=100)] = None,
     postal_code: Annotated[str | None, Query(min_length=5, max_length=10)] = None,
     payer: Annotated[str | None, Query(max_length=150)] = None,
+    plan: Annotated[uuid.UUID | None, Query()] = None,
     setting: Annotated[str | None, Query(max_length=40)] = None,
 ) -> ProcedureComparisonResponse:
     """Return one honest consumer comparison row per physical service location."""
@@ -1431,25 +1415,114 @@ def procedure_comparison(
         FacilityProcedurePriceSummary.facility_id.in_(facility_ids),
         SourceFile.source_url.not_like("file://%"),
     ]
-    if payer:
-        price_filters.append(PayerEntity.slug == payer)
     if setting:
         price_filters.append(FacilityProcedurePriceSummary.service_setting == setting)
     price_rows = session.execute(
-        select(FacilityProcedurePriceSummary, SourceFile)
+        select(FacilityProcedurePriceSummary, SourceFile, PayerEntity, InsurancePlanEntity)
         .join(SourceFile, SourceFile.id == FacilityProcedurePriceSummary.source_file_id)
         .outerjoin(PayerEntity, PayerEntity.id == FacilityProcedurePriceSummary.payer_entity_id)
+        .outerjoin(
+            InsurancePlanEntity,
+            InsurancePlanEntity.id == FacilityProcedurePriceSummary.insurance_plan_entity_id,
+        )
         .where(*price_filters)
     ).all()
+    price_source_ids = {source.id for _summary, source, _payer, _plan in price_rows}
+    import_dates = {
+        source_file_id: imported_at
+        for source_file_id, imported_at in session.execute(
+            select(
+                ImportRun.source_file_id,
+                func.max(func.coalesce(ImportRun.finished_at, ImportRun.started_at)),
+            )
+            .where(ImportRun.source_file_id.in_(price_source_ids))
+            .group_by(ImportRun.source_file_id)
+        )
+    }
 
     grouped: dict[
-        tuple[uuid.UUID, uuid.UUID], list[tuple[FacilityProcedurePriceSummary, SourceFile]]
+        tuple[uuid.UUID, uuid.UUID],
+        list[
+            tuple[
+                FacilityProcedurePriceSummary,
+                SourceFile,
+                PayerEntity | None,
+                InsurancePlanEntity | None,
+            ]
+        ],
     ] = {}
-    for summary, source in price_rows:
+    for summary, source, payer_entity, plan_entity in price_rows:
         if summary.facility_location_id is not None:
             grouped.setdefault((summary.facility_id, summary.facility_location_id), []).append(
-                (summary, source)
+                (summary, source, payer_entity, plan_entity)
             )
+
+    cash_observation_filters: list[ColumnElement[bool]] = [
+        FacilityProcedurePriceObservation.procedure_id == procedure.id,
+        FacilityProcedurePriceObservation.facility_id.in_(facility_ids),
+        FacilityProcedurePriceObservation.price_type == "discounted_cash",
+        FacilityProcedurePriceObservation.publication_status == "publishable",
+        SourceFile.source_url.not_like("file://%"),
+    ]
+    if setting:
+        cash_observation_filters.append(
+            FacilityProcedurePriceObservation.service_setting == setting
+        )
+    cash_rows = session.execute(
+        select(FacilityProcedurePriceObservation, HospitalPriceRecord)
+        .join(
+            HospitalPriceRecord,
+            HospitalPriceRecord.id == FacilityProcedurePriceObservation.hospital_price_record_id,
+        )
+        .join(SourceFile, SourceFile.id == HospitalPriceRecord.source_file_id)
+        .where(*cash_observation_filters)
+    ).all()
+    cash_by_location: dict[
+        tuple[uuid.UUID, uuid.UUID],
+        list[tuple[FacilityProcedurePriceObservation, HospitalPriceRecord]],
+    ] = defaultdict(list)
+    for observation, record in cash_rows:
+        if observation.facility_location_id is not None:
+            cash_by_location[(observation.facility_id, observation.facility_location_id)].append(
+                (observation, record)
+            )
+
+    negotiated_count_filters: list[ColumnElement[bool]] = [
+        FacilityProcedurePriceObservation.procedure_id == procedure.id,
+        FacilityProcedurePriceObservation.facility_id.in_(facility_ids),
+        FacilityProcedurePriceObservation.price_type == "payer_negotiated",
+        FacilityProcedurePriceObservation.publication_status == "publishable",
+        SourceFile.source_url.not_like("file://%"),
+    ]
+    if setting:
+        negotiated_count_filters.append(
+            FacilityProcedurePriceObservation.service_setting == setting
+        )
+    negotiated_counts = {
+        (facility_id, location_id, payer_id, plan_id): int(count)
+        for facility_id, location_id, payer_id, plan_id, count in session.execute(
+            select(
+                FacilityProcedurePriceObservation.facility_id,
+                FacilityProcedurePriceObservation.facility_location_id,
+                FacilityProcedurePriceObservation.payer_entity_id,
+                FacilityProcedurePriceObservation.insurance_plan_entity_id,
+                func.count(FacilityProcedurePriceObservation.id),
+            )
+            .join(
+                HospitalPriceRecord,
+                HospitalPriceRecord.id
+                == FacilityProcedurePriceObservation.hospital_price_record_id,
+            )
+            .join(SourceFile, SourceFile.id == HospitalPriceRecord.source_file_id)
+            .where(*negotiated_count_filters)
+            .group_by(
+                FacilityProcedurePriceObservation.facility_id,
+                FacilityProcedurePriceObservation.facility_location_id,
+                FacilityProcedurePriceObservation.payer_entity_id,
+                FacilityProcedurePriceObservation.insurance_plan_entity_id,
+            )
+        )
+    }
 
     rating_rows = session.execute(
         select(FacilityQualityMeasureObservation)
@@ -1467,26 +1540,156 @@ def procedure_comparison(
     items: list[dict[str, object]] = []
     priced_facilities: set[uuid.UUID] = set()
     for facility, location in locations:
-        summaries = grouped.get((facility.id, location.id), [])
+        all_summaries = grouped.get((facility.id, location.id), [])
+        selected_summaries = [
+            row
+            for row in all_summaries
+            if (not payer or (row[2] is not None and row[2].slug == payer))
+            and (plan is None or (row[3] is not None and row[3].id == plan))
+        ]
+        summaries = selected_summaries if payer or plan else all_summaries
         if summaries:
             priced_facilities.add(facility.id)
+        cash_details = cash_by_location.get((facility.id, location.id), [])
+        cash_amounts = sorted({observation.amount for observation, _record in cash_details})
+        cash_descriptions = {record.raw_description for _observation, record in cash_details}
+        cash_settings = {observation.service_setting for observation, _record in cash_details}
+        cash_components = {observation.included_component_scope for observation, _ in cash_details}
         cash_values = [
             value
-            for summary, _source in summaries
+            for summary, _source, _payer, _plan in all_summaries
             for value in (summary.cash_price_min, summary.cash_price_max)
             if value is not None
         ]
         negotiated_values = [
             value
-            for summary, _source in summaries
+            for summary, _source, _payer, _plan in summaries
             for value in (summary.negotiated_price_min, summary.negotiated_price_max)
             if value is not None
         ]
-        latest = max((summary.calculated_at for summary, _source in summaries), default=None)
+        all_negotiated_values = [
+            value
+            for summary, _source, _payer, _plan in all_summaries
+            for value in (summary.negotiated_price_min, summary.negotiated_price_max)
+            if value is not None
+        ]
+        latest = max(
+            (summary.calculated_at for summary, _source, _payer, _plan in summaries),
+            default=None,
+        )
         latest_source = max(
             summaries,
             key=lambda pair: pair[0].calculated_at,
             default=None,
+        )
+        payer_groups: dict[str, dict[str, Any]] = {}
+        for summary, _source, payer_entity, plan_entity in all_summaries:
+            if payer_entity is None or summary.negotiated_price_min is None:
+                continue
+            entry = payer_groups.setdefault(
+                payer_entity.slug,
+                {
+                    "slug": payer_entity.slug,
+                    "name": payer_entity.canonical_name,
+                    "id": payer_entity.id,
+                    "plan_ids": set(),
+                },
+            )
+            if plan_entity is not None:
+                plan_ids = entry["plan_ids"]
+                assert isinstance(plan_ids, set)
+                plan_ids.add(plan_entity.id)
+        published_payers = [
+            {
+                "slug": entry["slug"],
+                "name": entry["name"],
+                "rate_count": sum(
+                    count
+                    for (row_facility, row_location, row_payer, _row_plan), count in (
+                        negotiated_counts.items()
+                    )
+                    if row_facility == facility.id
+                    and row_location == location.id
+                    and row_payer == entry["id"]
+                ),
+                "plan_count": len(entry["plan_ids"]),
+            }
+            for entry in sorted(payer_groups.values(), key=lambda value: str(value["name"]))
+        ]
+        plan_ids = {
+            plan_entity.id
+            for summary, _source, _payer_entity, plan_entity in all_summaries
+            if plan_entity is not None and summary.negotiated_price_min is not None
+        }
+        selected_payer = next(
+            (payer_entity for _s, _f, payer_entity, _p in summaries if payer_entity), None
+        )
+        selected_plan = next(
+            (plan_entity for _s, _f, _p, plan_entity in summaries if plan_entity), None
+        )
+        requested_payer_id = next(
+            (
+                payer_entity.id
+                for _summary, _source, payer_entity, _plan_entity in all_summaries
+                if payer_entity is not None and payer_entity.slug == payer
+            ),
+            None,
+        )
+        matching_rate_count = sum(
+            count
+            for (row_facility, row_location, row_payer, row_plan), count in (
+                negotiated_counts.items()
+            )
+            if row_facility == facility.id
+            and row_location == location.id
+            and (not payer or row_payer == requested_payer_id)
+            and (plan is None or row_plan == plan)
+        )
+        cash_explanation = None
+        if len(cash_amounts) > 1:
+            qualifiers: list[str] = []
+            if any(
+                _consumer_service_variant(description) == "bilateral"
+                for description in cash_descriptions
+            ):
+                qualifiers.append("unilateral and bilateral source descriptions")
+            if len(cash_settings) > 1:
+                qualifiers.append("different service settings")
+            if len(cash_components) > 1:
+                qualifiers.append("different billing components")
+            reason = ", ".join(qualifiers) if qualifiers else "different source records"
+            cash_explanation = (
+                f"{len(cash_amounts)} hospital-published cash prices were found for {reason}."
+            )
+        negotiated_min = min(negotiated_values) if negotiated_values else None
+        negotiated_max = max(negotiated_values) if negotiated_values else None
+        extreme_spread = bool(
+            negotiated_min is not None
+            and negotiated_max is not None
+            and negotiated_min > 0
+            and negotiated_max / negotiated_min >= 10
+        )
+        completeness_notes = ["Source and physical location verified", "Procedure mapping reviewed"]
+        if cash_values:
+            completeness_notes.append("Cash price semantic type known")
+        if all_summaries and all(
+            summary.service_setting != "unknown" for summary, *_rest in all_summaries
+        ):
+            completeness_notes.append("Service setting known")
+        if payer and negotiated_values:
+            completeness_notes.append("Selected payer identity known")
+        if plan and negotiated_values:
+            completeness_notes.append("Selected plan identity known")
+        if not cash_values:
+            completeness_notes.append("Cash price not published")
+        if payer and not negotiated_values:
+            completeness_notes.append("No matching published rate for selected insurance")
+        completeness = (
+            "high_data_completeness"
+            if cash_values and (not payer or negotiated_values)
+            else "some_details_unavailable"
+            if cash_values or negotiated_values
+            else "limited_pricing_detail"
         )
         items.append(
             {
@@ -1501,15 +1704,42 @@ def procedure_comparison(
                 "postal_code": location.postal_code,
                 "facility_type": facility.facility_type,
                 "cms_overall_rating": ratings.get(facility.id),
-                "price_available": bool(summaries),
+                "price_available": bool(all_summaries),
                 "cash_price_min": min(cash_values) if cash_values else None,
                 "cash_price_max": max(cash_values) if cash_values else None,
-                "negotiated_price_min": min(negotiated_values) if negotiated_values else None,
-                "negotiated_price_max": max(negotiated_values) if negotiated_values else None,
-                "service_settings": sorted({summary.service_setting for summary, _ in summaries}),
+                "negotiated_price_min": negotiated_min,
+                "negotiated_price_max": negotiated_max,
+                "cash_price_value_count": len(cash_amounts),
+                "cash_price_record_count": len(cash_details),
+                "cash_price_explanation": cash_explanation,
+                "matching_negotiated_rate_count": matching_rate_count,
+                "distinct_payer_count": len(payer_groups),
+                "distinct_plan_count": len(plan_ids),
+                "published_payers": published_payers,
+                "selected_payer_name": selected_payer.canonical_name if selected_payer else None,
+                "selected_plan_name": selected_plan.canonical_name if selected_plan else None,
+                "all_published_negotiated_min": (
+                    min(all_negotiated_values) if all_negotiated_values else None
+                ),
+                "all_published_negotiated_max": (
+                    max(all_negotiated_values) if all_negotiated_values else None
+                ),
+                "extreme_rate_spread": extreme_spread,
+                "data_completeness": completeness,
+                "completeness_notes": completeness_notes,
+                "service_settings": sorted(
+                    {summary.service_setting for summary, _source, _payer, _plan in all_summaries}
+                ),
                 "summary_count": len(summaries),
-                "source_count": len({source.id for _summary, source in summaries}),
+                "source_count": len({source.id for _summary, source, _payer, _plan in summaries}),
                 "latest_updated": latest,
+                "source_file_date": latest_source[1].source_published_at if latest_source else None,
+                "source_file_last_modified": (
+                    latest_source[1].last_modified if latest_source else None
+                ),
+                "downloaded_at": latest_source[1].downloaded_at if latest_source else None,
+                "imported_at": (import_dates.get(latest_source[1].id) if latest_source else None),
+                "carevero_refresh_date": latest,
                 "source_url": latest_source[1].source_url if latest_source else None,
             }
         )
@@ -1521,6 +1751,169 @@ def procedure_comparison(
         facilities_with_prices=len(priced_facilities),
         service_locations=len(items),
         items=items,
+    )
+
+
+def _consumer_service_variant(description: str) -> str:
+    normalized = f" {description.upper()} "
+    if any(marker in normalized for marker in (" BILATERAL ", " BI ", " BOTH ")):
+        return "bilateral"
+    if any(marker in normalized for marker in (" LEFT ", " LT ")):
+        return "left"
+    if any(marker in normalized for marker in (" RIGHT ", " RT ")):
+        return "right"
+    return "not_specified_by_source"
+
+
+@app.get(
+    "/api/v1/procedures/{slug}/locations/{location_id}/price-details",
+    response_model=ConsumerPriceDetailResponse,
+    tags=["pricing"],
+)
+def consumer_price_details(
+    slug: str,
+    location_id: uuid.UUID,
+    session: Annotated[Session, Depends(get_session)],
+    payer: Annotated[str | None, Query(max_length=150)] = None,
+    plan: Annotated[uuid.UUID | None, Query()] = None,
+) -> ConsumerPriceDetailResponse:
+    """Return bounded, consumer-readable source rates for one procedure and location."""
+    procedure = session.scalar(
+        select(Procedure).where(Procedure.slug == slug, Procedure.active.is_(True))
+    )
+    if procedure is None:
+        raise HTTPException(status_code=404, detail="procedure not found")
+    facility_location = session.execute(
+        select(FacilityLocation, Facility)
+        .join(Facility, Facility.id == FacilityLocation.facility_id)
+        .where(FacilityLocation.id == location_id, FacilityLocation.active.is_(True))
+    ).one_or_none()
+    if facility_location is None:
+        raise HTTPException(status_code=404, detail="service location not found")
+    location, facility = facility_location
+
+    detail_filters: list[ColumnElement[bool]] = [
+        FacilityProcedurePriceObservation.procedure_id == procedure.id,
+        FacilityProcedurePriceObservation.facility_location_id == location_id,
+        FacilityProcedurePriceObservation.publication_status == "publishable",
+        SourceFile.source_url.not_like("file://%"),
+    ]
+    if payer:
+        detail_filters.append(
+            (FacilityProcedurePriceObservation.price_type != "payer_negotiated")
+            | (PayerEntity.slug == payer)
+        )
+    if plan:
+        detail_filters.append(
+            (FacilityProcedurePriceObservation.price_type != "payer_negotiated")
+            | (InsurancePlanEntity.id == plan)
+        )
+    rows = session.execute(
+        select(
+            FacilityProcedurePriceObservation,
+            HospitalPriceRecord,
+            SourceFile,
+            PayerEntity,
+            InsurancePlanEntity,
+            HospitalPriceRateDetail,
+            ImportRun,
+        )
+        .join(
+            HospitalPriceRecord,
+            HospitalPriceRecord.id == FacilityProcedurePriceObservation.hospital_price_record_id,
+        )
+        .join(SourceFile, SourceFile.id == HospitalPriceRecord.source_file_id)
+        .join(ImportRun, ImportRun.id == HospitalPriceRecord.import_run_id)
+        .outerjoin(
+            PayerEntity,
+            PayerEntity.id == FacilityProcedurePriceObservation.payer_entity_id,
+        )
+        .outerjoin(
+            InsurancePlanEntity,
+            InsurancePlanEntity.id == FacilityProcedurePriceObservation.insurance_plan_entity_id,
+        )
+        .outerjoin(
+            HospitalPriceRateDetail,
+            HospitalPriceRateDetail.id
+            == FacilityProcedurePriceObservation.hospital_price_rate_detail_id,
+        )
+        .where(*detail_filters)
+        .order_by(
+            FacilityProcedurePriceObservation.price_type,
+            PayerEntity.canonical_name,
+            InsurancePlanEntity.canonical_name,
+            FacilityProcedurePriceObservation.amount,
+        )
+        .limit(2001)
+    ).all()
+    records_truncated = len(rows) > 2000
+    rows = rows[:2000]
+    record_ids = {record.id for _observation, record, *_rest in rows}
+    code_rows: list[PriceServiceCode] = (
+        list(
+            session.execute(
+                select(PriceServiceCode).where(
+                    PriceServiceCode.hospital_price_record_id.in_(record_ids)
+                )
+            ).scalars()
+        )
+        if record_ids
+        else []
+    )
+    codes_by_record: dict[uuid.UUID, list[dict[str, str | None]]] = defaultdict(list)
+    for code in code_rows:
+        codes_by_record[code.hospital_price_record_id].append(
+            {
+                "system": code.code_system,
+                "code": code.code,
+                "modifier": code.modifier,
+            }
+        )
+    semantic_types = {
+        "discounted_cash": "cash_self_pay",
+        "payer_negotiated": "negotiated_payer_plan",
+        "gross": "gross_charge",
+        "deidentified_min": "minimum_negotiated_rate",
+        "deidentified_max": "maximum_negotiated_rate",
+    }
+    details = []
+    for observation, record, source, payer_entity, plan_entity, rate, import_run in rows:
+        semantic_type = semantic_types.get(observation.price_type, "unknown_unsafe_to_classify")
+        if observation.price_type == "payer_negotiated" and plan_entity is None:
+            semantic_type = "negotiated_payer_only"
+        details.append(
+            {
+                "semantic_type": semantic_type,
+                "amount": observation.amount,
+                "payer_slug": payer_entity.slug if payer_entity else None,
+                "payer_name": payer_entity.canonical_name if payer_entity else None,
+                "plan_id": plan_entity.id if plan_entity else None,
+                "plan_name": plan_entity.canonical_name if plan_entity else None,
+                "negotiated_rate_type": rate.negotiated_rate_type if rate else None,
+                "original_description": record.raw_description,
+                "billing_codes": codes_by_record.get(record.id, []),
+                "service_variant": _consumer_service_variant(record.raw_description),
+                "service_setting": observation.service_setting,
+                "component_scope": observation.included_component_scope,
+                "source_row_identity": record.source_record_identifier,
+                "source_url": source.source_url,
+                "source_checksum_sha256": source.checksum_sha256,
+                "source_file_date": source.source_published_at,
+                "source_file_last_modified": source.last_modified,
+                "downloaded_at": source.downloaded_at,
+                "imported_at": import_run.finished_at or import_run.started_at,
+                "carevero_refresh_date": observation.created_at,
+            }
+        )
+    return ConsumerPriceDetailResponse(
+        procedure_slug=procedure.slug,
+        procedure_name=procedure.consumer_name,
+        facility_id=facility.id,
+        facility_name=facility.display_name,
+        facility_location_id=location.id,
+        location_name=location.location_name,
+        records=details,
+        records_truncated=records_truncated,
     )
 
 

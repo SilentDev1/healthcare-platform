@@ -30,6 +30,126 @@
       "vendor_name": null,
       "health_system_name": "Beth Israel Lahey Health",
       "evidence": "Hospital Charge Data link for Exeter Hospital on the official BILH price-transparency directory"
+    },
+    {
+      "ccn": "301305",
+      "facility_name": "ALICE PECK DAY MEMORIAL HOSPITAL",
+      "source_page_url": "https://www.alicepeckday.org/patients/billing-financial-assistance",
+      "machine_readable_file_url": "https://www.alicepeckday.org/02-0222791_Alice%20Peck%20Day%20Memorial_standardcharges.csv",
+      "declared_format": "csv",
+      "vendor_name": null,
+      "health_system_name": "Dartmouth Health",
+      "evidence": "Direct MRF declared by the hospital's official cms-hpt.txt"
+    },
+    {
+      "ccn": "300019",
+      "facility_name": "CHESHIRE MEDICAL CENTER",
+      "source_page_url": "https://www.cheshiremed.org/patients-visitors/charges-for-services",
+      "machine_readable_file_url": "https://www.cheshiremed.org/02-0354549_Cheshire%20Medical%20Center_standardcharges.zip",
+      "declared_format": "zip",
+      "vendor_name": null,
+      "health_system_name": "Dartmouth Health",
+      "evidence": "Direct MRF declared by the hospital's official cms-hpt.txt"
+    },
+    {
+      "ccn": "301312",
+      "facility_name": "HUGGINS HOSPITAL",
+      "source_page_url": "https://www.cdmpricing.com/731ef0e972451ae12e17d777e7ad6cc9",
+      "machine_readable_file_url": "https://apim.services.craneware.com/api-pricing-transparency/api/public/731ef0e972451ae12e17d777e7ad6cc9/charges/mrf",
+      "declared_format": "csv",
+      "vendor_name": "Craneware",
+      "health_system_name": null,
+      "evidence": "Craneware MRF endpoint declared by the hospital's official cms-hpt.txt"
+    },
+    {
+      "ccn": "301302",
+      "facility_name": "LITTLETON REGIONAL HEALTHCARE",
+      "source_page_url": "https://www.cdmpricing.com/dd0894ed86f26a1af99627e59ddebbb1/",
+      "machine_readable_file_url": "https://apim.services.craneware.com/api-pricing-transparency/api/public/dd0894ed86f26a1af99627e59ddebbb1/charges/mrf",
+      "declared_format": "csv",
+      "vendor_name": "Craneware",
+      "health_system_name": null,
+      "evidence": "Craneware MRF endpoint declared by the hospital's official cms-hpt.txt"
+    },
+    {
+      "ccn": "300003",
+      "facility_name": "MARY HITCHCOCK MEMORIAL HOSPITAL",
+      "source_page_url": "https://www.dartmouth-hitchcock.org/patients-visitors/lebanon-locations",
+      "machine_readable_file_url": "https://www.dartmouth-hitchcock.org/02-0222140_Mary%20Hitchcock%20Memorial%20Hospital_standardcharges.zip",
+      "declared_format": "zip",
+      "vendor_name": null,
+      "health_system_name": "Dartmouth Health",
+      "evidence": "Direct MRF declared by the hospital's official cms-hpt.txt"
+    },
+    {
+      "ccn": "301309",
+      "facility_name": "MONADNOCK COMMUNITY HOSPITAL",
+      "source_page_url": "https://hospitalpricedisclosure.com/default.aspx?pi=96OHZrUcIshoMmRv3TQ0Bg*-*",
+      "machine_readable_file_url": "https://hospitalpricedisclosure.com/download.aspx?pi=96OHZrUcIshoMmRv3TQ0Bg*-*",
+      "declared_format": "csv",
+      "vendor_name": "Cleverley",
+      "health_system_name": null,
+      "evidence": "HospitalPriceDisclosure MRF endpoint declared by the hospital's official cms-hpt.txt"
+    },
+    {
+      "ccn": "301304",
+      "facility_name": "NEW LONDON HOSPITAL",
+      "source_page_url": "https://www.newlondonhospital.org/patients-visitors/charges-services",
+      "machine_readable_file_url": "https://www.newlondonhospital.org/02-0222171_New%20London%20Hospital_standardcharges.zip",
+      "declared_format": "zip",
+      "vendor_name": null,
+      "health_system_name": "Dartmouth Health",
+      "evidence": "Direct MRF declared by the hospital's official cms-hpt.txt"
+    },
+    {
+      "ccn": "300020",
+      "facility_name": "SOUTHERN NH MEDICAL CENTER",
+      "source_page_url": "https://hospitalpricedisclosure.com/default.aspx?pi=06hFExK19Svl3QLOl*_*Dgkw*-*",
+      "machine_readable_file_url": "https://hospitalpricedisclosure.com/Download.aspx?pxi=06hFExK19Svl3QLOl*_*Dgkw*-*&f=iFd*_*cEPwhQHJy3lVvHy9uQ*-*",
+      "declared_format": "json",
+      "vendor_name": "Cleverley",
+      "health_system_name": "SolutionHealth",
+      "evidence": "HospitalPriceDisclosure MRF endpoint declared by the hospital's official cms-hpt.txt"
+    },
+    {
+      "ccn": "301311",
+      "facility_name": "SPEARE MEMORIAL HOSPITAL",
+      "source_page_url": "https://hospitalpricedisclosure.com/default.aspx?pi=4EZY3sRA8HLb8Qjm705tAg*-*",
+      "machine_readable_file_url": "https://hospitalpricedisclosure.com/download.aspx?pi=4EZY3sRA8HLb8Qjm705tAg*-*",
+      "declared_format": "json",
+      "vendor_name": "Cleverley",
+      "health_system_name": null,
+      "evidence": "HospitalPriceDisclosure MRF endpoint declared by the hospital's official cms-hpt.txt"
+    },
+    {
+      "ccn": "301308",
+      "facility_name": "VALLEY REGIONAL HOSPITAL",
+      "source_page_url": "https://www.yourcareeverywhere.com/content/medhost/your-care-everywhere/pricing-estimator-page.html?facility_id=e8ee7c31-a93d-41f9-b0b7-1df54697d98f",
+      "machine_readable_file_url": "https://s3.amazonaws.com/ycubaa-production-marlin-1-charge-management-public/facilities/e8ee7c31-a93d-41f9-b0b7-1df54697d98f/020222118_VALLEY-REGIONAL-HOSPITAL_standardcharges.zip",
+      "declared_format": "zip",
+      "vendor_name": "MEDHOST",
+      "health_system_name": null,
+      "evidence": "MEDHOST MRF endpoint declared by the hospital's official cms-hpt.txt"
+    },
+    {
+      "ccn": "300012",
+      "facility_name": "ELLIOT HOSPITAL",
+      "source_page_url": "https://www.elliothospital.org/patients-and-visitors/patient-information/estimates",
+      "machine_readable_file_url": "https://cleverleypteusstatic.blob.core.windows.net/readable/020232673_elliot-hospital_standardcharges.json",
+      "declared_format": "json",
+      "vendor_name": "Cleverley",
+      "health_system_name": "SolutionHealth",
+      "evidence": "Elliot cms-hpt.txt declares the HospitalPriceDisclosure endpoint, which redirects to this facility-specific CMS 3.0 JSON file"
+    },
+    {
+      "ccn": "300034",
+      "facility_name": "CATHOLIC MEDICAL CENTER",
+      "source_page_url": "https://www.catholicmc.com/patient-resources/patient-financial-resources/pricing-transparency-cms-required-file-of-standard-charges",
+      "machine_readable_file_url": "https://stctrprodsnsvc00455826e6.blob.core.windows.net/pt-final-posting-files/99-3123201_CATHOLIC-MEDICAL-CENTER_standardcharges.json?si=pt-json-access-policy&spr=https&sv=2024-11-04&sr=c&sig=o5IofreS%2F7ETlsnhPakPWCwHVVUZRobywQ5wUKGjVuQ%3D",
+      "declared_format": "json",
+      "vendor_name": "HCA Healthcare",
+      "health_system_name": "HCA Healthcare",
+      "evidence": "Direct CMS Standard Charges link on Catholic Medical Center's current official HCA-operated pricing page"
     }
   ]
 }

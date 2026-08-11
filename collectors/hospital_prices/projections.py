@@ -18,6 +18,7 @@ from packages.database import (
     PriceRecordProcedureMapping,
     PricingAnomaly,
     PricingHealthScore,
+    SourceFile,
 )
 
 
@@ -90,6 +91,13 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
         )
     )
 
+    # Fixture imports are useful for parser and pipeline verification, but they
+    # must never become consumer-publishable data. Keep their observations for
+    # diagnostics while excluding them from public summary projection.
+    fixture_source_ids: set[object] = set(
+        session.scalars(select(SourceFile.id).where(SourceFile.source_url.like("file://%")))
+    )
+
     location_by_source_file: dict[object, object] = {
         source_file_id: location_id
         for source_file_id, location_id in session.execute(
@@ -140,7 +148,7 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
             record.source_file_id
         )
         is_blocked = record.id in blocked_ids
-        if location_id is None:
+        if record.source_file_id in fixture_source_ids or location_id is None:
             status = "review_required"
         elif is_blocked:
             status = "suppressed"

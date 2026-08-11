@@ -100,7 +100,7 @@ export function SourceAttribution({
       </span>
       {updated && (
         <span>
-          <strong>Last updated:</strong>{" "}
+          <strong>{quality ? "Source updated:" : "Carevero refresh:"}</strong>{" "}
           {new Date(updated).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
@@ -201,13 +201,21 @@ export function FacilityPriceCard({
           </strong>
         </div>
         <div>
-          <span>Published negotiated range</span>
-          <strong>
-            <PriceRange
-              min={item.negotiated_price_min}
-              max={item.negotiated_price_max}
-            />
-          </strong>
+          <span>Published insurance pricing</span>
+          {item.payer_name ? (
+            <strong>
+              <PriceRange
+                min={item.negotiated_price_min}
+                max={item.negotiated_price_max}
+              />
+            </strong>
+          ) : (
+            <strong>
+              {item.negotiated_price_min !== null
+                ? "Rates available — choose a payer"
+                : "No normalized payer rates published"}
+            </strong>
+          )}
         </div>
       </div>
       {item.payer_name && (
@@ -240,15 +248,28 @@ export function ComparisonFacilityCard({
   procedureName,
   procedureSlug,
   payerName,
+  planName,
+  planId,
 }: {
   item: ProcedureComparisonItem;
   procedureName: string;
   procedureSlug: string;
   payerName?: string;
+  planName?: string;
+  planId?: string;
 }) {
   const locationLabel = item.location_name
     ? `${item.location_name} · ${item.city}, ${item.state}`
     : `${item.city}, ${item.state}`;
+  const detailQuery = new URLSearchParams();
+  if (payerName && item.published_payers?.length) {
+    const selected = item.published_payers.find(
+      (publishedPayer) => publishedPayer.name === payerName,
+    );
+    if (selected) detailQuery.set("payer", selected.slug);
+  }
+  if (planId) detailQuery.set("plan", planId);
+  const detailHref = `/procedures/${procedureSlug}/prices/${item.facility_location_id}${detailQuery.size ? `?${detailQuery}` : ""}`;
   return (
     <article
       className={`facility-card ${item.price_available ? "" : "no-price"}`}
@@ -284,22 +305,66 @@ export function ComparisonFacilityCard({
       {item.price_available ? (
         <div className="price-grid">
           <div>
-            <span>Published cash price</span>
+            <span>
+              {item.cash_price_value_count && item.cash_price_value_count > 1
+                ? "Published cash prices"
+                : "Published cash price"}
+            </span>
             <strong>
               <PriceRange min={item.cash_price_min} max={item.cash_price_max} />
             </strong>
+            {item.cash_price_explanation && (
+              <small className="price-context">
+                {item.cash_price_explanation}
+              </small>
+            )}
+            <Link className="price-detail-link" href={detailHref}>
+              View price details
+            </Link>
           </div>
           <div>
-            <span>
-              Published negotiated range
-              {payerName ? ` · ${payerName}` : " · across available payers"}
-            </span>
-            <strong>
-              <PriceRange
-                min={item.negotiated_price_min}
-                max={item.negotiated_price_max}
-              />
-            </strong>
+            {payerName ? (
+              <>
+                <span className="selected-insurance-label">
+                  Your selected insurance
+                </span>
+                <strong className="insurance-name">
+                  {payerName}
+                  {planName ? ` · ${planName}` : ""}
+                </strong>
+                <span>Published matching negotiated rates</span>
+                <strong>
+                  <PriceRange
+                    min={item.negotiated_price_min}
+                    max={item.negotiated_price_max}
+                  />
+                </strong>
+                <small className="price-context">
+                  {item.matching_negotiated_rate_count ?? 0} matching published
+                  rate records
+                </small>
+              </>
+            ) : (
+              <>
+                <span>Published negotiated rates available</span>
+                <strong className="payer-availability">
+                  {item.distinct_payer_count
+                    ? `${item.distinct_payer_count} payer${item.distinct_payer_count === 1 ? "" : "s"}`
+                    : "No normalized payer rates"}
+                </strong>
+                {!!item.published_payers?.length && (
+                  <small className="price-context">
+                    {item.published_payers
+                      .slice(0, 4)
+                      .map((publishedPayer) => publishedPayer.name)
+                      .join(" · ")}
+                    {item.published_payers.length > 4
+                      ? ` · +${item.published_payers.length - 4} more`
+                      : ""}
+                  </small>
+                )}
+              </>
+            )}
           </div>
         </div>
       ) : (
@@ -329,15 +394,37 @@ export function ComparisonFacilityCard({
                 </dd>
               </div>
               <div>
-                <dt>Published rate records</dt>
+                <dt>Published summary groups</dt>
                 <dd>{item.summary_count}</dd>
               </div>
               <div>
-                <dt>Payer context</dt>
-                <dd>{payerName ?? "All available published payers"}</dd>
+                <dt>Price-data completeness</dt>
+                <dd>
+                  {item.data_completeness === "high_data_completeness"
+                    ? "High data completeness"
+                    : item.data_completeness === "some_details_unavailable"
+                      ? "Some details unavailable"
+                      : "Limited pricing detail"}
+                </dd>
+              </div>
+              <div>
+                <dt>All published negotiated rates</dt>
+                <dd>
+                  <PriceRange
+                    min={item.all_published_negotiated_min ?? null}
+                    max={item.all_published_negotiated_max ?? null}
+                  />
+                </dd>
               </div>
             </dl>
-            <p>Published prices may not equal your final out-of-pocket cost.</p>
+            <p>
+              Published prices may not equal your final out-of-pocket cost. A
+              published rate does not verify network participation or coverage.
+              Separately billed professional services may apply.
+            </p>
+            <Link className="text-link" href={detailHref}>
+              View all price and source details
+            </Link>
           </details>
           <SourceAttribution
             updated={item.latest_updated ?? undefined}

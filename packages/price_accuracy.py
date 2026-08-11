@@ -64,6 +64,34 @@ def source_amount_for(
     return None if field is None else parse_source_decimal(getattr(record, field))
 
 
+def raw_payload_amount_for(price_type: str, record: Any, rate_detail: Any | None) -> Decimal | None:
+    """Read the monetary value retained verbatim from the parsed source row."""
+    if price_type == "payer_negotiated":
+        payload = {} if rate_detail is None else getattr(rate_detail, "source_payload", {})
+        return parse_source_decimal(payload.get("negotiated_rate"))
+    keys = {
+        "gross": ("gross_charge", "standard_charge|gross"),
+        "discounted_cash": (
+            "discounted_cash_price",
+            "discounted_cash",
+            "standard_charge|discounted_cash",
+        ),
+        "deidentified_min": (
+            "deidentified_minimum_negotiated_rate",
+            "standard_charge|min",
+        ),
+        "deidentified_max": (
+            "deidentified_maximum_negotiated_rate",
+            "standard_charge|max",
+        ),
+    }.get(price_type, ())
+    payload = getattr(record, "raw_payload", {})
+    for key in keys:
+        if key in payload and (amount := parse_source_decimal(payload[key])) is not None:
+            return amount
+    return None
+
+
 @dataclass(frozen=True)
 class AuditOutcome:
     status: str
@@ -93,7 +121,11 @@ def audit_observation(
     raw_source_available: bool = False,
     source_location_id: object | None = None,
 ) -> AuditOutcome:
-    source_amount = source_amount_for(observation.price_type, record, rate_detail)
+    normalized_record_amount = source_amount_for(observation.price_type, record, rate_detail)
+    raw_payload_amount = raw_payload_amount_for(observation.price_type, record, rate_detail)
+    source_amount = (
+        raw_payload_amount if raw_payload_amount is not None else normalized_record_amount
+    )
     normalized = Decimal(observation.amount)
     difference = None if source_amount is None else normalized - source_amount
     semantic = {
@@ -122,6 +154,9 @@ def audit_observation(
         "source_record_identifier_present": bool(record.source_record_identifier),
         "source_payload_hash_present": len(record.source_payload_hash or "") == 64,
         "bounded_source_payload_present": bool(record.raw_payload),
+        "raw_payload_value_present": raw_payload_amount is not None,
+        "raw_payload_matches_normalized_record": raw_payload_amount is not None
+        and raw_payload_amount == normalized_record_amount,
         "parser_version_present": bool(record.parser_version),
         "raw_source_available": raw_source_available,
         "raw_checksum_verified": raw_checksum_verified,
@@ -165,6 +200,10 @@ def audit_observation(
             "parser_name": record.parser_name,
             "parser_version": record.parser_version,
             "mapping_method": None if mapping is None else mapping.mapping_method,
+            "raw_payload_amount": None if raw_payload_amount is None else str(raw_payload_amount),
+            "normalized_record_amount": (
+                None if normalized_record_amount is None else str(normalized_record_amount)
+            ),
         },
     )
 

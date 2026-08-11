@@ -81,7 +81,12 @@ def propagate_system_sources(
     session: Session,
     inventory: HospitalInventory | None = None,
 ) -> dict[str, int]:
-    """Copy discovered MRF sources from one system member to siblings lacking sources.
+    """Copy explicitly multi-facility sources to system siblings lacking sources.
+
+    A hospital MRF is facility-specific by default. Membership in a health system
+    is not evidence that one member's file belongs to another member. Only sources
+    explicitly classified as a health-system directory or multi-facility package
+    may be propagated.
 
     Returns {system_name: sources_propagated}.
     """
@@ -119,8 +124,13 @@ def _propagate_for_system(session: Session, system_name: str, system: HealthSyst
                 )
             )
         )
-        if sources:
-            all_sources.extend(sources)
+        propagatable = [
+            source
+            for source in sources
+            if source.file_role in {"health_system_directory", "multi_facility_standard_charges"}
+        ]
+        if propagatable:
+            all_sources.extend(propagatable)
             members_with_sources.add(facility.id)
 
     if not all_sources:

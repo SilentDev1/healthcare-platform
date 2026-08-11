@@ -1,6 +1,9 @@
 import uuid
 
-from collectors.hospital_prices.location_association import _normalized_address
+from collectors.hospital_prices.location_association import (
+    _normalized_address,
+    _unambiguous_source_locations,
+)
 from collectors.hospital_prices.overlap import SourceProfile, classify_profiles
 from collectors.hospital_prices.projections import consumer_summary_key
 from collectors.hospital_prices.source_facility_association import filename_identifies_facility
@@ -113,6 +116,20 @@ def test_location_ids_are_not_reused_across_state_scopes() -> None:
     nh_location = uuid.uuid4()
     ma_location = uuid.uuid4()
     assert nh_location != ma_location
+
+
+def test_record_location_backfill_rejects_shared_file_ambiguity() -> None:
+    source_file = uuid.uuid4()
+    unique_source = uuid.uuid4()
+    location_a = uuid.uuid4()
+    location_b = uuid.uuid4()
+    assert _unambiguous_source_locations(
+        [
+            (source_file, location_a),
+            (source_file, location_b),
+            (unique_source, location_a),
+        ]
+    ) == {unique_source: location_a}
 
 
 def test_consumer_identity_ignores_source_but_separates_locations() -> None:

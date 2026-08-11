@@ -449,7 +449,7 @@ class ProcedureCodeMapping(TimestampMixin, Base):
         ForeignKey("procedure_code_systems.id"), index=True
     )
     code: Mapped[str] = mapped_column(String(50), index=True)
-    modifier: Mapped[str | None] = mapped_column(String(20))
+    modifier: Mapped[str | None] = mapped_column(String(255))
     version: Mapped[str | None] = mapped_column(String(100))
     mapping_status: Mapped[str] = mapped_column(String(30), default="draft", index=True)
     source_file_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("source_files.id"))

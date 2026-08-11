@@ -413,7 +413,9 @@ def discover_sources(session: Session, client: httpx.Client | None = None) -> Di
             select(Facility).where(Facility.active.is_(True)).order_by(Facility.id)
         ):
             summary.facilities_examined += 1
-            domain = facility.website_url or official_domains.get(facility.legal_name)
+            # The reviewed inventory wins over CMS/general website metadata. A stale
+            # facility website must never redirect discovery to a sibling hospital.
+            domain = official_domains.get(facility.legal_name) or facility.website_url
             if not domain:
                 summary.facilities_missing += 1
                 continue

@@ -2,6 +2,7 @@ import hashlib
 import json
 import logging
 import uuid
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
@@ -98,6 +99,13 @@ def decimal_value(value: object) -> Decimal | None:
     if not result.is_finite():
         raise ValueError("price must be finite")
     return result
+
+
+def rate_identity(payload: Mapping[str, object]) -> tuple[str, str | None, Decimal | None]:
+    """Return the database uniqueness identity for one source rate payload."""
+    payer_name = str(payload.get("payer_name") or "").strip()
+    plan_name = str(payload.get("plan_name") or "").strip() or None
+    return payer_name, plan_name, decimal_value(payload.get("negotiated_rate"))
 
 
 def _code_system(raw: object) -> str:
@@ -434,16 +442,19 @@ def import_price_source(
 
                     # Rate details — payer/plan via in-memory cache (dict for Core insert)
                     row_rate_count = 0
+                    seen_rate_identities: set[tuple[str, str | None, Decimal | None]] = set()
                     with profiler.time_section("rate_details"):
                         for rate_payload in row["rates"]:
                             if not isinstance(rate_payload, dict):
                                 continue
-                            rate = decimal_value(rate_payload.get("negotiated_rate"))
+                            payer_name, plan_name, rate = rate_identity(rate_payload)
+                            rate_key = (payer_name, plan_name, rate)
+                            if rate_key in seen_rate_identities:
+                                continue
+                            seen_rate_identities.add(rate_key)
                             if rate is not None and rate < 0:
                                 raise ValueError("negative negotiated rate")
-                            payer_name = str(rate_payload.get("payer_name") or "").strip()
                             payer_id, _method, _conf = caches.match_payer(payer_name)
-                            plan_name = str(rate_payload.get("plan_name") or "").strip() or None
                             plan_id = caches.match_or_create_plan(payer_id, plan_name)
                             detail_uuid = uuid.uuid4()
                             batch.rate_dicts.append(
@@ -551,25 +562,65 @@ def import_price_source(
         run.throughput_rows_per_sec = Decimal(str(round(profiler.rows_per_sec, 2)))
         source.status = SourceStatus.COMPLETED
     except KeyboardInterrupt:
-        run.status = ImportStatus.INTERRUPTED
-        source.status = SourceStatus.FAILED
-        run.error_summary = "Import interrupted by user"
+        _persist_failed_import(
+            session,
+            run.id,
+            source.id,
+            ImportStatus.INTERRUPTED,
+            "Import interrupted by user",
+            summary,
+        )
         raise
     except Exception as exc:
-        run.status = ImportStatus.FAILED
-        source.status = SourceStatus.FAILED
-        run.error_summary = f"{type(exc).__name__}: {exc}"[:2000]
+        _persist_failed_import(
+            session,
+            run.id,
+            source.id,
+            ImportStatus.FAILED,
+            f"{type(exc).__name__}: {exc}"[:2000],
+            summary,
+        )
         raise
-    finally:
-        run.finished_at = datetime.now(UTC)
-        run.rows_read = summary.rows_examined
-        run.rows_inserted = summary.records_normalized
-        run.rows_rejected = summary.records_rejected
-        profiler.record_db_transaction()
-        with profiler.time_section("db_commit"):
-            session.commit()
-        logger.info("import_complete", extra=profiler.summary())
+    run.finished_at = datetime.now(UTC)
+    run.rows_read = summary.rows_examined
+    run.rows_inserted = summary.records_normalized
+    run.rows_rejected = summary.records_rejected
+    profiler.record_db_transaction()
+    with profiler.time_section("db_commit"):
+        session.commit()
+    logger.info("import_complete", extra=profiler.summary())
     return summary
+
+
+def _persist_failed_import(
+    session: Session,
+    run_id: uuid.UUID,
+    source_id: uuid.UUID,
+    status: ImportStatus,
+    error_summary: str,
+    summary: PriceImportSummary,
+) -> None:
+    """Rollback the failed batch, then persist an accurate terminal run state."""
+    session.rollback()
+    failed_run = session.get(ImportRun, run_id)
+    failed_source = session.get(SourceFile, source_id)
+    if failed_run is None:
+        failed_run = ImportRun(
+            id=run_id,
+            importer_name="hospital_prices",
+            source_file_id=source_id,
+            status=status,
+        )
+        session.add(failed_run)
+    failed_run.status = status
+    failed_run.error_summary = error_summary
+    failed_run.finished_at = datetime.now(UTC)
+    failed_run.rows_read = summary.rows_examined
+    failed_run.rows_inserted = 0
+    failed_run.rows_rejected = summary.records_rejected
+    if failed_source is not None:
+        failed_source.status = SourceStatus.FAILED
+    session.commit()
 
 
 def _batch_anomaly(

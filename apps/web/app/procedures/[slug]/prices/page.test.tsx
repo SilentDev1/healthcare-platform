@@ -65,6 +65,7 @@ vi.mock("../../../../lib/api", () => ({
         ],
       });
     if (path.includes("/pricing/payers")) return Promise.resolve([]);
+    if (path.includes("/pricing/plans")) return Promise.resolve([]);
     return Promise.resolve({
       slug: "mri-brain",
       consumer_name: "MRI brain",
@@ -88,8 +89,8 @@ describe("ProcedurePrices", () => {
     expect(screen.getByText("Published Hospital")).toBeInTheDocument();
     expect(screen.getByText("Coverage Gap Hospital")).toBeInTheDocument();
     expect(
-      screen.getByText("Price not currently available"),
-    ).toBeInTheDocument();
+      screen.getAllByText("Price not currently available").length,
+    ).toBeGreaterThan(0);
     expect(screen.getByText(/1 of 26 active hospitals/)).toBeInTheDocument();
   });
 

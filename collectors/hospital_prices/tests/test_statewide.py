@@ -3,7 +3,7 @@
 import uuid
 from pathlib import Path
 
-from sqlalchemy import Engine, create_engine, func, select
+from sqlalchemy import Engine, create_engine, func, select, update
 from sqlalchemy.orm import Session
 
 from collectors.hospital_prices.fixture_generator import generate_cms_wide_fixture
@@ -13,7 +13,11 @@ from collectors.hospital_prices.pipeline import (
     run_fixture_pipeline,
     run_statewide_pipeline,
 )
-from collectors.hospital_prices.projections import evaluate_pricing_health, freshness_score
+from collectors.hospital_prices.projections import (
+    evaluate_pricing_health,
+    freshness_score,
+    rebuild_price_summaries,
+)
 from packages.database import (
     Base,
     Facility,
@@ -314,6 +318,12 @@ def test_price_change_snapshot_created_on_rebuild() -> None:
         session.commit()
         # First run: establishes baseline
         run_fixture_pipeline(session)
+        session.execute(
+            update(SourceFile)
+            .where(SourceFile.source_url.like("file://%"))
+            .values(source_url="https://hospital.example.test/standardcharges.csv")
+        )
+        rebuild_price_summaries(session)
         baseline_summaries = (
             session.scalar(select(func.count(FacilityProcedurePriceSummary.id))) or 0
         )

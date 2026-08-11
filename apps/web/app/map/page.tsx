@@ -26,9 +26,15 @@ const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
 });
 
 const STATUS_COLORS: Record<string, string> = {
-  publishable: "#087f5b",
-  partial: "#e67700",
-  no_data: "#868e96",
+  pricing_available: "#087f5b",
+  limited_pricing: "#e67700",
+  pricing_not_available_yet: "#868e96",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  pricing_available: "Pricing available",
+  limited_pricing: "Limited pricing",
+  pricing_not_available_yet: "Pricing data not available yet",
 };
 
 export default function MapPage() {
@@ -74,16 +80,18 @@ export default function MapPage() {
           }}
         >
           <option value="">All hospitals</option>
-          <option value="publishable">With published prices</option>
-          <option value="partial">Partial data</option>
-          <option value="no_data">No pricing data</option>
+          <option value="pricing_available">Pricing available</option>
+          <option value="limited_pricing">Limited pricing</option>
+          <option value="pricing_not_available_yet">
+            Pricing data not available yet
+          </option>
         </select>
         <span
           style={{ fontSize: "0.85rem", color: "#526862", alignSelf: "center" }}
         >
-          <span style={{ color: "#087f5b" }}>●</span> Published{" "}
-          <span style={{ color: "#e67700" }}>●</span> Partial{" "}
-          <span style={{ color: "#868e96" }}>●</span> No data
+          <span style={{ color: "#087f5b" }}>●</span> Available{" "}
+          <span style={{ color: "#e67700" }}>●</span> Limited{" "}
+          <span style={{ color: "#868e96" }}>●</span> Not available yet
         </span>
         <div
           className="mobile-only"
@@ -123,7 +131,8 @@ export default function MapPage() {
               {data.map((feature) => (
                 <article className="card" key={feature.properties.id}>
                   <span className="badge neutral">
-                    {feature.properties.pricing_status.replaceAll("_", " ")}
+                    {STATUS_LABELS[feature.properties.pricing_status] ??
+                      "Pricing status unavailable"}
                   </span>
                   <h2>
                     {feature.properties.location_name ??

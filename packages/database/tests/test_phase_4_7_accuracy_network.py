@@ -30,6 +30,7 @@ def _objects(price_type: str = "discounted_cash") -> tuple[SimpleNamespace, ...]
     )
     rate = SimpleNamespace(
         negotiated_rate=Decimal("975.00"),
+        source_payload={"negotiated_rate": "975.00"},
         payer_entity_id=payer_id,
         insurance_plan_entity_id=plan_id,
     )
@@ -60,6 +61,15 @@ def test_exact_price_and_formatted_source_value_are_preserved() -> None:
     outcome = audit_observation(*_objects(), raw_source_available=False)
     assert outcome.status == "PROVENANCE_VERIFIED"
     assert outcome.difference == 0
+    assert outcome.provenance_checks["raw_payload_matches_normalized_record"]
+
+
+def test_raw_payload_monetary_mismatch_is_detected() -> None:
+    observation, record, rate, mapping, source = _objects()
+    record.raw_payload["discounted_cash"] = "$1,251.00"
+    outcome = audit_observation(observation, record, rate, mapping, source)
+    assert outcome.status == "VALUE_MISMATCH"
+    assert outcome.difference == Decimal("-1.00")
 
 
 def test_checksum_mismatch_does_not_claim_full_source_verification() -> None:

@@ -58,12 +58,9 @@ export default async function ProcedureDetail({
   const cashMaxes = priced
     .map((price) => price.cash_price_max)
     .filter((value): value is string => value !== null);
-  const negotiatedMins = priced
-    .map((price) => price.negotiated_price_min)
-    .filter((value): value is string => value !== null);
-  const negotiatedMaxes = priced
-    .map((price) => price.negotiated_price_max)
-    .filter((value): value is string => value !== null);
+  const locationsWithInsuranceRates = priced.filter(
+    (price) => (price.distinct_payer_count ?? 0) > 0,
+  ).length;
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "MedicalProcedure",
@@ -132,21 +129,11 @@ export default async function ProcedureDetail({
             </strong>
           </article>
           <article>
-            <span>Published range across available payers and plans</span>
-            <strong>
-              <PriceRange
-                min={
-                  negotiatedMins.length
-                    ? String(Math.min(...negotiatedMins.map(Number)))
-                    : null
-                }
-                max={
-                  negotiatedMaxes.length
-                    ? String(Math.max(...negotiatedMaxes.map(Number)))
-                    : null
-                }
-              />
-            </strong>
+            <span>Locations with published insurance rates</span>
+            <strong>{locationsWithInsuranceRates}</strong>
+            <small>
+              Choose a payer in comparison results to see matching rates.
+            </small>
           </article>
           <article>
             <span>Hospitals with prices</span>
@@ -154,8 +141,9 @@ export default async function ProcedureDetail({
           </article>
         </div>
         <p className="field-help">
-          These statewide ranges can combine different service settings. Use the
-          comparison filters to review like-for-like settings and payer context.
+          The cash range can combine different service settings. Use the
+          comparison filters to review like-for-like settings and select payer
+          context.
         </p>
       </section>
       <section className="section" style={{ paddingInline: 0 }}>

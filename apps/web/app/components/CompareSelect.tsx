@@ -91,9 +91,11 @@ export function CompareSelect({
 export function CompareTray({
   procedureSlug,
   payer,
+  plan,
 }: {
   procedureSlug: string;
   payer?: string;
+  plan?: string;
 }) {
   const selected = useChoices(procedureSlug);
 
@@ -103,6 +105,7 @@ export function CompareTray({
     procedure: procedureSlug,
   });
   if (payer) compareQuery.set("payer", payer);
+  if (plan) compareQuery.set("plan", plan);
   const compareHref = `/compare?${compareQuery}`;
   function clear() {
     sessionStorage.removeItem(storageKey(procedureSlug));
@@ -153,11 +156,13 @@ export function InlineComparePanel({
   procedureName,
   items,
   payer,
+  plan,
 }: {
   procedureSlug: string;
   procedureName: string;
   items: ProcedureComparisonItem[];
   payer?: string;
+  plan?: string;
 }) {
   const selected = useChoices(procedureSlug);
   const selectedItems = selected
@@ -174,6 +179,7 @@ export function InlineComparePanel({
     items: selected.map((choice) => choice.key).join(","),
   });
   if (payer) query.set("payer", payer);
+  if (plan) query.set("plan", plan);
   function clear() {
     sessionStorage.removeItem(storageKey(procedureSlug));
     window.dispatchEvent(new Event("carevero:selection"));
@@ -241,13 +247,16 @@ export function InlineComparePanel({
                 )}
               </tr>
               <tr>
-                <th scope="row">Negotiated</th>
+                <th scope="row">
+                  {payer ? "Matching published rates" : "Insurance rates"}
+                </th>
                 {selectedItems.map((item) => (
                   <td key={item.facility_location_id}>
-                    {range(
-                      item.negotiated_price_min,
-                      item.negotiated_price_max,
-                    )}
+                    {payer
+                      ? `${range(item.negotiated_price_min, item.negotiated_price_max)} · ${item.matching_negotiated_rate_count ?? 0} records`
+                      : item.distinct_payer_count
+                        ? `${item.distinct_payer_count} payer${item.distinct_payer_count === 1 ? "" : "s"} publish rates`
+                        : "No normalized payer rates published"}
                   </td>
                 ))}
                 {Array.from({ length: 3 - selectedItems.length }).map(

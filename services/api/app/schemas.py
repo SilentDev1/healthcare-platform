@@ -423,10 +423,29 @@ class ProcedureComparisonItem(BaseModel):
     cash_price_max: Decimal | None
     negotiated_price_min: Decimal | None
     negotiated_price_max: Decimal | None
+    cash_price_value_count: int = 0
+    cash_price_record_count: int = 0
+    cash_price_explanation: str | None = None
+    matching_negotiated_rate_count: int = 0
+    distinct_payer_count: int = 0
+    distinct_plan_count: int = 0
+    published_payers: list[dict[str, object]] = Field(default_factory=list)
+    selected_payer_name: str | None = None
+    selected_plan_name: str | None = None
+    all_published_negotiated_min: Decimal | None = None
+    all_published_negotiated_max: Decimal | None = None
+    extreme_rate_spread: bool = False
+    data_completeness: str = "limited_pricing_detail"
+    completeness_notes: list[str] = Field(default_factory=list)
     service_settings: list[str]
     summary_count: int
     source_count: int
     latest_updated: datetime | None
+    source_file_date: datetime | None = None
+    source_file_last_modified: str | None = None
+    downloaded_at: datetime | None = None
+    imported_at: datetime | None = None
+    carevero_refresh_date: datetime | None = None
     source_url: str | None
 
 
@@ -438,6 +457,45 @@ class ProcedureComparisonResponse(BaseModel):
     facilities_with_prices: int
     service_locations: int
     items: list[ProcedureComparisonItem]
+
+
+class ConsumerPriceDetailRecord(BaseModel):
+    semantic_type: str
+    amount: Decimal
+    payer_slug: str | None
+    payer_name: str | None
+    plan_id: uuid.UUID | None
+    plan_name: str | None
+    negotiated_rate_type: str | None
+    original_description: str
+    billing_codes: list[dict[str, str | None]]
+    service_variant: str
+    service_setting: str
+    component_scope: str
+    source_row_identity: str
+    source_url: str
+    source_checksum_sha256: str
+    source_file_date: datetime | None
+    source_file_last_modified: str | None
+    downloaded_at: datetime
+    imported_at: datetime
+    carevero_refresh_date: datetime
+
+
+class ConsumerPriceDetailResponse(BaseModel):
+    procedure_slug: str
+    procedure_name: str
+    facility_id: uuid.UUID
+    facility_name: str
+    facility_location_id: uuid.UUID
+    location_name: str | None
+    records: list[ConsumerPriceDetailRecord]
+    records_truncated: bool = False
+    disclaimer: str = (
+        "Published hospital prices are not personalized estimates. Separately billed "
+        "professional services may apply. A published negotiated rate does not verify "
+        "network participation or coverage."
+    )
 
 
 class FacilityProcedureOverviewItem(BaseModel):

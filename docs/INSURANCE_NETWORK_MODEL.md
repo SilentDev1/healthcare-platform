@@ -42,6 +42,11 @@ in-network for [specific plan]” language. Until such data is imported, the UI 
 “Published negotiated rate available” and “Network status not verified,” with “Confirm with your
 insurer before scheduling.”
 
+The anonymous consumer API accepts an optional normalized payer slug and optional payer-scoped plan
+ID. A selected payer/plan filters published price evidence only. Selection state may travel in the
+URL or session storage and does not create an account, consumer profile, eligibility claim, or
+network-participation observation.
+
 ## Matching policy
 
 Strong identifiers (NPI, CCN where applicable, and official organization IDs) are evaluated before

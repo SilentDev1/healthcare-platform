@@ -144,10 +144,34 @@ export interface ProcedureComparisonItem {
   cash_price_max: string | null;
   negotiated_price_min: string | null;
   negotiated_price_max: string | null;
+  cash_price_value_count?: number;
+  cash_price_record_count?: number;
+  cash_price_explanation?: string | null;
+  matching_negotiated_rate_count?: number;
+  distinct_payer_count?: number;
+  distinct_plan_count?: number;
+  published_payers?: Array<{
+    slug: string;
+    name: string;
+    rate_count: number;
+    plan_count: number;
+  }>;
+  selected_payer_name?: string | null;
+  selected_plan_name?: string | null;
+  all_published_negotiated_min?: string | null;
+  all_published_negotiated_max?: string | null;
+  extreme_rate_spread?: boolean;
+  data_completeness?: string;
+  completeness_notes?: string[];
   service_settings: string[];
   summary_count: number;
   source_count: number;
   latest_updated: string | null;
+  source_file_date?: string | null;
+  source_file_last_modified?: string | null;
+  downloaded_at?: string | null;
+  imported_at?: string | null;
+  carevero_refresh_date?: string | null;
   source_url: string | null;
 }
 
@@ -159,6 +183,45 @@ export interface ProcedureComparison {
   facilities_with_prices: number;
   service_locations: number;
   items: ProcedureComparisonItem[];
+}
+
+export interface ConsumerPriceDetailRecord {
+  semantic_type: string;
+  amount: string;
+  payer_slug: string | null;
+  payer_name: string | null;
+  plan_id: string | null;
+  plan_name: string | null;
+  negotiated_rate_type: string | null;
+  original_description: string;
+  billing_codes: Array<{
+    system: string | null;
+    code: string | null;
+    modifier: string | null;
+  }>;
+  service_variant: string;
+  service_setting: string;
+  component_scope: string;
+  source_row_identity: string;
+  source_url: string;
+  source_checksum_sha256: string;
+  source_file_date: string | null;
+  source_file_last_modified: string | null;
+  downloaded_at: string;
+  imported_at: string;
+  carevero_refresh_date: string;
+}
+
+export interface ConsumerPriceDetail {
+  procedure_slug: string;
+  procedure_name: string;
+  facility_id: string;
+  facility_name: string;
+  facility_location_id: string;
+  location_name: string | null;
+  records: ConsumerPriceDetailRecord[];
+  records_truncated: boolean;
+  disclaimer: string;
 }
 
 export interface PricingHealth {

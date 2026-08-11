@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from collectors.hospital_prices.pipeline import run_fixture_pipeline
+from collectors.hospital_prices.projections import rebuild_price_summaries
 from packages.data_health import evaluate_data_health
 from packages.database import (
     Base,
@@ -137,6 +138,7 @@ def setup_function() -> None:
             .where(SourceFile.source_url.like("file://%"))
             .values(source_url="https://hospital.example.test/standardcharges.csv")
         )
+        rebuild_price_summaries(session)
         session.commit()
 
 
@@ -231,6 +233,25 @@ def test_phase_4_pricing_endpoints_are_filtered_and_paginated() -> None:
     assert comparison.json()["facilities_with_prices"] == 1
     assert comparison.json()["items"][0]["cms_overall_rating"] == "4"
     assert comparison.json()["items"][0]["price_available"] is True
+    comparison_item = comparison.json()["items"][0]
+    assert comparison_item["cash_price_value_count"] >= 1
+    assert comparison_item["data_completeness"] in {
+        "high_data_completeness",
+        "some_details_unavailable",
+    }
+    assert comparison_item["source_count"] >= 1
+    details = client.get(
+        "/api/v1/procedures/mri-brain-without-contrast/locations/"
+        f"{comparison_item['facility_location_id']}/price-details"
+    )
+    assert details.status_code == 200
+    assert details.json()["records"]
+    assert {record["semantic_type"] for record in details.json()["records"]} >= {
+        "cash_self_pay",
+        "gross_charge",
+    }
+    assert "raw_payload" not in details.text
+    assert all(record["source_url"].startswith("https://") for record in details.json()["records"])
     facility_prices = client.get("/api/v1/facilities/00000000-0000-0000-0000-000000000001/prices")
     assert facility_prices.status_code == 200
     overview = client.get(
@@ -241,8 +262,30 @@ def test_phase_4_pricing_endpoints_are_filtered_and_paginated() -> None:
     assert len(overview.json()["items"]) >= overview.json()["procedure_count"]
     assert overview.json()["items"][0]["summary_count"] >= 1
     assert "raw_payload" not in overview.text
-    assert client.get("/api/v1/pricing/payers").status_code == 200
-    assert client.get("/api/v1/pricing/plans").status_code == 200
+    payer_response = client.get("/api/v1/pricing/payers")
+    assert payer_response.status_code == 200
+    payer_slug = payer_response.json()[0]["slug"]
+    plan_response = client.get(f"/api/v1/pricing/plans?payer={payer_slug}")
+    assert plan_response.status_code == 200
+    assert plan_response.json()
+    plan_id = plan_response.json()[0]["id"]
+    insured_comparison = client.get(
+        "/api/v1/procedures/mri-brain-without-contrast/comparison"
+        f"?state=NH&payer={payer_slug}&plan={plan_id}"
+    )
+    assert insured_comparison.status_code == 200
+    insured_item = insured_comparison.json()["items"][0]
+    assert insured_item["selected_payer_name"]
+    assert insured_item["selected_plan_name"]
+    assert insured_item["matching_negotiated_rate_count"] >= 1
+    insured_details = client.get(
+        "/api/v1/procedures/mri-brain-without-contrast/locations/"
+        f"{comparison_item['facility_location_id']}/price-details"
+        f"?payer={payer_slug}&plan={plan_id}"
+    ).json()["records"]
+    assert insured_item["matching_negotiated_rate_count"] == sum(
+        record["semantic_type"].startswith("negotiated_") for record in insured_details
+    )
     for path in (
         "/api/v1/admin/pricing/sources",
         "/api/v1/admin/pricing/source-discovery-runs",

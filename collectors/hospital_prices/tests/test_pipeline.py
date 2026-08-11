@@ -10,7 +10,12 @@ from sqlalchemy.orm import Session
 from collectors.hospital_prices.config import HospitalPriceSettings
 from collectors.hospital_prices.discovery import discover_sources, extract_mrf_urls
 from collectors.hospital_prices.downloader import safe_extract
-from collectors.hospital_prices.importer import decimal_value
+from collectors.hospital_prices.importer import (
+    PriceImportSummary,
+    _persist_failed_import,
+    decimal_value,
+    rate_identity,
+)
 from collectors.hospital_prices.normalization import match_payer, normalize_payer_name, seed_payers
 from collectors.hospital_prices.pipeline import run_fixture_pipeline
 from packages.database import (
@@ -20,12 +25,14 @@ from packages.database import (
     FacilityPriceSource,
     FacilityProcedurePriceSummary,
     HospitalPriceRecord,
+    ImportRun,
     PayerEntity,
     PricingAnomaly,
     PricingUnmatchedRecord,
     SourceFile,
 )
-from packages.database.models import SourceStatus
+from packages.database.models import ImportStatus, SourceStatus
+from scripts.seed_price_mappings import MAPPINGS
 from scripts.seed_procedure_catalog import seed_catalog
 
 
@@ -83,13 +90,13 @@ def test_fixture_pipeline_is_provenance_safe_and_idempotent(tmp_path: Path) -> N
         assert first.records_normalized == 14
         assert first.records_rejected == 2
         assert first.procedure_mappings == 10
-        assert first.summaries == 16
+        assert first.summaries == 0
         assert second.files_skipped_unchanged == 6
         assert second.records_normalized == 0
         assert session.scalar(select(func.count(HospitalPriceRecord.id))) == 14
         assert session.scalar(select(func.count(PricingUnmatchedRecord.id))) == 2
         assert session.scalar(select(func.count(PricingAnomaly.id))) == 5
-        assert session.scalar(select(func.count(FacilityProcedurePriceSummary.id))) == 16
+        assert session.scalar(select(func.count(FacilityProcedurePriceSummary.id))) == 0
         assert (
             session.scalar(
                 select(func.count(HospitalPriceRecord.id)).where(
@@ -114,6 +121,60 @@ def test_decimal_and_payer_normalization_are_conservative() -> None:
         assert match_payer(session, "").method == "blank"
         assert session.scalar(select(func.count(PayerEntity.id))) == 11
     engine.dispose()
+
+
+def test_rate_identity_deduplicates_equivalent_decimal_source_rates() -> None:
+    first = {"payer_name": "Bcbs", "plan_name": "Anthem Ppo", "negotiated_rate": "0.02"}
+    repeated = {
+        "payer_name": "Bcbs",
+        "plan_name": "Anthem Ppo",
+        "negotiated_rate": "0.0200",
+    }
+    assert rate_identity(first) == rate_identity(repeated)
+
+
+def test_failed_import_run_survives_rollback() -> None:
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        source = SourceFile(
+            source_name="Hospital MRF",
+            source_url="https://hospital.example/prices.csv",
+            source_type="hospital_mrf",
+            storage_path="prices.csv",
+            checksum_sha256="b" * 64,
+            file_size=1,
+            parser_version="test",
+            status=SourceStatus.COMPLETED,
+        )
+        session.add(source)
+        session.commit()
+        run_id = uuid.uuid4()
+        _persist_failed_import(
+            session,
+            run_id,
+            source.id,
+            ImportStatus.FAILED,
+            "parser failed",
+            PriceImportSummary(rows_examined=12, records_normalized=10, records_rejected=2),
+        )
+        failed = session.get(ImportRun, run_id)
+        assert failed is not None
+        assert failed.status == ImportStatus.FAILED
+        assert failed.rows_read == 12
+        assert failed.rows_inserted == 0
+        assert failed.rows_rejected == 2
+        failed_source = session.get(SourceFile, source.id)
+        assert failed_source is not None
+        assert failed_source.status == SourceStatus.FAILED
+    engine.dispose()
+
+
+def test_approved_code_registry_has_no_ambiguous_consumer_procedure_codes() -> None:
+    procedures_by_code: dict[tuple[str, str], set[str]] = {}
+    for slug, system, code in MAPPINGS:
+        procedures_by_code.setdefault((system, code), set()).add(slug)
+    assert all(len(slugs) == 1 for slugs in procedures_by_code.values())
 
 
 def test_cms_hpt_discovery_multiple_sources_and_idempotency() -> None:

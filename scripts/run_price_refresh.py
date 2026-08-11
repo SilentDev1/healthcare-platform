@@ -13,7 +13,24 @@ from packages.runtime import runtime_settings
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--state", required=True, help="Two-letter state scope")
-    parser.add_argument("--mode", choices=("refresh", "discover", "audit"), default="refresh")
+    parser.add_argument(
+        "--mode",
+        choices=(
+            "refresh",
+            "discover",
+            "audit",
+            "major-audit",
+            "major-recovery",
+            "phase-4-7-audit",
+            "phase-4-7-safety",
+            "phase-4-7-price-audit",
+            "phase-4-7-repair",
+            "phase-4-7-dartmouth",
+            "phase-4-7-regional",
+            "phase-4-7-valley",
+        ),
+        default="refresh",
+    )
     args = parser.parse_args()
     state = args.state.upper()
     if len(state) != 2 or not state.isalpha():
@@ -22,10 +39,28 @@ def main() -> None:
         raise SystemExit("scheduler is disabled; set SCHEDULER_ENABLED=true")
 
     lock_key = f"carevero:price-refresh:{state}"
-    module = {
-        "refresh": "scripts.pipeline_full",
-        "discover": "scripts.pipeline_discover",
-        "audit": "scripts.statewide_scorecard",
+    module, extra_args = {
+        "refresh": ("scripts.pipeline_full", []),
+        "discover": ("scripts.pipeline_discover", []),
+        "audit": ("scripts.statewide_scorecard", []),
+        "major-audit": ("scripts.audit_major_nh_coverage", []),
+        "major-recovery": ("scripts.recover_major_nh_coverage", []),
+        "phase-4-7-audit": ("scripts.phase_4_7_audit", []),
+        "phase-4-7-safety": ("scripts.phase_4_7_safety", []),
+        "phase-4-7-price-audit": ("scripts.audit_public_prices", ["--sample-size", "100"]),
+        "phase-4-7-repair": ("scripts.repair_phase_4_7_projections", []),
+        "phase-4-7-dartmouth": (
+            "scripts.recover_phase_4_7_sources",
+            ["--wave", "dartmouth"],
+        ),
+        "phase-4-7-regional": (
+            "scripts.recover_phase_4_7_sources",
+            ["--wave", "regional"],
+        ),
+        "phase-4-7-valley": (
+            "scripts.recover_phase_4_7_sources",
+            ["--wave", "valley"],
+        ),
     }[args.mode]
     with engine.connect() as connection:
         acquired = connection.scalar(
@@ -35,7 +70,7 @@ def main() -> None:
             raise SystemExit(f"refresh already active for {state}")
         try:
             result = subprocess.run(
-                [sys.executable, "-m", module, "--state", state],
+                [sys.executable, "-m", module, "--state", state, *extra_args],
                 check=False,
             )
             raise SystemExit(result.returncode)

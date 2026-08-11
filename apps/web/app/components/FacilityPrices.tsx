@@ -44,7 +44,7 @@ export function FacilityPrices({
               <tr>
                 <th scope="col">Procedure and location</th>
                 <th scope="col">Cash price</th>
-                <th scope="col">Negotiated range</th>
+                <th scope="col">Insurance pricing</th>
                 <th scope="col">Setting</th>
                 <th scope="col">Source</th>
               </tr>
@@ -70,11 +70,14 @@ export function FacilityPrices({
                       max={price.cash_price_max}
                     />
                   </td>
-                  <td data-label="Negotiated range">
-                    <PriceRange
-                      min={price.negotiated_price_min}
-                      max={price.negotiated_price_max}
-                    />
+                  <td data-label="Insurance pricing">
+                    {price.negotiated_price_min !== null ? (
+                      <Link href={`/procedures/${price.procedure_slug}/prices`}>
+                        Published rates available — choose a payer
+                      </Link>
+                    ) : (
+                      "No normalized payer rates published"
+                    )}
                   </td>
                   <td data-label="Setting">
                     {price.service_settings.join(", ").replaceAll("_", " ")}

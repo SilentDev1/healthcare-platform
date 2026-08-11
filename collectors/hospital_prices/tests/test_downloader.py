@@ -111,6 +111,10 @@ def test_detect_container_formats(tmp_path: Path) -> None:
     json_file.write_bytes(b'{"key": "value"}')
     assert detect_container(json_file) == "json"
 
+    bom_json_file = tmp_path / "bom.json"
+    bom_json_file.write_bytes(b'\xef\xbb\xbf{"version": "3.0.0"}')
+    assert detect_container(bom_json_file) == "json"
+
     xml_file = tmp_path / "test.xml"
     xml_file.write_bytes(b"<?xml version='1.0'?><root><item/></root>")
     assert detect_container(xml_file) == "xml"

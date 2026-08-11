@@ -62,11 +62,8 @@ MAPPINGS = (
     ("cesarean-delivery", "MS_DRG", "766"),
     ("cesarean-delivery", "MS_DRG", "765"),  # with CC
     ("cesarean-delivery", "MS_DRG", "767"),  # with MCC
-    # --- Joint replacement DRGs ---
-    ("knee-replacement", "MS_DRG", "470"),  # without MCC
-    ("knee-replacement", "MS_DRG", "469"),  # with MCC
-    ("hip-replacement", "MS_DRG", "470"),  # without MCC
-    ("hip-replacement", "MS_DRG", "469"),  # with MCC
+    # MS-DRG 469/470 represent major hip *or* knee replacement and cannot be
+    # deterministically assigned to either consumer procedure from the code alone.
     # --- Revenue codes ---
     ("chest-x-ray", "REV_CODE", "0324"),  # diagnostic radiology
     ("complete-blood-count", "REV_CODE", "0300"),  # laboratory

@@ -50,6 +50,17 @@ are the publishable observation IDs linked through summary provenance. Calculati
 maximum, and median within one facility/location/procedure/payer/plan/setting/component scope. The
 calculation never combines incompatible locations or settings.
 
+Consumer comparison keeps cash/self-pay separate from negotiated rates. Without an explicit payer
+selection, the primary representation is payer availability and exact payer/plan/rate counts; the
+cross-payer minimum and maximum is secondary source context only. With a payer and optional plan,
+only matching published rates enter the primary range. Distribution percentiles remain suppressed
+when code variant, setting, component, or rate-method comparability is not established.
+
+Exact duplicate rate tuples within one hospital source row are normalized once to satisfy the
+provenance model's source-row/payer/plan/amount identity. This removes duplicate encodings, not
+outliers, and never changes the published amount. Distinct source rows and semantic scopes remain
+separate observations.
+
 ## Audit statuses
 
 - `FULL_SOURCE_VERIFIED`: exact value and semantics pass; archived raw source exists and SHA-256

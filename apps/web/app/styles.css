@@ -2833,6 +2833,132 @@ body .comparison-toolbar .sort-form .button {
   white-space: nowrap;
 }
 
+/* Phase 4.7 consumer price semantics and source-detail presentation. */
+.price-context,
+.price-detail-link {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+.decision-context {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+}
+.decision-context div {
+  min-width: 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: #fff;
+}
+.decision-context dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.decision-context dd {
+  margin: 0.25rem 0 0;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.price-context {
+  color: var(--muted);
+}
+.price-detail-link {
+  width: fit-content;
+  color: var(--blue);
+  font-weight: 750;
+}
+.selected-insurance-label {
+  color: var(--blue) !important;
+  font-size: 0.68rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.insurance-name,
+.payer-availability {
+  font-size: 0.9rem !important;
+  line-height: 1.25;
+}
+.price-detail-section {
+  margin: 1.5rem 0;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+.price-detail-section > h2 {
+  margin-top: 0;
+}
+.rate-detail-list,
+.price-detail-section:has(> .rate-detail-card) {
+  display: grid;
+  gap: 0.85rem;
+}
+.rate-detail-card {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--surface-soft);
+}
+.rate-detail-card h3 {
+  margin: 0.45rem 0 0.25rem;
+  font-size: 1.35rem;
+}
+.rate-detail-card p {
+  overflow-wrap: anywhere;
+}
+.rate-detail-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.rate-detail-facts div {
+  min-width: 0;
+}
+.rate-detail-facts dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+.rate-detail-facts dd {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+}
+.payer-rate-group {
+  margin: 0.75rem 0;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+}
+.payer-rate-group > summary {
+  padding: 1rem;
+  cursor: pointer;
+  font-weight: 800;
+}
+.payer-rate-group .rate-detail-list {
+  padding: 0 1rem 1rem;
+}
+
+@media (max-width: 680px) {
+  .decision-context {
+    grid-template-columns: 1fr;
+  }
+  .rate-detail-facts {
+    grid-template-columns: 1fr;
+  }
+  .rate-detail-card {
+    padding: 0.85rem;
+  }
+}
+
 @media (max-width: 900px) {
   body .product-hero.hero {
     min-height: 660px;
@@ -2892,5 +3018,44 @@ body .comparison-toolbar .sort-form .button {
   }
   body .comparison-toolbar .sort-form .button {
     width: 100%;
+  }
+  body .marketplace-results-layout .facility-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.8rem;
+    padding: 1rem;
+  }
+  body .marketplace-results-layout .facility-card-top,
+  body .marketplace-results-layout .facility-facts,
+  body .marketplace-results-layout .price-grid,
+  body .marketplace-results-layout .card-actions {
+    grid-column: 1;
+    grid-row: auto;
+    width: 100%;
+    min-width: 0;
+  }
+  body .marketplace-results-layout .facility-card h2,
+  body .marketplace-results-layout .facility-card p,
+  body .marketplace-results-layout .facility-facts span,
+  body .marketplace-results-layout .price-grid span,
+  body .marketplace-results-layout .price-grid strong {
+    overflow-wrap: anywhere;
+  }
+  body .marketplace-results-layout .price-grid {
+    grid-template-columns: 1fr;
+  }
+  body .marketplace-results-layout .price-grid > div {
+    padding: 0.75rem 0;
+  }
+  body .marketplace-results-layout .card-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex-direction: unset;
+  }
+  body .marketplace-results-layout .card-actions > .button,
+  body .marketplace-results-layout .card-actions .compare-actions,
+  body .marketplace-results-layout .card-actions .compare-actions .button {
+    width: 100%;
+    min-width: 0;
   }
 }
