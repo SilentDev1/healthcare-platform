@@ -1,160 +1,169 @@
-# CareCompare
+# Carevero
 
-CareCompare is a healthcare price transparency platform for New Hampshire. It ingests
-public hospital machine-readable files, maps them to a consumer procedure catalog, enforces
-publication safety gates, and serves reviewed pricing through a Next.js public site, admin
-dashboard, and FastAPI backend — all backed by PostgreSQL 17 and Alembic migrations.
+Carevero is a consumer-first healthcare price-transparency and hospital-comparison
+platform. It ingests public hospital machine-readable files and official CMS data,
+normalizes the records into a provenance-preserving PostgreSQL model, applies publication
+safety gates, and exposes the reviewed data through a FastAPI service and a Next.js public
+site.
 
-## Current status (Phase 4.2.2)
+The product is currently a New Hampshire private beta. Its core search, price browsing,
+facility detail, and comparison flows are anonymous and free—an account is not required.
 
-| Metric                                 | Value     |
-| -------------------------------------- | --------- |
-| NH facilities in database              | 28        |
-| Facilities with discovered MRF sources | 22 (79%)  |
-| Facilities with downloaded files       | 13 (46%)  |
-| Facilities with parsed records         | 13 (46%)  |
-| Facilities with publishable pricing    | 12 (43%)  |
-| Consumer procedures in catalog         | 50        |
-| Total price records                    | 1,197,796 |
-| Publishable summaries                  | 4,173     |
-| Average pricing health score           | 49.07     |
-| Safety invariants                      | All clear |
+## Local development
 
-Phase 4.2.2 achieved a major coverage recovery: from 6 publishable facilities (21%) to
-12 (43%), with total records growing from 361K to 1.2M. Key unlocks included CMS HPT JSON
-3.0 parsing for large files (246–437 MB), streaming downloads with .part atomic rename and
-HTTP Range resume, expanded CDM crosswalk (54 patterns), and a conditional publication
-pathway for legacy parsers with approved-code mappings.
-
-## Quick start
-
-Prerequisites: Docker, Python 3.12+, Node.js 22+, and npm.
+Prerequisites: Docker Desktop, Python 3.12+, [`uv`](https://docs.astral.sh/uv/), Node.js
+22+, and npm.
 
 ```bash
 cp .env.example .env
 make setup
 make db-up
+docker compose ps
 make migrate
-make import-cms-hospitals
-make api
 ```
 
-API docs: <http://localhost:8000/docs>. Public site: `make web` (port 3000).
-Admin dashboard: `make admin` (port 3001).
-
-### Phase-specific workflows
+Run each application in a separate terminal:
 
 ```bash
-# Phase 2: CMS quality data
-make import-cms-quality
-make verify-phase-2
+make api     # FastAPI on http://localhost:8000
+make web     # public Next.js app on http://localhost:3000
+make admin   # local-only admin app on http://localhost:3001
+```
 
-# Phase 3: Identity, search, data health
-make import-nppes-organizations
-make seed-procedure-catalog
-make rebuild-search-index
-make evaluate-data-health
-make verify-phase-3
+API documentation is available locally at <http://localhost:8000/docs>. The configured
+local database is PostgreSQL 17 from [`compose.yaml`](compose.yaml).
 
-# Phase 4: Hospital pricing pipeline (fixture-only)
-make pricing-pipeline
-make verify-phase-4
+## Verification
 
-# Phase 4.2: Statewide coverage
-make pipeline-full-nh
-make statewide-scorecard
-make verify-phase-4-2
+The primary release gate is:
+
+```bash
+make beta-gate
+```
+
+It runs Python and TypeScript tests, Ruff formatting/lint, strict MyPy, ESLint, Prettier,
+TypeScript checks, production builds, the secret scan, and `npm audit`. Useful individual
+commands are:
+
+```bash
+make test
+make lint
+make typecheck
+make build
+make secret-scan
+make beta-data-smoke
+```
+
+The last UI release passed 96 Python tests, 17 workspace tests, strict MyPy, Ruff, ESLint,
+Prettier, TypeScript, both Next.js production builds, the secret scan, and an audit with
+zero npm vulnerabilities. Re-run the suite after changes; historical results are not a
+substitute for current verification.
+
+To smoke-test a deployed beta, use the checked-in command rather than ad hoc fixture
+fallbacks:
+
+```bash
+uv run python -m scripts.beta_smoke \
+  --web-url "$PUBLIC_APP_URL" \
+  --api-url "$API_PUBLIC_URL" \
+  --facility-id "$KNOWN_PRICED_FACILITY_ID" \
+  --missing-price-facility-id "$KNOWN_UNPRICED_FACILITY_ID"
 ```
 
 ## Architecture
 
+```text
+apps/web/                    Next.js consumer search, prices, compare, facilities, map
+apps/admin/                  Local/internal Next.js operational dashboard
+services/api/                FastAPI public and internal API boundaries
+collectors/                  CMS and hospital-price acquisition/parsing
+packages/database/           SQLAlchemy models and Alembic migrations (head: 0008)
+packages/search/             Consumer search index and synonyms
+packages/identity/           Deterministic facility and location identity resolution
+packages/shared_types/       Shared TypeScript contracts
+packages/validation/         Shared validation
+scripts/                     Pipeline, verification, migration, and deployment tooling
+infrastructure/cloudbuild/   Remote image build definitions
+infrastructure/docker/       Container definitions used by Cloud Build
+infrastructure/terraform/    Existing Google Cloud beta infrastructure
+docs/                        Architecture, provenance, API, operations, and runbooks
 ```
-apps/web/          Next.js public interface (facilities, procedures, prices, map, search)
-apps/admin/        Next.js admin dashboard (scorecard, pipeline status, quality review)
-services/api/      FastAPI backend (28 endpoints, publication-gated pricing)
-collectors/        Hospital price discovery, download, parsing, normalization
-packages/database/ SQLAlchemy models, Alembic migrations (0001–0007)
-packages/search/   Search index with 40+ consumer synonym mappings
-packages/identity/ Deterministic facility identity resolution
-scripts/           Pipeline CLI, benchmarks, reports, verification
-docs/              Operations, API, coverage methodology, provenance
+
+Important domain boundaries:
+
+- Canonical facilities and physical service locations are separate entities.
+- Price sources may be associated with verified physical locations.
+- Raw source data, normalized Carevero data, consumer representations, and future
+  commercial analytics are conceptually separate.
+- Organic price results and ranking must never be changed by future paid placement.
+- Provider-supplied information must eventually remain distinguishable from independently
+  collected transparency and government data.
+
+Do not introduce speculative tables or services for future accounts, billing, RBAC,
+commercial APIs, or provider products. Document extension points until a current feature
+naturally needs an abstraction.
+
+## Pricing and publication pipeline
+
+The pipeline is:
+
+```text
+discover -> download -> parse -> normalize -> map -> review -> publish
 ```
 
-All imported data is tied to immutable source metadata and an import run. No PHI or patient
-data belongs in this system.
+Key safety properties:
 
-## Hospital pricing pipeline
+- discovery is bounded to official hospital sources;
+- downloads preserve checksums, source URLs, and immutable source-file metadata;
+- parsing is deterministic and supports CMS HPT CSV/JSON plus approved legacy formats;
+- procedure mapping uses reviewed codes/crosswalks rather than fuzzy inference;
+- unresolved critical anomalies block publication;
+- public APIs return only publication-gated summaries; and
+- overlapping schedules retain provenance while public identities remain deduplicated.
 
-The pipeline follows a strict sequence: discover → download → parse → normalize → map →
-review → publish. Each stage has safety gates:
+`make pricing-pipeline` uses fixtures. Live statewide commands such as
+`pipeline-discover-nh`, `pipeline-download-nh`, `pipeline-import-nh`, and
+`pipeline-full-nh` affect real pipeline state and require deliberate operational review.
+See [`docs/hospital-price-transparency.md`](docs/hospital-price-transparency.md),
+[`docs/phase-4-2-operations.md`](docs/phase-4-2-operations.md), and
+[`docs/statewide-coverage.md`](docs/statewide-coverage.md).
 
-- **Discovery**: Bounded to official hospital domains via `robots.txt`-compliant crawling
-- **Parsing**: Deterministic CMS HPT CSV/JSON parsers (including 3.0 nested format), chargemaster
-  wide CSV, XML standard charges — with header-alias extensions (24 description synonyms, 27 code synonyms)
-- **Mapping**: Code-based procedure mapping (87 CPT/HCPCS/DRG mappings, 54 CDM crosswalk patterns) — no fuzzy matching
-- **Quality**: Auto-triage rules suppress known false positives; unresolved critical/error
-  anomalies block publication
-- **Publication**: Only `publishable` summaries with reviewed mappings and acceptable
-  source confidence reach the public API
+## Deployment
 
-`make pricing-pipeline` runs fixtures only. Live discovery and downloads are separate
-reviewable commands. See [hospital price transparency](docs/hospital-price-transparency.md).
+The existing private-beta architecture is:
 
-## Statewide coverage (Phase 4.2)
+- Cloud Run: public web and FastAPI services
+- Cloud Run Jobs: hospital pricing refresh/import
+- Cloud SQL: private PostgreSQL 17 with deletion protection and automated backups
+- Cloud Storage: private, versioned source/provenance storage
+- Cloud Scheduler: bounded refresh schedules
+- Secret Manager: runtime secrets
+- Artifact Registry and Cloud Build: immutable application images
+- Cloud Logging/Monitoring and budget alerts: operations and cost visibility
 
-Phase 4.2 extends the pricing pipeline to all 28 NH acute-care hospitals:
+Build images remotely from the checked-in files under `infrastructure/cloudbuild/`, tag
+them with the Git SHA, and deploy immutable digests. Terraform uses the existing remote
+state and project resources. A safe plan must not recreate the project, create duplicate
+resources, expose Cloud SQL/storage publicly, or alter unrelated resources.
 
-- **Statewide pipeline** — `make pipeline-full-nh` runs the full discover → postprocess sequence
-- **Quality system** — auto-triage rules, freshness scoring (30/60/90/180-day tiers), historical price change tracking via `PriceChangeSnapshot`
-- **Statewide scorecard** — 6-component readiness score (discovery, parsing, mapping, quality, freshness, coverage)
-- **Search synonyms** — 40+ consumer-friendly term mappings (e.g., "knee replacement" → "total knee arthroplasty")
-- **Interactive map** — Leaflet/OpenStreetMap NH hospital map with pricing-status color coding
-- **Admin dashboard** — readiness gauge, component score bars, per-facility quality table
-- **API endpoints** — scorecard, freshness, facility scores, map data, pricing health, price filtering
+The temporary Cloud Run hostname must remain `noindex` while
+`SEO_INDEXING_ENABLED=false`. A future permanent domain should require configuration
+changes to `PUBLIC_APP_URL`, `API_PUBLIC_URL`, `CANONICAL_SITE_URL`, CORS/trusted hosts,
+and SEO settings—not an application redesign.
 
-### Phase 4.2.2 — Coverage recovery
+## Product direction
 
-- **Large file streaming** — 750 MB download ceiling, .part atomic rename, HTTP Range resume, streaming SHA-256
-- **CMS HPT JSON 3.0** — nested `code_information` and `standard_charges`/`payers_information` extraction
-- **Expanded parsers** — 24 description synonyms, 27 code synonyms, space-variant header detection, chargemaster wide CSV preamble skip
-- **CDM crosswalk** — 54 deterministic patterns (ED visits, deliveries, imaging, urgent care, labs)
-- **Health system propagation** — Dartmouth Health, SolutionHealth, North Country Healthcare sibling source sharing
-- **Publication pathway** — legacy parsers publishable when records have exact approved-code mappings
-- **Diagnostics** — `scripts/publication_blockers.py`, `scripts/analyze_unmapped_codes.py`, `scripts/final_classification.py`
+The primary anonymous journey is:
 
-### Verified status
+```text
+Search -> Results -> Compare -> Facility -> Understand Price -> Take Action
+```
 
-All checks pass as of the latest commit:
+Near-term work should improve this real-data consumer experience without weakening trust.
+Future consumer accounts, provider products, employer tools, analytics, and commercial
+APIs are valid extension paths, but they are not permission to create unused identity,
+billing, authorization, advertising, or microservice infrastructure today.
 
-| Check              | Result                 |
-| ------------------ | ---------------------- |
-| mypy (strict)      | 0 errors, 109 files    |
-| pytest             | 78 passed              |
-| Ruff format + lint | Clean                  |
-| Safety invariants  | 0 AI / 0 fuzzy / 0 PHI |
-
-### Remaining gaps
-
-1. 9 facilities have discovered sources but download failed (stale URLs, 404s, HTML error pages)
-2. 6 facilities have no discovered MRF source (Cottage, Exeter, Hampstead, Monadnock, NH Hospital, Valley Regional)
-3. Littleton Regional parsed (20K records) but not publishable — CDM codes unresolved, legacy parser
-4. 2 excluded facilities (Hampstead psychiatric, NH Hospital state-run)
-
-See [pipeline operations](docs/phase-4-2-operations.md), [API endpoints](docs/api-pricing-endpoints.md),
-and [coverage methodology](docs/statewide-coverage.md).
-
-## Safety invariants
-
-These invariants are enforced and verified on every commit:
-
-- 0 AI-modified prices
-- 0 fuzzy auto-merges of facility identity
-- 0 public unreviewed procedure mappings
-- 0 accepted negative prices in public output
-- 0 PHI stored
-- 0 insurer Transparency in Coverage files ingested
-- 0 cloud deployments
-
-Public pricing pages include disclaimers that published prices may not equal the final bill
-and that additional professional, anesthesia, pathology, imaging, laboratory, medication,
-implant, or other charges may apply.
+When handing off work, report exactly what changed, what was verified, whether production
+or data state changed, the deployed URLs/revisions if applicable, Git status, and commit
+hashes.
