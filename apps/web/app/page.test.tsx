@@ -18,7 +18,7 @@ describe("Home", () => {
     render(await Home());
     expect(
       screen.getByRole("heading", {
-        name: "Compare healthcare prices near you.",
+        name: "Healthcare prices. Clear. Local. Comparable.",
       }),
     ).toBeInTheDocument();
     expect(

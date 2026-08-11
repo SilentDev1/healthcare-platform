@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { CareSearch } from "../components/CareSearch";
 import { EmptyState, ErrorState, LoadingSkeleton } from "../components/ui";
@@ -9,6 +9,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 const SEARCH_TIMEOUT_MS = 10_000;
 
 function SearchContent() {
+  const router = useRouter();
   const params = useSearchParams();
   const q = params.get("q") ?? "";
   const location = params.get("location") ?? "";
@@ -36,7 +37,23 @@ function SearchContent() {
         if (!r.ok) throw new Error();
         return r.json();
       })
-      .then((d) => setItems(d.items ?? []))
+      .then((d) => {
+        const results = (d.items ?? []) as SearchResult[];
+        const procedures = results.filter(
+          (item) => item.entity_type === "procedure" && item.metadata.slug,
+        );
+        if (procedures.length === 1 && results.length === 1) {
+          const priceParams = new URLSearchParams();
+          if (location) priceParams.set("location", location);
+          if (payer) priceParams.set("payer", payer);
+          const query = priceParams.size ? `?${priceParams}` : "";
+          router.replace(
+            `/procedures/${procedures[0].metadata.slug}/prices${query}`,
+          );
+          return;
+        }
+        setItems(results);
+      })
       .catch((e) => {
         if (timedOut || e.name !== "AbortError") setError(true);
       })
@@ -49,7 +66,7 @@ function SearchContent() {
       clearTimeout(timeout);
       controller.abort();
     };
-  }, [q, location, requestNonce]);
+  }, [q, location, payer, requestNonce, router]);
   return (
     <main>
       <div className="page-heading">

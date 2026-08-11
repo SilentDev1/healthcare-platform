@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { CareSearch } from "./components/CareSearch";
-import { CoverageNotice } from "./components/ui";
+import { ComparisonFacilityCard, CoverageNotice } from "./components/ui";
+import { InlineComparePanel } from "./components/CompareSelect";
 import { apiGet } from "../lib/api";
+import type { ProcedureComparison } from "../lib/api";
 
 interface Coverage {
   nh_facilities: number;
@@ -21,9 +23,17 @@ const popular = [
 
 export default async function Home() {
   let coverage: Coverage | null = null;
+  let featured: ProcedureComparison | null = null;
   try {
-    coverage = await apiGet<Coverage>("/api/v1/pricing/coverage");
+    [coverage, featured] = await Promise.all([
+      apiGet<Coverage>("/api/v1/pricing/coverage"),
+      apiGet<ProcedureComparison>(
+        "/api/v1/procedures/mri-knee-without-contrast/comparison?state=NH",
+      ),
+    ]);
   } catch {}
+  const featuredItems =
+    featured?.items?.filter((item) => item.price_available).slice(0, 4) ?? [];
   return (
     <>
       <main className="hero product-hero">
@@ -31,7 +41,7 @@ export default async function Home() {
           <div className="hero-copy">
             <p className="eyebrow">Clear information for confident choices</p>
             <h1>
-              Compare healthcare <span>prices</span> near you.
+              Healthcare prices. <span>Clear. Local. Comparable.</span>
             </h1>
             <p className="lede">
               Compare published prices for procedures and services at New
@@ -93,6 +103,43 @@ export default async function Home() {
           </div>
         </div>
       </main>
+      {featured && featuredItems.length > 0 && (
+        <section className="section featured-marketplace">
+          <div className="marketplace-section-heading">
+            <div>
+              <p className="eyebrow">Real published prices</p>
+              <h2>{featured.procedure_name}</h2>
+              <p>
+                Select up to three New Hampshire hospitals to compare their
+                published prices side by side.
+              </p>
+            </div>
+            <Link
+              className="button secondary"
+              href="/procedures/mri-knee-without-contrast/prices"
+            >
+              View all matching hospitals
+            </Link>
+          </div>
+          <div className="marketplace-results-layout">
+            <section className="result-list" aria-label="Featured prices">
+              {featuredItems.map((item) => (
+                <ComparisonFacilityCard
+                  key={`${item.facility_id}-${item.facility_location_id}`}
+                  item={item}
+                  procedureName={featured.procedure_name}
+                  procedureSlug={featured.procedure_slug}
+                />
+              ))}
+            </section>
+            <InlineComparePanel
+              procedureSlug={featured.procedure_slug}
+              procedureName={featured.procedure_name}
+              items={featuredItems}
+            />
+          </div>
+        </section>
+      )}
       <section className="section product-intro">
         <div className="section-heading">
           <p className="eyebrow">How it works</p>

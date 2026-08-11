@@ -62,7 +62,7 @@ export function CareSearch({
       .then((value: Array<{ slug: string; name: string }>) => setPayers(value))
       .catch(() => setPayers([]));
   }, [showInsurance]);
-  function submit(event: React.FormEvent) {
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!care.trim()) return;
     if (/^\d+$/.test(location.trim()) && !/^\d{5}$/.test(location.trim())) {
@@ -73,6 +73,32 @@ export function CareSearch({
     const params = new URLSearchParams({ q: care.trim() });
     if (location.trim()) params.set("location", location.trim());
     if (payer) params.set("payer", payer);
+    try {
+      const response = await fetch(
+        `${API_URL}/api/v1/search?${new URLSearchParams({ q: care.trim(), page_size: "5" })}`,
+      );
+      if (response.ok) {
+        const data = (await response.json()) as {
+          items?: Array<{
+            entity_type: string;
+            metadata?: { slug?: string };
+          }>;
+        };
+        const procedure = data.items?.find(
+          (item) => item.entity_type === "procedure" && item.metadata?.slug,
+        );
+        if (procedure?.metadata?.slug) {
+          const priceParams = new URLSearchParams();
+          if (location.trim()) priceParams.set("location", location.trim());
+          if (payer) priceParams.set("payer", payer);
+          const query = priceParams.size ? `?${priceParams}` : "";
+          router.push(`/procedures/${procedure.metadata.slug}/prices${query}`);
+          return;
+        }
+      }
+    } catch {
+      // The complete search page remains the resilient fallback.
+    }
     router.push(`/search?${params}`);
   }
   function keyDown(event: React.KeyboardEvent) {

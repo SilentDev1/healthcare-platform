@@ -14,7 +14,10 @@ import {
   PricingDisclaimer,
 } from "../../../components/ui";
 import { launchRegion } from "../../../../lib/brand";
-import { CompareTray } from "../../../components/CompareSelect";
+import {
+  CompareTray,
+  InlineComparePanel,
+} from "../../../components/CompareSelect";
 
 interface Filters {
   location?: string;
@@ -239,8 +242,8 @@ export default async function ProcedurePrices({
             <button className="button secondary">Apply</button>
           </form>
         </div>
-        <div className="results-layout">
-          <FilterPanel>{filterForm}</FilterPanel>
+        <FilterPanel>{filterForm}</FilterPanel>
+        <div className="marketplace-results-layout">
           <section className="result-list" aria-label="Facility results">
             {items.length === 0 ? (
               <EmptyState title="No hospitals match these filters">
@@ -277,6 +280,12 @@ export default async function ProcedurePrices({
               ))
             )}
           </section>
+          <InlineComparePanel
+            procedureSlug={slug}
+            procedureName={procedure.consumer_name}
+            items={items}
+            payer={filters.payer}
+          />
         </div>
         <PricingDisclaimer />
         <CompareTray procedureSlug={slug} payer={filters.payer} />

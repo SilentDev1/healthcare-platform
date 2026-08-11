@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useSyncExternalStore } from "react";
+import type { ProcedureComparisonItem } from "../../lib/api";
 
 interface CompareChoice {
   key: string;
@@ -127,6 +128,167 @@ export function CompareTray({
       ) : (
         <span className="muted">Choose one more to compare</span>
       )}
+    </aside>
+  );
+}
+
+function money(value: string | null) {
+  if (value === null) return "Not published";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(Number(value));
+}
+
+function range(min: string | null, max: string | null) {
+  if (min === null && max === null) return "Not published";
+  if (min === max || max === null) return money(min);
+  if (min === null) return money(max);
+  return `${money(min)} – ${money(max)}`;
+}
+
+export function InlineComparePanel({
+  procedureSlug,
+  procedureName,
+  items,
+  payer,
+}: {
+  procedureSlug: string;
+  procedureName: string;
+  items: ProcedureComparisonItem[];
+  payer?: string;
+}) {
+  const selected = useChoices(procedureSlug);
+  const selectedItems = selected
+    .map((choice) =>
+      items.find(
+        (item) =>
+          item.facility_id === choice.facilityId &&
+          item.facility_location_id === choice.locationId,
+      ),
+    )
+    .filter((item): item is ProcedureComparisonItem => Boolean(item));
+  const query = new URLSearchParams({
+    procedure: procedureSlug,
+    items: selected.map((choice) => choice.key).join(","),
+  });
+  if (payer) query.set("payer", payer);
+  function clear() {
+    sessionStorage.removeItem(storageKey(procedureSlug));
+    window.dispatchEvent(new Event("carevero:selection"));
+  }
+  return (
+    <aside className="inline-compare" aria-live="polite">
+      <div className="inline-compare-heading">
+        <div>
+          <span className="eyebrow">Side-by-side prices</span>
+          <h2>Compare up to 3 hospitals</h2>
+        </div>
+        {selected.length > 0 && (
+          <button className="text-button" type="button" onClick={clear}>
+            Clear all
+          </button>
+        )}
+      </div>
+      {selectedItems.length === 0 ? (
+        <div className="compare-empty">
+          <span aria-hidden="true">⇄</span>
+          <strong>Select hospitals to compare</strong>
+          <p>
+            Choose two or three results. Their real published prices will appear
+            here.
+          </p>
+        </div>
+      ) : (
+        <div className="inline-compare-table-wrap">
+          <table className="inline-compare-table">
+            <caption className="sr-only">
+              Selected hospital prices for {procedureName}
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Price</th>
+                {selectedItems.map((item) => (
+                  <th scope="col" key={item.facility_location_id}>
+                    {item.location_name ?? item.facility_name}
+                    {item.location_name && <small>{item.facility_name}</small>}
+                  </th>
+                ))}
+                {Array.from({ length: 3 - selectedItems.length }).map(
+                  (_, index) => (
+                    <th className="compare-placeholder" scope="col" key={index}>
+                      Select hospital
+                    </th>
+                  ),
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Cash price</th>
+                {selectedItems.map((item) => (
+                  <td key={item.facility_location_id}>
+                    <strong>
+                      {range(item.cash_price_min, item.cash_price_max)}
+                    </strong>
+                  </td>
+                ))}
+                {Array.from({ length: 3 - selectedItems.length }).map(
+                  (_, index) => (
+                    <td key={index}>—</td>
+                  ),
+                )}
+              </tr>
+              <tr>
+                <th scope="row">Negotiated</th>
+                {selectedItems.map((item) => (
+                  <td key={item.facility_location_id}>
+                    {range(
+                      item.negotiated_price_min,
+                      item.negotiated_price_max,
+                    )}
+                  </td>
+                ))}
+                {Array.from({ length: 3 - selectedItems.length }).map(
+                  (_, index) => (
+                    <td key={index}>—</td>
+                  ),
+                )}
+              </tr>
+              <tr>
+                <th scope="row">Setting</th>
+                {selectedItems.map((item) => (
+                  <td key={item.facility_location_id}>
+                    {item.service_settings.length
+                      ? item.service_settings.join(", ").replaceAll("_", " ")
+                      : "Not published"}
+                  </td>
+                ))}
+                {Array.from({ length: 3 - selectedItems.length }).map(
+                  (_, index) => (
+                    <td key={index}>—</td>
+                  ),
+                )}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div className="inline-compare-footer">
+        <span>{selected.length} of 3 selected</span>
+        {selected.length >= 2 ? (
+          <Link className="button" href={`/compare?${query}`}>
+            View full comparison <span aria-hidden="true">→</span>
+          </Link>
+        ) : (
+          <span className="muted">Select at least 2 hospitals</span>
+        )}
+      </div>
+      <p className="compare-disclaimer">
+        Published prices are not a personalized estimate or guarantee of your
+        final cost.
+      </p>
     </aside>
   );
 }
