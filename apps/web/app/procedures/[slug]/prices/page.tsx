@@ -296,41 +296,54 @@ export default async function ProcedurePrices({
                 .replace("{withPrices}", String(data.facilities_with_prices))
                 .replace("{active}", String(data.active_facilities))}
         </CoverageNotice>
-        <div className="toolbar comparison-toolbar">
+        <p className="results-count">
           <strong>
             {(items.length === 1
               ? messages.serviceLocationCountOne
               : messages.serviceLocationCountOther
             ).replace("{count}", String(items.length))}
-            {activeFilterCount
-              ? ` · ${(activeFilterCount === 1
-                  ? messages.activeFilterCountOne
-                  : messages.activeFilterCountOther
-                ).replace("{count}", String(activeFilterCount))}`
-              : ""}
           </strong>
-          <form className="sort-form">
+          {activeFilterCount
+            ? ` · ${(activeFilterCount === 1
+                ? messages.activeFilterCountOne
+                : messages.activeFilterCountOther
+              ).replace("{count}", String(activeFilterCount))}`
+            : ""}
+        </p>
+        <div className="results-controls">
+          <FilterPanel messages={messages}>{filterForm}</FilterPanel>
+          <form className="results-sort-form">
             {Object.entries(filters)
-              .filter(([key, value]) => key !== "sort" && value)
+              .filter(
+                ([key, value]) =>
+                  key !== "sort" && key !== "radius" && value,
+              )
               .map(([key, value]) => (
                 <input key={key} type="hidden" name={key} value={value} />
               ))}
-            <label htmlFor="sort">{messages.sortLabel}</label>
-            <select
-              id="sort"
-              name="sort"
-              defaultValue={filters.sort ?? "recommended"}
-            >
-              <option value="recommended">{messages.sortRecommended}</option>
-              <option value="distance">{messages.nearestFirst}</option>
-              <option value="cash">{messages.sortLowestCash}</option>
-              <option value="rating">{messages.sortHighestRating}</option>
-              <option value="name">{messages.sortHospitalName}</option>
-            </select>
+            <label className="control-field">
+              <span>{messages.distanceRadius}</span>
+              <select name="radius" defaultValue={filters.radius ?? ""}>
+                <option value="">{messages.anyDistance}</option>
+                <option value="10">10 {messages.milesUnit}</option>
+                <option value="25">25 {messages.milesUnit}</option>
+                <option value="50">50 {messages.milesUnit}</option>
+                <option value="100">100 {messages.milesUnit}</option>
+              </select>
+            </label>
+            <label className="control-field">
+              <span>{messages.sortLabel}</span>
+              <select name="sort" defaultValue={filters.sort ?? "recommended"}>
+                <option value="recommended">{messages.sortRecommended}</option>
+                <option value="distance">{messages.nearestFirst}</option>
+                <option value="cash">{messages.sortLowestCash}</option>
+                <option value="rating">{messages.sortHighestRating}</option>
+                <option value="name">{messages.sortHospitalName}</option>
+              </select>
+            </label>
             <button className="button secondary">{messages.apply}</button>
           </form>
         </div>
-        <FilterPanel messages={messages}>{filterForm}</FilterPanel>
         <div className="marketplace-results-layout">
           <section
             className="result-list"

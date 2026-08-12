@@ -61,17 +61,16 @@ describe("consumer pricing components", () => {
       />,
     );
     expect(screen.getByText("$825")).toBeInTheDocument();
+    // Truthful insurance availability — never "insurance accepted".
     expect(screen.getByText("1 company publishes rates")).toBeInTheDocument();
+    // CMS quality, not fabricated review stars.
+    expect(screen.getByText(/4\/5 CMS/)).toBeInTheDocument();
     expect(
-      screen.queryByText("Your selected insurance"),
+      screen.queryByText(/insurance accepted/i),
     ).not.toBeInTheDocument();
-    expect(
-      screen.getByText("All published negotiated rates"),
-    ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "View price details" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Verified published source/)).toBeInTheDocument();
 
     rerender(
       <ComparisonFacilityCard
@@ -104,13 +103,11 @@ describe("consumer pricing components", () => {
         payerName="Example Insurance"
       />,
     );
-    expect(screen.getByText("Your selected insurance")).toBeInTheDocument();
+    // The selected payer's published rate is shown by name (not "accepted").
+    expect(screen.getByText("Example Insurance")).toBeInTheDocument();
     expect(screen.getAllByText(/\$640/).length).toBeGreaterThan(0);
     expect(
       screen.getByText(/3 matching published rate records/),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/does not verify network participation/),
     ).toBeInTheDocument();
   });
 

@@ -233,7 +233,6 @@ export function LoadingSkeleton({ messages }: { messages?: Messages }) {
 
 export function ComparisonFacilityCard({
   item,
-  procedureName,
   procedureSlug,
   payerName,
   planName,
@@ -242,7 +241,7 @@ export function ComparisonFacilityCard({
   locale,
 }: {
   item: ProcedureComparisonItem;
-  procedureName: string;
+  procedureName?: string;
   procedureSlug: string;
   payerName?: string;
   planName?: string;
@@ -273,10 +272,15 @@ export function ComparisonFacilityCard({
         item.cash_price_value_count ?? 0,
       )
     : (item.cash_price_explanation ?? null);
+  const cashLabel =
+    item.cash_price_value_count && item.cash_price_value_count > 1
+      ? (messages?.publishedCashPrices ?? "Published cash prices")
+      : (messages?.publishedCashPrice ?? "Published cash price");
+  const settingLabel = item.service_settings.length
+    ? item.service_settings.join(", ").replaceAll("_", " ")
+    : null;
   return (
-    <article
-      className={`facility-card facility-card-media-layout ${item.price_available ? "" : "no-price"}`}
-    >
+    <article className={`rcard ${item.price_available ? "" : "rcard-noprice"}`}>
       <FacilityImage
         name={item.facility_name}
         imageUrl={item.image_url}
@@ -292,142 +296,101 @@ export function ComparisonFacilityCard({
         attribution={item.image_attribution ?? undefined}
         placeholderLabel={messages?.imageNoPhoto}
         variant="card"
-        className="facility-card-media"
+        className="rcard-photo"
       />
-      <div className="facility-card-body">
-        <div className="facility-card-top">
-          <div>
-            <span className="badge neutral">
-              {item.location_type.replaceAll("_", " ")}
-            </span>
-            <h2>{item.facility_name}</h2>
-            <p className="location">
-              {locationLabel}
-              {distanceLabel && (
-                <span className="facility-distance"> · {distanceLabel}</span>
-              )}
-            </p>
-          </div>
-          {item.price_available ? (
-            <span className="verified">
-              <span aria-hidden="true">✓</span>{" "}
-              {messages?.verifiedPublishedSource ?? "Verified published source"}
-            </span>
-          ) : (
-            <span className="badge unavailable">
-              {messages?.noPublishedPrice ?? "No published price"}
-            </span>
+      <div className="rcard-info">
+        <h3 className="rcard-name">{item.facility_name}</h3>
+        <p className="rcard-meta">
+          {locationLabel}
+          {distanceLabel && (
+            <span className="rcard-distance"> · {distanceLabel}</span>
           )}
-        </div>
-        <div
-          className="facility-facts"
-          aria-label={messages?.facilityFacts ?? "Facility facts"}
-        >
+        </p>
+        <div className="rcard-tags">
           <QualityRating value={item.cms_overall_rating} messages={messages} />
-          <span>{item.facility_type ?? "Hospital"}</span>
-          <span>
-            {item.service_settings.length
-              ? item.service_settings.join(", ").replaceAll("_", " ")
-              : (messages?.serviceSettingUnavailable ??
-                "Service setting unavailable")}
+          <span className="rcard-type">
+            {item.facility_type ?? (messages?.facilityTypeHospital ?? "Hospital")}
+            {settingLabel ? ` · ${settingLabel}` : ""}
           </span>
         </div>
+      </div>
+
+      <div className="rcard-price">
         {item.price_available ? (
-          <div className="price-grid">
-            <div>
-              <span>
-                {item.cash_price_value_count && item.cash_price_value_count > 1
-                  ? (messages?.publishedCashPrices ?? "Published cash prices")
-                  : (messages?.publishedCashPrice ?? "Published cash price")}
+          <>
+            <span className="rcard-price-label">{cashLabel}</span>
+            <strong className="rcard-price-value">
+              <PriceRange
+                min={item.cash_price_min}
+                max={item.cash_price_max}
+                messages={messages}
+              />
+            </strong>
+            {item.lower_priced_nearby_option ? (
+              <span
+                className="savings-badge nearby"
+                title={messages?.comparedWithLowest ?? undefined}
+              >
+                <span aria-hidden="true">↓ </span>
+                {moneyWhole(
+                  item.lower_priced_nearby_option.published_price_difference ??
+                    0,
+                )}{" "}
+                {messages?.lowerNearbySuffix ?? "lower published price nearby"}{" "}
+                · {item.lower_priced_nearby_option.facility_name}
+                {typeof item.lower_priced_nearby_option.distance_miles ===
+                "number"
+                  ? ` · ${item.lower_priced_nearby_option.distance_miles} ${messages?.milesUnit ?? "miles"}`
+                  : ""}
               </span>
-              <strong>
-                <PriceRange
-                  min={item.cash_price_min}
-                  max={item.cash_price_max}
-                  messages={messages}
-                />
-              </strong>
-              {item.lower_priced_nearby_option ? (
-                <span
-                  className="savings-badge nearby"
-                  title={messages?.comparedWithLowest ?? undefined}
-                >
-                  <span aria-hidden="true">↓ </span>
-                  {moneyWhole(
-                    item.lower_priced_nearby_option
-                      .published_price_difference ?? 0,
-                  )}{" "}
-                  {messages?.lowerNearbySuffix ??
-                    "lower published price nearby"}{" "}
-                  · {item.lower_priced_nearby_option.facility_name}
-                  {typeof item.lower_priced_nearby_option.distance_miles ===
-                  "number"
-                    ? ` · ${item.lower_priced_nearby_option.distance_miles} ${messages?.milesUnit ?? "miles"}`
-                    : ""}
-                </span>
-              ) : item.is_lowest_comparable_cash ? (
-                <span className="savings-badge lowest">
-                  {messages?.lowestNearby ??
-                    "Lowest comparable published price nearby"}
-                </span>
-              ) : null}
-              {item.additional_published_prices &&
-              item.additional_published_prices.length > 0 ? (
-                <details className="component-note">
-                  <summary>
-                    {messages?.additionalPublishedPrices ??
-                      "Additional published prices"}{" "}
-                    ({item.additional_published_prices.length})
-                  </summary>
-                  <p>
-                    {messages?.componentRangeNote ??
-                      "This hospital publishes multiple prices for this service. They may represent different billing components and are not a single price range."}
-                  </p>
-                  <ul>
-                    {item.additional_published_prices.map(
-                      (component, index) => (
-                        <li key={index}>
-                          {moneyWhole(component.amount_min)}
-                          {component.amount_min !== component.amount_max
-                            ? `–${moneyWhole(component.amount_max)}`
-                            : ""}{" "}
-                          · {component.service_setting.replaceAll("_", " ")} ·{" "}
-                          {component.billing_scope.replaceAll("_", " ")}
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                </details>
-              ) : cashExplanation ? (
-                <small className="price-context">{cashExplanation}</small>
-              ) : null}
-              <Link className="price-detail-link" href={detailHref}>
-                {messages?.priceDetails ?? "View price details"}
-              </Link>
-            </div>
-            <div>
+            ) : item.is_lowest_comparable_cash ? (
+              <span className="savings-badge lowest">
+                {messages?.lowestNearby ??
+                  "Lowest comparable published price nearby"}
+              </span>
+            ) : null}
+            {item.additional_published_prices &&
+            item.additional_published_prices.length > 0 ? (
+              <details className="component-note">
+                <summary>
+                  {messages?.additionalPublishedPrices ??
+                    "Additional published prices"}{" "}
+                  ({item.additional_published_prices.length})
+                </summary>
+                <p>
+                  {messages?.componentRangeNote ??
+                    "This hospital publishes multiple prices for this service. They may represent different billing components and are not a single price range."}
+                </p>
+                <ul>
+                  {item.additional_published_prices.map((component, index) => (
+                    <li key={index}>
+                      {moneyWhole(component.amount_min)}
+                      {component.amount_min !== component.amount_max
+                        ? `–${moneyWhole(component.amount_max)}`
+                        : ""}{" "}
+                      · {component.service_setting.replaceAll("_", " ")} ·{" "}
+                      {component.billing_scope.replaceAll("_", " ")}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ) : cashExplanation ? (
+              <small className="price-context">{cashExplanation}</small>
+            ) : null}
+            <div className="rcard-insurance">
               {payerName ? (
                 <>
-                  <span className="selected-insurance-label">
-                    {messages?.yourSelectedInsurance ??
-                      "Your selected insurance"}
-                  </span>
-                  <strong className="insurance-name">
+                  <span className="rcard-insurance-name">
                     {payerName}
                     {planName ? ` · ${planName}` : ""}
-                  </strong>
-                  <span>
-                    {messages?.matchingRates ??
-                      "Published matching negotiated rates"}
-                  </span>
-                  <strong>
-                    <PriceRange
-                      min={item.negotiated_price_min}
-                      max={item.negotiated_price_max}
-                      messages={messages}
-                    />
-                  </strong>
-                  <small className="price-context">
+                  </span>{" "}
+                  <PriceRange
+                    min={item.negotiated_price_min}
+                    max={item.negotiated_price_max}
+                    messages={messages}
+                  />{" "}
+                  <span className="rcard-insurance-note">
+                    ·{" "}
                     {(
                       messages?.matchingRateRecords ??
                       "{count} matching published rate records"
@@ -435,12 +398,11 @@ export function ComparisonFacilityCard({
                       "{count}",
                       String(item.matching_negotiated_rate_count ?? 0),
                     )}
-                  </small>
+                  </span>
                 </>
               ) : (
                 <>
-                  <span>{messages?.insurancePrices ?? "Insurance prices"}</span>
-                  <strong className="payer-availability">
+                  <span className="rcard-insurance-count">
                     {item.distinct_payer_count
                       ? item.distinct_payer_count === 1
                         ? (messages?.oneCompanyPublishesRates ??
@@ -448,24 +410,27 @@ export function ComparisonFacilityCard({
                         : `${item.distinct_payer_count} ${messages?.companiesPublishRates ?? "companies publish rates"}`
                       : (messages?.noInsurancePrices ??
                         "No published insurance prices")}
-                  </strong>
+                  </span>
                   {!!item.published_payers?.length && (
-                    <small className="price-context">
+                    <span className="rcard-insurance-note">
                       {item.published_payers
-                        .slice(0, 4)
+                        .slice(0, 3)
                         .map((publishedPayer) => publishedPayer.name)
                         .join(" · ")}
-                      {item.published_payers.length > 4
-                        ? ` · +${item.published_payers.length - 4} more`
+                      {item.published_payers.length > 3
+                        ? ` · +${item.published_payers.length - 3} more`
                         : ""}
-                    </small>
+                    </span>
                   )}
                 </>
               )}
             </div>
-          </div>
+            <Link className="rcard-detail" href={detailHref}>
+              {messages?.priceDetails ?? "View price details"}
+            </Link>
+          </>
         ) : (
-          <div className="no-price-message">
+          <div className="rcard-nopricebox">
             <strong>
               {messages?.priceNotAvailable ?? "Price not currently available"}
             </strong>
@@ -475,90 +440,22 @@ export function ComparisonFacilityCard({
             </p>
           </div>
         )}
-        {item.price_available && (
-          <>
-            <details className="price-details">
-              <summary>
-                {messages?.priceDetailsAndSource ?? "Price details and source"}
-              </summary>
-              <dl>
-                <div>
-                  <dt>{messages?.procedure ?? "Procedure"}</dt>
-                  <dd>{procedureName}</dd>
-                </div>
-                <div>
-                  <dt>{messages?.serviceSetting ?? "Service setting"}</dt>
-                  <dd>
-                    {item.service_settings.length
-                      ? item.service_settings.join(", ").replaceAll("_", " ")
-                      : (messages?.notPublished ?? "Not published")}
-                  </dd>
-                </div>
-                <div>
-                  <dt>
-                    {messages?.publishedSummaryGroups ??
-                      "Published summary groups"}
-                  </dt>
-                  <dd>{item.summary_count}</dd>
-                </div>
-                <div>
-                  <dt>
-                    {messages?.priceDataCompleteness ??
-                      "Price-data completeness"}
-                  </dt>
-                  <dd>
-                    {item.data_completeness === "high_data_completeness"
-                      ? (messages?.highDataCompleteness ??
-                        "High data completeness")
-                      : item.data_completeness === "some_details_unavailable"
-                        ? (messages?.someDetailsUnavailable ??
-                          "Some details unavailable")
-                        : (messages?.limitedPricingDetail ??
-                          "Limited pricing detail")}
-                  </dd>
-                </div>
-                <div>
-                  <dt>
-                    {messages?.allPublishedNegotiatedRates ??
-                      "All published negotiated rates"}
-                  </dt>
-                  <dd>
-                    <PriceRange
-                      min={item.all_published_negotiated_min ?? null}
-                      max={item.all_published_negotiated_max ?? null}
-                      messages={messages}
-                    />
-                  </dd>
-                </div>
-              </dl>
-              <p>
-                {messages?.priceDetailsDisclaimer ??
-                  "Published prices may not equal your final out-of-pocket cost. A published rate does not verify network participation or coverage. Separately billed professional services may apply."}
-              </p>
-              <Link className="text-link" href={detailHref}>
-                {messages?.viewAllPriceDetails ??
-                  "View all price and source details"}
-              </Link>
-            </details>
-            <SourceAttribution
-              updated={item.latest_updated ?? undefined}
-              url={item.source_url ?? undefined}
-              messages={messages}
-            />
-          </>
-        )}
-        <div className="card-actions">
-          <Link className="button" href={`/hospitals/${item.facility_id}`}>
-            {messages?.viewDetails ?? "View details"}
-          </Link>
-          <CompareSelect
-            facilityId={item.facility_id}
-            locationId={item.facility_location_id}
-            name={locationLabel}
-            procedureSlug={procedureSlug}
-            locale={locale}
-          />
-        </div>
+      </div>
+
+      <div className="rcard-actions">
+        <Link
+          className="button secondary"
+          href={`/hospitals/${item.facility_id}`}
+        >
+          {messages?.viewDetails ?? "View details"}
+        </Link>
+        <CompareSelect
+          facilityId={item.facility_id}
+          locationId={item.facility_location_id}
+          name={locationLabel}
+          procedureSlug={procedureSlug}
+          locale={locale}
+        />
       </div>
     </article>
   );

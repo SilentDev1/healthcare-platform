@@ -3466,3 +3466,276 @@ body .comparison-toolbar .sort-form .button {
   border-color: #b9e3c8;
   font-weight: 700;
 }
+
+/* ------------------------------------------------------------------ */
+/* Compact result card (Phase 5 — mockup-aligned, truthful data).      */
+/* Photo · identity (CMS rating, not reviews) · published price ·      */
+/* "N companies publish rates" (never "insurance accepted") · actions. */
+/* Uses fresh .rcard-* classes; supersedes the older .facility-card    */
+/* grid on the results/featured lists.                                 */
+/* ------------------------------------------------------------------ */
+.marketplace-results-layout .result-list {
+  display: grid;
+  gap: 0.7rem;
+}
+.rcard {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr) minmax(150px, 210px) 118px;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  background: var(--paper);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.rcard:hover,
+.rcard:has([aria-pressed="true"]) {
+  border-color: var(--brand);
+  box-shadow: 0 6px 18px rgba(17, 50, 94, 0.09);
+}
+.rcard-noprice {
+  background: var(--canvas);
+}
+.rcard-photo {
+  width: 118px;
+  height: 86px;
+  align-self: stretch;
+}
+.rcard-info {
+  min-width: 0;
+}
+.rcard-name {
+  margin: 0 0 0.15rem;
+  font-size: 0.98rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--ink);
+}
+.rcard-meta {
+  margin: 0 0 0.3rem;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+.rcard-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.6rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.rcard-type {
+  color: var(--muted);
+  text-transform: capitalize;
+}
+.rcard-price {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+.rcard-price-label {
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+.rcard-price-value {
+  font-size: 1.18rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #0a7c42;
+}
+.rcard-insurance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.rcard-insurance-count,
+.rcard-insurance-name {
+  font-weight: 600;
+  color: var(--ink);
+}
+.rcard-insurance-note {
+  color: var(--muted);
+}
+.rcard-detail {
+  font-size: 0.72rem;
+  margin-top: 0.1rem;
+}
+.rcard-nopricebox strong {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+.rcard-nopricebox p {
+  margin: 0.2rem 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.rcard-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-self: center;
+}
+.rcard-actions .button {
+  width: 100%;
+  min-height: 34px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.75rem;
+  text-align: center;
+}
+.rcard-actions .compare-actions,
+.rcard-actions .compare-actions .button {
+  width: 100%;
+}
+.rcard .savings-badge {
+  align-self: flex-start;
+  font-size: 0.68rem;
+}
+.rcard .component-note {
+  font-size: 0.7rem;
+}
+.rcard .component-note summary {
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .rcard {
+    grid-template-columns: 96px 1fr;
+    grid-template-areas:
+      "photo info"
+      "price price"
+      "actions actions";
+    row-gap: 0.55rem;
+    column-gap: 0.85rem;
+  }
+  .rcard-photo {
+    grid-area: photo;
+    width: 96px;
+    height: 74px;
+  }
+  .rcard-info {
+    grid-area: info;
+  }
+  .rcard-price {
+    grid-area: price;
+  }
+  .rcard-actions {
+    grid-area: actions;
+    flex-direction: row;
+  }
+  .rcard-actions .button,
+  .rcard-actions .compare-actions {
+    flex: 1;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Horizontal results controls bar: Filters · Distance · Sort · Apply. */
+/* ------------------------------------------------------------------ */
+.results-count {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.results-count strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+.results-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.6rem;
+  margin-bottom: 0.9rem;
+}
+.results-controls .responsive-filters {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  flex: 0 0 auto;
+}
+.results-controls .responsive-filters > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  list-style: none;
+  cursor: pointer;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background: var(--paper);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.results-controls .responsive-filters > summary::-webkit-details-marker {
+  display: none;
+}
+.results-controls .responsive-filters > summary small {
+  display: none;
+}
+.results-controls .responsive-filters > summary::before {
+  content: "☰";
+  font-size: 0.9rem;
+  color: var(--brand);
+}
+.results-controls .responsive-filters[open] {
+  flex: 1 0 100%;
+  order: 5;
+}
+.results-controls .responsive-filters[open] > summary {
+  border-color: var(--brand);
+  margin-bottom: 0.7rem;
+}
+.results-sort-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+.results-sort-form .control-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  background: var(--paper);
+  font-size: 0.74rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.results-sort-form .control-field select {
+  border: 0;
+  background: transparent;
+  font-size: 0.78rem;
+  color: var(--ink);
+  font-weight: 600;
+  padding: 0;
+  max-width: 150px;
+}
+.results-sort-form .button {
+  min-height: 34px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.78rem;
+}
+@media (max-width: 720px) {
+  .results-sort-form {
+    margin-left: 0;
+    width: 100%;
+  }
+  .results-sort-form .control-field {
+    flex: 1;
+  }
+}
