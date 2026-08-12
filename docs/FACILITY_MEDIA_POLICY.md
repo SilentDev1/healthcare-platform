@@ -84,11 +84,18 @@ placeholder is shown instead.
 ## 8. Fallback (deterministic)
 
 ```
-verified service-location image
-  -> verified facility image
-    -> (future) verified health-system image, only if it does not misrepresent
-      -> Carevero neutral placeholder (building glyph + initials)
+verified service-location photo
+  -> verified facility photo
+    -> verified facility logo (media_type="logo")
+      -> (future) verified health-system image, only if it does not misrepresent
+        -> Carevero neutral placeholder (building glyph + initials)
 ```
+
+A real **photo** always outranks a **logo** (`facility_media._rank`): a verified
+logo is only shown when no verified photo exists, before the placeholder. Logos
+are identification imagery (nominative use) from an official hospital/health-system
+source; they go through the same verification gate as photos and record
+provenance. Never scrape or apply a trademarked logo without review.
 
 The placeholder is always a safe terminal state and is never a broken-image icon.
 
