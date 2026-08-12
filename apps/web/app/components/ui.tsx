@@ -298,6 +298,7 @@ export function ComparisonFacilityCard({
         variant="card"
         className="rcard-photo"
       />
+      <div className="rcard-body">
       <div className="rcard-info">
         <h3 className="rcard-name">{item.facility_name}</h3>
         <p className="rcard-meta">
@@ -440,6 +441,7 @@ export function ComparisonFacilityCard({
             </p>
           </div>
         )}
+      </div>
       </div>
 
       <div className="rcard-actions">
