@@ -36,6 +36,11 @@ export function CareSearch({
   const [suggesting, setSuggesting] = useState(false);
   const [locationError, setLocationError] = useState("");
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // Only auto-open the suggestions dropdown after the user actually types — not
+  // when `care` is pre-filled (e.g. arriving on the search page from a Popular
+  // Searches chip), where the results are already shown below and an auto-opened
+  // dropdown would just cover them.
+  const interacted = useRef(false);
   useEffect(() => {
     clearTimeout(timer.current);
     if (care.trim().length < 2) {
@@ -49,7 +54,7 @@ export function CareSearch({
         );
         if (response.ok) {
           setItems(await response.json());
-          setOpen(true);
+          if (interacted.current) setOpen(true);
         }
       } catch {
         setItems([]);
@@ -140,6 +145,7 @@ export function CareSearch({
           id={`${listId}-care`}
           value={care}
           onChange={(e) => {
+            interacted.current = true;
             const nextCare = e.target.value;
             setCare(nextCare);
             if (nextCare.trim().length < 2) {
