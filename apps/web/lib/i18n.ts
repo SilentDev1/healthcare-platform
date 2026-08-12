@@ -605,6 +605,9 @@ const en = {
     "Carevero does not provide medical advice. Discuss care decisions with a qualified healthcare professional.",
   termsReviewNote:
     "These beta terms require legal review before a broad public launch.",
+  matchingHospitals: "Matching hospitals",
+  pricesNearYou: "Prices near you",
+  sourcesHeading: "Sources",
 };
 
 export type Messages = typeof en;
@@ -1194,6 +1197,9 @@ export const messages: Record<Locale, Messages> = {
       "Carevero no ofrece consejo médico. Hable sobre las decisiones de atención con un profesional de salud calificado.",
     termsReviewNote:
       "Estos términos de la beta requieren revisión legal antes de un lanzamiento público amplio.",
+    matchingHospitals: "Hospitales coincidentes",
+    pricesNearYou: "Precios cerca de usted",
+    sourcesHeading: "Fuentes",
   },
   vi: {
     skip: "Chuyển đến nội dung chính",
@@ -1766,6 +1772,9 @@ export const messages: Record<Locale, Messages> = {
       "Carevero không cung cấp lời khuyên y tế. Hãy trao đổi các quyết định chăm sóc với một chuyên gia y tế có đủ chuyên môn.",
     termsReviewNote:
       "Các điều khoản bản beta này cần được xem xét pháp lý trước khi ra mắt công khai rộng rãi.",
+    matchingHospitals: "Bệnh viện phù hợp",
+    pricesNearYou: "Giá gần bạn",
+    sourcesHeading: "Nguồn",
   },
   "zh-TW": {
     skip: "跳至主要內容",
@@ -2296,6 +2305,9 @@ export const messages: Record<Locale, Messages> = {
     termsMedicalBody:
       "Carevero 不提供醫療建議。請與合格的醫療專業人員討論照護決定。",
     termsReviewNote: "這些測試版條款在廣泛公開推出前需經法律審查。",
+    matchingHospitals: "符合的醫院",
+    pricesNearYou: "您附近的價格",
+    sourcesHeading: "來源",
   },
   "zh-CN": {
     skip: "跳至主要内容",
@@ -2822,6 +2834,9 @@ export const messages: Record<Locale, Messages> = {
     termsMedicalHeading: "医疗决策",
     termsMedicalBody: "Carevero 不提供医疗建议。请与合格的医疗专业人员讨论医疗决策。",
     termsReviewNote: "这些测试版条款在广泛公开发布之前需要经过法律审查。",
+    matchingHospitals: "匹配的医院",
+    pricesNearYou: "您附近的价格",
+    sourcesHeading: "来源",
   },
 };
 
