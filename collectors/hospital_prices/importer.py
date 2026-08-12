@@ -1,6 +1,8 @@
 import hashlib
 import json
 import logging
+import shutil
+import tempfile
 import uuid
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -251,8 +253,24 @@ def import_price_source(
             extra={"resume_line": resume_line, "batch_number": batch_number},
         )
 
-    extracted = safe_extract(
-        Path(source.storage_path), Path(source.storage_path).parent / "extracted", settings
+    # Stage extraction and parsing on local container disk instead of the gcsfuse
+    # source mount. Reading/writing multi-GB machine-readable files directly over
+    # gcsfuse stalls the import before the first row; local disk keeps it fast. The
+    # staging directory is always removed in the finally clause below.
+    local_extract_root = Path(tempfile.mkdtemp(prefix="carevero-extract-"))
+    logger.info("import_extract_start", extra={"source_file_id": str(source.id)})
+    staged_inputs: list[Path] = []
+    for candidate in safe_extract(Path(source.storage_path), local_extract_root, settings):
+        if local_extract_root in candidate.parents:
+            staged_inputs.append(candidate)
+        else:
+            local_copy = local_extract_root / candidate.name
+            shutil.copyfile(candidate, local_copy)
+            staged_inputs.append(local_copy)
+    extracted = staged_inputs
+    logger.info(
+        "import_extract_complete",
+        extra={"source_file_id": str(source.id), "files": len(extracted)},
     )
     batch = _BatchAccumulator.empty()
     try:
@@ -581,6 +599,8 @@ def import_price_source(
             summary,
         )
         raise
+    finally:
+        shutil.rmtree(local_extract_root, ignore_errors=True)
     run.finished_at = datetime.now(UTC)
     run.rows_read = summary.rows_examined
     run.rows_inserted = summary.records_normalized
