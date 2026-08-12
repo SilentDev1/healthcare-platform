@@ -3361,3 +3361,19 @@ body .comparison-toolbar .sort-form .button {
   margin: 0.35rem 0 0;
   color: var(--muted);
 }
+
+/* Phase 4.8 — billing-component disclosure on result cards. */
+.component-note {
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.component-note > summary {
+  cursor: pointer;
+  color: var(--brand);
+  font-weight: 600;
+}
+.component-note ul {
+  margin: 0.3rem 0 0;
+  padding-left: 1rem;
+}

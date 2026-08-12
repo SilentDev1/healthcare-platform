@@ -374,11 +374,38 @@ export function ComparisonFacilityCard({
                     : ""}
                 </small>
               )}
-              {item.cash_price_explanation && (
+              {item.additional_published_prices &&
+              item.additional_published_prices.length > 0 ? (
+                <details className="component-note">
+                  <summary>
+                    {messages?.additionalPublishedPrices ??
+                      "Additional published prices"}{" "}
+                    ({item.additional_published_prices.length})
+                  </summary>
+                  <p>
+                    {messages?.componentRangeNote ??
+                      "This hospital publishes multiple prices for this service. They may represent different billing components and are not a single price range."}
+                  </p>
+                  <ul>
+                    {item.additional_published_prices.map(
+                      (component, index) => (
+                        <li key={index}>
+                          {moneyWhole(component.amount_min)}
+                          {component.amount_min !== component.amount_max
+                            ? `–${moneyWhole(component.amount_max)}`
+                            : ""}{" "}
+                          · {component.service_setting.replaceAll("_", " ")} ·{" "}
+                          {component.billing_scope.replaceAll("_", " ")}
+                        </li>
+                      ),
+                    )}
+                  </ul>
+                </details>
+              ) : item.cash_price_explanation ? (
                 <small className="price-context">
                   {item.cash_price_explanation}
                 </small>
-              )}
+              ) : null}
               <Link className="price-detail-link" href={detailHref}>
                 View price details
               </Link>

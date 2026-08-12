@@ -63,6 +63,13 @@ const en = {
     "Saving comparisons is coming soon — no account is needed to compare now.",
   enterLocationForDistance:
     "Enter a ZIP or city to see distance and nearby lower published prices.",
+  comparablePrice: "Comparable published cash price",
+  additionalPublishedPrices: "Additional published prices",
+  billingComponent: "Billing component",
+  notDirectlyComparable: "Not directly comparable",
+  multiplePublishedPrices: "Multiple published prices — review details",
+  componentRangeNote:
+    "This hospital publishes multiple prices for this service. They may represent different billing components (for example a facility fee and a separate professional fee) and are not a single price range.",
 };
 
 export type Messages = typeof en;
@@ -123,6 +130,13 @@ export const messages: Record<Locale, Messages> = {
       "Guardar comparaciones estará disponible pronto; no se necesita cuenta para comparar ahora.",
     enterLocationForDistance:
       "Ingrese un código postal o ciudad para ver la distancia y los precios publicados más bajos cercanos.",
+    comparablePrice: "Precio en efectivo publicado comparable",
+    additionalPublishedPrices: "Precios publicados adicionales",
+    billingComponent: "Componente de facturación",
+    notDirectlyComparable: "No directamente comparable",
+    multiplePublishedPrices: "Varios precios publicados — revise los detalles",
+    componentRangeNote:
+      "Este hospital publica varios precios para este servicio. Pueden representar diferentes componentes de facturación (por ejemplo, una tarifa de centro y una tarifa profesional aparte) y no son un solo rango de precios.",
   },
   vi: {
     skip: "Chuyển đến nội dung chính",
@@ -178,6 +192,13 @@ export const messages: Record<Locale, Messages> = {
       "Tính năng lưu so sánh sắp ra mắt — không cần tài khoản để so sánh ngay bây giờ.",
     enterLocationForDistance:
       "Nhập mã ZIP hoặc thành phố để xem khoảng cách và giá công bố thấp hơn ở gần.",
+    comparablePrice: "Giá tiền mặt công bố có thể so sánh",
+    additionalPublishedPrices: "Giá công bố bổ sung",
+    billingComponent: "Thành phần chi phí",
+    notDirectlyComparable: "Không thể so sánh trực tiếp",
+    multiplePublishedPrices: "Nhiều giá công bố — xem chi tiết",
+    componentRangeNote:
+      "Bệnh viện này công bố nhiều giá cho dịch vụ này. Chúng có thể đại diện cho các thành phần chi phí khác nhau (ví dụ phí cơ sở và phí chuyên môn riêng) và không phải là một khoảng giá duy nhất.",
   },
   "zh-TW": {
     skip: "跳至主要內容",
@@ -230,6 +251,13 @@ export const messages: Record<Locale, Messages> = {
     saveComparisonNote: "儲存比較功能即將推出——目前無需帳戶即可比較。",
     enterLocationForDistance:
       "輸入郵遞區號或城市，即可查看距離與鄰近較低的公布價格。",
+    comparablePrice: "可比較的公布現金價",
+    additionalPublishedPrices: "其他公布價格",
+    billingComponent: "帳單組成部分",
+    notDirectlyComparable: "無法直接比較",
+    multiplePublishedPrices: "多筆公布價格——請查看詳情",
+    componentRangeNote:
+      "此醫院為此服務公布多筆價格。這些價格可能代表不同的帳單組成部分（例如設施費與另計的專業費），並非單一價格區間。",
   },
   "zh-CN": {
     skip: "跳至主要内容",
@@ -282,6 +310,13 @@ export const messages: Record<Locale, Messages> = {
     saveComparisonNote: "保存比较功能即将推出——目前无需账户即可比较。",
     enterLocationForDistance:
       "输入邮政编码或城市，即可查看距离和邻近较低的公布价格。",
+    comparablePrice: "可比较的公布现金价",
+    additionalPublishedPrices: "其他公布价格",
+    billingComponent: "账单组成部分",
+    notDirectlyComparable: "无法直接比较",
+    multiplePublishedPrices: "多笔公布价格——请查看详情",
+    componentRangeNote:
+      "该医院为此服务公布多笔价格。这些价格可能代表不同的账单组成部分（例如设施费与另计的专业费），并非单一价格区间。",
   },
 };
 

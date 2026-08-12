@@ -173,6 +173,16 @@ export interface ProcedureComparisonItem {
   imported_at?: string | null;
   carevero_refresh_date?: string | null;
   source_url: string | null;
+  primary_service_setting?: string | null;
+  primary_billing_scope?: string | null;
+  comparability_status?: string;
+  comparability_reason?: string | null;
+  additional_published_prices?: Array<{
+    service_setting: string;
+    billing_scope: string;
+    amount_min: string;
+    amount_max: string;
+  }>;
   distance_miles?: number | null;
   comparable_cash_price?: string | null;
   published_price_difference?: string | null;

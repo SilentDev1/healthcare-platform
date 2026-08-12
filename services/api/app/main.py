@@ -51,6 +51,7 @@ from packages.database import (
 from packages.geo import resolve_origin
 from packages.search import search
 from services.api.app.comparison_insights import annotate as annotate_comparison
+from services.api.app.comparison_insights import summarize_cash_components
 from services.api.app.coverage import consumer_pricing_status, pricing_status_matches
 from services.api.app.logging import configure_logging
 from services.api.app.schemas import (
@@ -1566,6 +1567,18 @@ def procedure_comparison(
         cash_descriptions = {record.raw_description for _observation, record in cash_details}
         cash_settings = {observation.service_setting for observation, _record in cash_details}
         cash_components = {observation.included_component_scope for observation, _ in cash_details}
+        # Group published cash by (setting, billing scope) so a facility fee is
+        # never min/maxed with a professional component into a misleading range.
+        cash_summary = summarize_cash_components(
+            [
+                (
+                    observation.amount,
+                    observation.service_setting,
+                    observation.included_component_scope,
+                )
+                for observation, _record in cash_details
+            ]
+        )
         cash_values = [
             value
             for summary, _source, _payer, _plan in all_summaries
@@ -1716,8 +1729,13 @@ def procedure_comparison(
                 "facility_type": facility.facility_type,
                 "cms_overall_rating": ratings.get(facility.id),
                 "price_available": bool(all_summaries),
-                "cash_price_min": min(cash_values) if cash_values else None,
-                "cash_price_max": max(cash_values) if cash_values else None,
+                "cash_price_min": cash_summary["cash_price_min"],
+                "cash_price_max": cash_summary["cash_price_max"],
+                "primary_service_setting": cash_summary["primary_service_setting"],
+                "primary_billing_scope": cash_summary["primary_billing_scope"],
+                "comparability_status": cash_summary["comparability_status"],
+                "comparability_reason": cash_summary["comparability_reason"],
+                "additional_published_prices": cash_summary["additional_published_prices"],
                 "negotiated_price_min": negotiated_min,
                 "negotiated_price_max": negotiated_max,
                 "cash_price_value_count": len(cash_amounts),

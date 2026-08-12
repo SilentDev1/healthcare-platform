@@ -447,6 +447,12 @@ class ProcedureComparisonItem(BaseModel):
     imported_at: datetime | None = None
     carevero_refresh_date: datetime | None = None
     source_url: str | None
+    # Phase 4.8 billing-component comparability.
+    primary_service_setting: str | None = None
+    primary_billing_scope: str | None = None
+    comparability_status: str = "unknown"
+    comparability_reason: str | None = None
+    additional_published_prices: list[dict[str, object]] = Field(default_factory=list)
     # Phase 4.8 distance + deterministic comparable-price insights.
     distance_miles: float | None = None
     comparable_cash_price: Decimal | None = None
