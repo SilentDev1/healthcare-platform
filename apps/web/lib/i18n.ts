@@ -70,6 +70,20 @@ const en = {
   multiplePublishedPrices: "Multiple published prices — review details",
   componentRangeNote:
     "This hospital publishes multiple prices for this service. They may represent different billing components (for example a facility fee and a separate professional fee) and are not a single price range.",
+  searchCareLabel: "1. Procedure or service",
+  searchCareLabelCompact: "What do you need?",
+  searchCarePlaceholder: "MRI, colonoscopy, knee replacement…",
+  searchFindingMatches: "Finding matches…",
+  searchPressEnter: "Press Enter to search all care and hospitals.",
+  searchLocationLabel: "2. Location",
+  searchLocationLabelCompact: "Where?",
+  searchLocationPlaceholder: "ZIP or city",
+  searchLocationHelp: "Optional. Use a 5-digit ZIP or city name.",
+  searchLocationError: "Enter a 5-digit ZIP code or a city name.",
+  searchPayerLabel: "3. Published insurer / rate",
+  searchAnyRates: "Any published rates",
+  searchPayerHelp: "Published rates do not confirm coverage or network status.",
+  searchButton: "Search prices",
 };
 
 export type Messages = typeof en;
@@ -137,6 +151,24 @@ export const messages: Record<Locale, Messages> = {
     multiplePublishedPrices: "Varios precios publicados — revise los detalles",
     componentRangeNote:
       "Este hospital publica varios precios para este servicio. Pueden representar diferentes componentes de facturación (por ejemplo, una tarifa de centro y una tarifa profesional aparte) y no son un solo rango de precios.",
+    searchCareLabel: "1. Procedimiento o servicio",
+    searchCareLabelCompact: "¿Qué necesita?",
+    searchCarePlaceholder: "Resonancia, colonoscopia, reemplazo de rodilla…",
+    searchFindingMatches: "Buscando coincidencias…",
+    searchPressEnter:
+      "Presione Enter para buscar en toda la atención y los hospitales.",
+    searchLocationLabel: "2. Ubicación",
+    searchLocationLabelCompact: "¿Dónde?",
+    searchLocationPlaceholder: "Código postal o ciudad",
+    searchLocationHelp:
+      "Opcional. Use un código postal de 5 dígitos o el nombre de una ciudad.",
+    searchLocationError:
+      "Ingrese un código postal de 5 dígitos o el nombre de una ciudad.",
+    searchPayerLabel: "3. Aseguradora / tarifa publicada",
+    searchAnyRates: "Cualquier tarifa publicada",
+    searchPayerHelp:
+      "Las tarifas publicadas no confirman cobertura ni participación en la red.",
+    searchButton: "Buscar precios",
   },
   vi: {
     skip: "Chuyển đến nội dung chính",
@@ -199,6 +231,22 @@ export const messages: Record<Locale, Messages> = {
     multiplePublishedPrices: "Nhiều giá công bố — xem chi tiết",
     componentRangeNote:
       "Bệnh viện này công bố nhiều giá cho dịch vụ này. Chúng có thể đại diện cho các thành phần chi phí khác nhau (ví dụ phí cơ sở và phí chuyên môn riêng) và không phải là một khoảng giá duy nhất.",
+    searchCareLabel: "1. Thủ thuật hoặc dịch vụ",
+    searchCareLabelCompact: "Bạn cần gì?",
+    searchCarePlaceholder: "MRI, nội soi đại tràng, thay khớp gối…",
+    searchFindingMatches: "Đang tìm kết quả…",
+    searchPressEnter: "Nhấn Enter để tìm mọi dịch vụ và bệnh viện.",
+    searchLocationLabel: "2. Địa điểm",
+    searchLocationLabelCompact: "Ở đâu?",
+    searchLocationPlaceholder: "Mã ZIP hoặc thành phố",
+    searchLocationHelp:
+      "Không bắt buộc. Dùng mã ZIP 5 chữ số hoặc tên thành phố.",
+    searchLocationError: "Nhập mã ZIP 5 chữ số hoặc tên thành phố.",
+    searchPayerLabel: "3. Hãng bảo hiểm / giá công bố",
+    searchAnyRates: "Mọi mức giá đã công bố",
+    searchPayerHelp:
+      "Giá đã công bố không xác nhận quyền lợi hay tình trạng trong mạng lưới.",
+    searchButton: "Tìm giá",
   },
   "zh-TW": {
     skip: "跳至主要內容",
@@ -258,6 +306,20 @@ export const messages: Record<Locale, Messages> = {
     multiplePublishedPrices: "多筆公布價格——請查看詳情",
     componentRangeNote:
       "此醫院為此服務公布多筆價格。這些價格可能代表不同的帳單組成部分（例如設施費與另計的專業費），並非單一價格區間。",
+    searchCareLabel: "1. 醫療項目或服務",
+    searchCareLabelCompact: "您需要什麼？",
+    searchCarePlaceholder: "MRI、大腸鏡、膝關節置換…",
+    searchFindingMatches: "尋找結果中…",
+    searchPressEnter: "按 Enter 搜尋所有醫療服務與醫院。",
+    searchLocationLabel: "2. 地點",
+    searchLocationLabelCompact: "在哪裡？",
+    searchLocationPlaceholder: "郵遞區號或城市",
+    searchLocationHelp: "選填。請使用 5 位數郵遞區號或城市名稱。",
+    searchLocationError: "請輸入 5 位數郵遞區號或城市名稱。",
+    searchPayerLabel: "3. 保險公司／已公布費率",
+    searchAnyRates: "任何已公布費率",
+    searchPayerHelp: "已公布費率不代表承保或網絡資格。",
+    searchButton: "查詢價格",
   },
   "zh-CN": {
     skip: "跳至主要内容",
@@ -317,6 +379,20 @@ export const messages: Record<Locale, Messages> = {
     multiplePublishedPrices: "多笔公布价格——请查看详情",
     componentRangeNote:
       "该医院为此服务公布多笔价格。这些价格可能代表不同的账单组成部分（例如设施费与另计的专业费），并非单一价格区间。",
+    searchCareLabel: "1. 医疗项目或服务",
+    searchCareLabelCompact: "您需要什么？",
+    searchCarePlaceholder: "MRI、结肠镜、膝关节置换…",
+    searchFindingMatches: "正在查找结果…",
+    searchPressEnter: "按 Enter 搜索所有医疗服务和医院。",
+    searchLocationLabel: "2. 地点",
+    searchLocationLabelCompact: "在哪里？",
+    searchLocationPlaceholder: "邮政编码或城市",
+    searchLocationHelp: "选填。请使用 5 位邮政编码或城市名称。",
+    searchLocationError: "请输入 5 位邮政编码或城市名称。",
+    searchPayerLabel: "3. 保险公司/已公布费率",
+    searchAnyRates: "任何已公布费率",
+    searchPayerHelp: "已公布费率不代表承保或网络资格。",
+    searchButton: "查询价格",
   },
 };
 

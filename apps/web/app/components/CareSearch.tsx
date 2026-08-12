@@ -2,7 +2,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { SearchSuggestion } from "../../lib/api";
-import { localePath, type Locale } from "../../lib/i18n";
+import { localePath, messages, type Locale } from "../../lib/i18n";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
@@ -22,6 +22,7 @@ export function CareSearch({
   locale?: Locale;
 }) {
   const router = useRouter();
+  const t = messages[locale] ?? messages.en;
   const listId = useId();
   const [care, setCare] = useState(initialCare);
   const [location, setLocation] = useState(initialLocation);
@@ -69,7 +70,7 @@ export function CareSearch({
     event.preventDefault();
     if (!care.trim()) return;
     if (/^\d+$/.test(location.trim()) && !/^\d{5}$/.test(location.trim())) {
-      setLocationError("Enter a 5-digit ZIP code or a city name.");
+      setLocationError(t.searchLocationError);
       return;
     }
     setLocationError("");
@@ -133,7 +134,7 @@ export function CareSearch({
     >
       <div className="field autocomplete">
         <label htmlFor={`${listId}-care`}>
-          {compact ? "What do you need?" : "1. Procedure or service"}
+          {compact ? t.searchCareLabelCompact : t.searchCareLabel}
         </label>
         <input
           id={`${listId}-care`}
@@ -155,7 +156,7 @@ export function CareSearch({
           aria-activedescendant={
             active >= 0 ? `${listId}-${active}` : undefined
           }
-          placeholder="MRI, colonoscopy, knee replacement…"
+          placeholder={t.searchCarePlaceholder}
           autoComplete="off"
           aria-autocomplete="list"
           required
@@ -181,21 +182,21 @@ export function CareSearch({
         )}
         <span className="field-help" role="status" aria-live="polite">
           {suggesting
-            ? "Finding matches…"
+            ? t.searchFindingMatches
             : care.trim().length >= 2 && !open && items.length === 0
-              ? "Press Enter to search all care and hospitals."
+              ? t.searchPressEnter
               : ""}
         </span>
       </div>
       <div className="field">
         <label htmlFor={`${listId}-location`}>
-          {compact ? "Where?" : "2. Location"}
+          {compact ? t.searchLocationLabelCompact : t.searchLocationLabel}
         </label>
         <input
           id={`${listId}-location`}
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          placeholder="ZIP or city"
+          placeholder={t.searchLocationPlaceholder}
           autoComplete="postal-code"
           aria-describedby={`${listId}-location-help`}
         />
@@ -204,31 +205,29 @@ export function CareSearch({
           className={locationError ? "field-error" : "field-help"}
           role={locationError ? "alert" : undefined}
         >
-          {locationError || "Optional. Use a 5-digit ZIP or city name."}
+          {locationError || t.searchLocationHelp}
         </span>
       </div>
       {showInsurance && (
         <div className="field insurance-field">
-          <label htmlFor={`${listId}-payer`}>3. Published payer / rate</label>
+          <label htmlFor={`${listId}-payer`}>{t.searchPayerLabel}</label>
           <select
             id={`${listId}-payer`}
             value={payer}
             onChange={(event) => setPayer(event.target.value)}
           >
-            <option value="">Any published rates</option>
+            <option value="">{t.searchAnyRates}</option>
             {payers.map((item) => (
               <option key={item.slug} value={item.slug}>
                 {item.name}
               </option>
             ))}
           </select>
-          <span className="field-help">
-            Published rates do not confirm coverage or network status.
-          </span>
+          <span className="field-help">{t.searchPayerHelp}</span>
         </div>
       )}
       <button className="button search-button" type="submit">
-        Search prices <span aria-hidden="true">→</span>
+        {t.searchButton} <span aria-hidden="true">→</span>
       </button>
     </form>
   );
