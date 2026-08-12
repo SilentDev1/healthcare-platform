@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useSyncExternalStore } from "react";
 import type { ProcedureComparisonItem } from "../../lib/api";
+import { messages, type Locale } from "../../lib/i18n";
 import { FacilityImage } from "./FacilityImage";
 
 interface CompareChoice {
@@ -44,12 +45,15 @@ export function CompareSelect({
   locationId,
   name,
   procedureSlug,
+  locale = "en",
 }: {
   facilityId: string;
   locationId: string;
   name: string;
   procedureSlug: string;
+  locale?: Locale;
 }) {
+  const t = messages[locale];
   const key = `${facilityId}~${locationId}`;
   const selected = useChoices(procedureSlug);
   const active = selected.some((choice) => choice.key === key);
@@ -77,13 +81,16 @@ export function CompareSelect({
         onClick={toggle}
         disabled={limitReached}
         aria-pressed={active}
-        aria-label={`${active ? "Remove" : "Add"} ${name} ${active ? "from" : "to"} comparison`}
+        aria-label={(active
+          ? t.removeFromComparison
+          : t.addToComparison
+        ).replace("{name}", name)}
       >
         {active
-          ? "✓ Selected"
+          ? t.compareSelected
           : limitReached
-            ? "3 selected — remove one to add"
-            : "+ Compare"}
+            ? t.compareLimitReached
+            : t.compareAdd}
       </button>
     </div>
   );
@@ -93,11 +100,14 @@ export function CompareTray({
   procedureSlug,
   payer,
   plan,
+  locale = "en",
 }: {
   procedureSlug: string;
   payer?: string;
   plan?: string;
+  locale?: Locale;
 }) {
+  const t = messages[locale];
   const selected = useChoices(procedureSlug);
 
   if (selected.length === 0) return null;
@@ -115,29 +125,32 @@ export function CompareTray({
   return (
     <aside className="compare-tray" aria-live="polite">
       <div>
-        <strong>Compare hospitals · {selected.length} of 3 selected</strong>
-        <ul aria-label="Selected locations">
+        <strong>
+          {t.compareHospitals} ·{" "}
+          {t.selectedOfThree.replace("{count}", String(selected.length))}
+        </strong>
+        <ul aria-label={t.selectedLocations}>
           {selected.map((choice) => (
             <li key={choice.key}>{choice.name}</li>
           ))}
         </ul>
       </div>
       <button className="text-button" type="button" onClick={clear}>
-        Clear
+        {t.clear}
       </button>
       {selected.length >= 2 ? (
         <Link className="button" href={compareHref}>
-          Compare now <span aria-hidden="true">→</span>
+          {t.compareNow} <span aria-hidden="true">→</span>
         </Link>
       ) : (
-        <span className="muted">Choose one more to compare</span>
+        <span className="muted">{t.chooseOneMore}</span>
       )}
     </aside>
   );
 }
 
-function money(value: string | null) {
-  if (value === null) return "Not published";
+function money(value: string | null, notPublished = "Not published") {
+  if (value === null) return notPublished;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -145,11 +158,15 @@ function money(value: string | null) {
   }).format(Number(value));
 }
 
-function range(min: string | null, max: string | null) {
-  if (min === null && max === null) return "Not published";
-  if (min === max || max === null) return money(min);
-  if (min === null) return money(max);
-  return `${money(min)} – ${money(max)}`;
+function range(
+  min: string | null,
+  max: string | null,
+  notPublished = "Not published",
+) {
+  if (min === null && max === null) return notPublished;
+  if (min === max || max === null) return money(min, notPublished);
+  if (min === null) return money(max, notPublished);
+  return `${money(min, notPublished)} – ${money(max, notPublished)}`;
 }
 
 export function InlineComparePanel({
@@ -158,13 +175,16 @@ export function InlineComparePanel({
   items,
   payer,
   plan,
+  locale = "en",
 }: {
   procedureSlug: string;
   procedureName: string;
   items: ProcedureComparisonItem[];
   payer?: string;
   plan?: string;
+  locale?: Locale;
 }) {
+  const t = messages[locale];
   const selected = useChoices(procedureSlug);
   const selectedItems = selected
     .map((choice) =>
@@ -199,33 +219,33 @@ export function InlineComparePanel({
     <aside className="inline-compare" aria-live="polite">
       <div className="inline-compare-heading">
         <div>
-          <span className="eyebrow">Side-by-side prices</span>
-          <h2>Compare up to 3 hospitals</h2>
+          <span className="eyebrow">{t.sideBySidePrices}</span>
+          <h2>{t.compareUpToThree}</h2>
         </div>
         {selected.length > 0 && (
           <button className="text-button" type="button" onClick={clear}>
-            Clear all
+            {t.clearAll}
           </button>
         )}
       </div>
       {selectedItems.length === 0 ? (
         <div className="compare-empty">
           <span aria-hidden="true">⇄</span>
-          <strong>Select hospitals to compare</strong>
-          <p>
-            Choose two or three results. Their real published prices will appear
-            here.
-          </p>
+          <strong>{t.selectHospitalsToCompare}</strong>
+          <p>{t.chooseTwoOrThree}</p>
         </div>
       ) : (
         <div className="inline-compare-table-wrap">
           <table className="inline-compare-table">
             <caption className="sr-only">
-              Selected hospital prices for {procedureName}
+              {t.selectedHospitalPricesCaption.replace(
+                "{procedure}",
+                procedureName,
+              )}
             </caption>
             <thead>
               <tr>
-                <th scope="col">Price</th>
+                <th scope="col">{t.price}</th>
                 {selectedItems.map((item) => (
                   <th scope="col" key={item.facility_location_id}>
                     <div className="compare-col-head">
@@ -247,7 +267,10 @@ export function InlineComparePanel({
                             `${item.facility_id}~${item.facility_location_id}`,
                           )
                         }
-                        aria-label={`Remove ${item.facility_name} from comparison`}
+                        aria-label={t.removeFromComparison.replace(
+                          "{name}",
+                          item.facility_name,
+                        )}
                       >
                         <span aria-hidden="true">×</span>
                       </button>
@@ -257,7 +280,7 @@ export function InlineComparePanel({
                 {Array.from({ length: 3 - selectedItems.length }).map(
                   (_, index) => (
                     <th className="compare-placeholder" scope="col" key={index}>
-                      Select hospital
+                      {t.selectHospital}
                     </th>
                   ),
                 )}
@@ -265,11 +288,15 @@ export function InlineComparePanel({
             </thead>
             <tbody>
               <tr>
-                <th scope="row">Cash price</th>
+                <th scope="row">{t.cashPrice}</th>
                 {selectedItems.map((item) => (
                   <td key={item.facility_location_id}>
                     <strong>
-                      {range(item.cash_price_min, item.cash_price_max)}
+                      {range(
+                        item.cash_price_min,
+                        item.cash_price_max,
+                        t.notPublished,
+                      )}
                     </strong>
                   </td>
                 ))}
@@ -281,15 +308,17 @@ export function InlineComparePanel({
               </tr>
               <tr>
                 <th scope="row">
-                  {payer ? "Matching published rates" : "Insurance rates"}
+                  {payer ? t.matchingPublishedRates : t.insuranceRates}
                 </th>
                 {selectedItems.map((item) => (
                   <td key={item.facility_location_id}>
                     {payer
-                      ? `${range(item.negotiated_price_min, item.negotiated_price_max)} · ${item.matching_negotiated_rate_count ?? 0} records`
+                      ? `${range(item.negotiated_price_min, item.negotiated_price_max, t.notPublished)} · ${t.recordsCount.replace("{count}", String(item.matching_negotiated_rate_count ?? 0))}`
                       : item.distinct_payer_count
-                        ? `${item.distinct_payer_count} payer${item.distinct_payer_count === 1 ? "" : "s"} publish rates`
-                        : "No normalized payer rates published"}
+                        ? item.distinct_payer_count === 1
+                          ? t.oneCompanyPublishesRates
+                          : `${item.distinct_payer_count} ${t.companiesPublishRates}`
+                        : t.noInsurancePrices}
                   </td>
                 ))}
                 {Array.from({ length: 3 - selectedItems.length }).map(
@@ -299,12 +328,12 @@ export function InlineComparePanel({
                 )}
               </tr>
               <tr>
-                <th scope="row">Setting</th>
+                <th scope="row">{t.setting}</th>
                 {selectedItems.map((item) => (
                   <td key={item.facility_location_id}>
                     {item.service_settings.length
                       ? item.service_settings.join(", ").replaceAll("_", " ")
-                      : "Not published"}
+                      : t.notPublished}
                   </td>
                 ))}
                 {Array.from({ length: 3 - selectedItems.length }).map(
@@ -314,12 +343,15 @@ export function InlineComparePanel({
                 )}
               </tr>
               <tr>
-                <th scope="row">CMS rating</th>
+                <th scope="row">{t.cmsRating}</th>
                 {selectedItems.map((item) => (
                   <td key={item.facility_location_id}>
                     {item.cms_overall_rating
-                      ? `${item.cms_overall_rating}/5 CMS`
-                      : "Not available"}
+                      ? t.cmsRatingValue.replace(
+                          "{rating}",
+                          String(item.cms_overall_rating),
+                        )
+                      : t.notAvailable}
                   </td>
                 ))}
                 {Array.from({ length: 3 - selectedItems.length }).map(
@@ -329,11 +361,11 @@ export function InlineComparePanel({
                 )}
               </tr>
               <tr>
-                <th scope="row">Distance</th>
+                <th scope="row">{t.distance}</th>
                 {selectedItems.map((item) => (
                   <td key={item.facility_location_id}>
                     {typeof item.distance_miles === "number"
-                      ? `${item.distance_miles} mi`
+                      ? `${item.distance_miles} ${t.milesUnit}`
                       : "—"}
                   </td>
                 ))}
@@ -344,14 +376,14 @@ export function InlineComparePanel({
                 )}
               </tr>
               <tr>
-                <th scope="row">Published-price difference</th>
+                <th scope="row">{t.priceDifference}</th>
                 {selectedItems.map((item) => (
                   <td key={item.facility_location_id}>
                     {item.is_lowest_comparable_cash
-                      ? "Lowest shown"
+                      ? t.lowestShown
                       : item.published_price_difference &&
                           Number(item.published_price_difference) > 0
-                        ? `+${money(item.published_price_difference)}`
+                        ? `+${money(item.published_price_difference, t.notPublished)}`
                         : "—"}
                   </td>
                 ))}
@@ -366,28 +398,24 @@ export function InlineComparePanel({
         </div>
       )}
       <div className="inline-compare-footer">
-        <span>{selected.length} of 3 selected</span>
+        <span>
+          {t.selectedOfThree.replace("{count}", String(selected.length))}
+        </span>
         {selected.length >= 2 ? (
           <Link className="button" href={`/compare?${query}`}>
-            View full comparison <span aria-hidden="true">→</span>
+            {t.viewFullComparison} <span aria-hidden="true">→</span>
           </Link>
         ) : (
-          <span className="muted">Select at least 2 hospitals</span>
+          <span className="muted">{t.selectAtLeastTwo}</span>
         )}
       </div>
       {selected.length >= 2 && (
         <details className="save-comparison">
-          <summary>Save comparison</summary>
-          <p>
-            Saving comparisons is coming soon — no account is needed to compare
-            now.
-          </p>
+          <summary>{t.saveComparison}</summary>
+          <p>{t.saveComparisonNote}</p>
         </details>
       )}
-      <p className="compare-disclaimer">
-        Published prices are not a personalized estimate or guarantee of your
-        final cost.
-      </p>
+      <p className="compare-disclaimer">{t.compareDisclaimer}</p>
     </aside>
   );
 }

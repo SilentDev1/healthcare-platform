@@ -4,7 +4,7 @@ import { ComparisonFacilityCard, CoverageNotice } from "./components/ui";
 import { InlineComparePanel } from "./components/CompareSelect";
 import { apiGet } from "../lib/api";
 import type { ProcedureComparison } from "../lib/api";
-import { localePath } from "../lib/i18n";
+import { localePath, type Messages } from "../lib/i18n";
 import { requestLocale, requestMessages } from "../lib/i18n-server";
 
 interface Coverage {
@@ -12,15 +12,15 @@ interface Coverage {
   facilities_with_publishable_prices: number;
   publishable_procedures: number;
 }
-const popular = [
-  "MRI",
-  "CT scan",
-  "colonoscopy",
-  "mammogram",
-  "knee replacement",
-  "hip replacement",
-  "childbirth",
-  "lab tests",
+const popular: { q: string; key: keyof Messages }[] = [
+  { q: "MRI", key: "popularMri" },
+  { q: "CT scan", key: "popularCtScan" },
+  { q: "colonoscopy", key: "popularColonoscopy" },
+  { q: "mammogram", key: "popularMammogram" },
+  { q: "knee replacement", key: "popularKneeReplacement" },
+  { q: "hip replacement", key: "popularHipReplacement" },
+  { q: "childbirth", key: "popularChildbirth" },
+  { q: "lab tests", key: "popularLabTests" },
 ];
 
 export default async function Home() {
@@ -59,13 +59,13 @@ export default async function Home() {
           <div className="popular">
             <strong>{t.popular}</strong>
             <div className="popular-links">
-              {popular.map((term) => (
+              {popular.map(({ q, key }) => (
                 <Link
                   className="chip"
-                  key={term}
-                  href={`${localePath(locale, "/search")}?q=${encodeURIComponent(term)}`}
+                  key={q}
+                  href={`${localePath(locale, "/search")}?q=${encodeURIComponent(q)}`}
                 >
-                  {term}
+                  {t[key]}
                 </Link>
               ))}
             </div>
@@ -76,12 +76,9 @@ export default async function Home() {
         <section className="section featured-marketplace">
           <div className="marketplace-section-heading">
             <div>
-              <p className="eyebrow">Real published prices</p>
+              <p className="eyebrow">{t.homeFeaturedEyebrow}</p>
               <h2>{featured.procedure_name}</h2>
-              <p>
-                Select up to three New Hampshire hospitals to compare their
-                published prices side by side.
-              </p>
+              <p>{t.homeFeaturedIntro}</p>
             </div>
             <Link
               className="button secondary"
@@ -90,11 +87,14 @@ export default async function Home() {
                 "/procedures/mri-knee-without-contrast/prices",
               )}
             >
-              View all matching hospitals
+              {t.homeViewAllMatching}
             </Link>
           </div>
           <div className="marketplace-results-layout">
-            <section className="result-list" aria-label="Featured prices">
+            <section
+              className="result-list"
+              aria-label={t.homeFeaturedPricesAria}
+            >
               {featuredItems.map((item) => (
                 <ComparisonFacilityCard
                   key={`${item.facility_id}-${item.facility_location_id}`}
@@ -102,6 +102,7 @@ export default async function Home() {
                   procedureName={featured.procedure_name}
                   procedureSlug={featured.procedure_slug}
                   messages={t}
+                  locale={locale}
                 />
               ))}
             </section>
@@ -109,29 +110,21 @@ export default async function Home() {
               procedureSlug={featured.procedure_slug}
               procedureName={featured.procedure_name}
               items={featuredItems}
+              locale={locale}
             />
           </div>
         </section>
       )}
       <section className="section product-intro">
         <div className="section-heading">
-          <p className="eyebrow">How it works</p>
-          <h2>Search, compare, then verify</h2>
+          <p className="eyebrow">{t.howItWorks}</p>
+          <h2>{t.homeHowItWorksHeading}</h2>
         </div>
         <div className="feature-grid steps product-steps">
           {[
-            [
-              "Search",
-              "Use everyday language, like “knee MRI” or “mammogram.”",
-            ],
-            [
-              "Compare",
-              "Review published prices, locations, and service settings.",
-            ],
-            [
-              "Verify",
-              "Confirm your benefits and expected charges with the provider and insurer.",
-            ],
+            [t.homeStepSearchTitle, t.homeStepSearchBody],
+            [t.homeStepCompareTitle, t.homeStepCompareBody],
+            [t.homeStepVerifyTitle, t.homeStepVerifyBody],
           ].map(([title, body]) => (
             <article className="card feature-card" key={title}>
               <h3>{title}</h3>
@@ -149,7 +142,7 @@ export default async function Home() {
             quality information. Missing data stays visibly missing.
           </p>
         </div>
-        <CoverageNotice>
+        <CoverageNotice messages={t}>
           {coverage
             ? `Published prices are currently available for ${coverage.facilities_with_publishable_prices} of ${coverage.nh_facilities} active hospitals in the launch region, covering ${coverage.publishable_procedures} procedures.`
             : "Coverage is incomplete and varies by hospital and procedure. Availability is always shown with each result."}

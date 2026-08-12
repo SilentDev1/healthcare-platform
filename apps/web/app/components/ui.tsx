@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { PriceSummary, ProcedureComparisonItem } from "../../lib/api";
-import type { Messages } from "../../lib/i18n";
+import type { Locale, Messages } from "../../lib/i18n";
 import { CompareSelect } from "./CompareSelect";
 import { FacilityImage } from "./FacilityImage";
 
@@ -12,10 +12,18 @@ function moneyWhole(value: string | number): string {
   }).format(Number(value));
 }
 
-export function Money({ value }: { value: string | null }) {
+export function Money({
+  value,
+  messages,
+}: {
+  value: string | null;
+  messages?: Messages;
+}) {
   const amount = value === null ? Number.NaN : Number(value);
   if (!Number.isFinite(amount) || amount < 0)
-    return <span className="muted">Not available</span>;
+    return (
+      <span className="muted">{messages?.notAvailable ?? "Not available"}</span>
+    );
   return (
     <>
       {new Intl.NumberFormat("en-US", {
@@ -30,59 +38,88 @@ export function Money({ value }: { value: string | null }) {
 export function PriceRange({
   min,
   max,
+  messages,
 }: {
   min: string | null;
   max: string | null;
+  messages?: Messages;
 }) {
   if (min === null && max === null)
-    return <span className="price-missing">Price not currently available</span>;
-  if (min === max || max === null) return <Money value={min} />;
+    return (
+      <span className="price-missing">
+        {messages?.priceNotAvailable ?? "Price not currently available"}
+      </span>
+    );
+  if (min === max || max === null)
+    return <Money value={min} messages={messages} />;
   return (
     <>
-      <Money value={min} />–<Money value={max} />
+      <Money value={min} messages={messages} />–
+      <Money value={max} messages={messages} />
     </>
   );
 }
 
-export function QualityRating({ value }: { value?: string | null }) {
+export function QualityRating({
+  value,
+  messages,
+}: {
+  value?: string | null;
+  messages?: Messages;
+}) {
   const rating = value && /^[1-5](?:\.0+)?$/.test(value) ? Number(value) : null;
   return (
     <span
       className="quality-rating"
       aria-label={
         rating
-          ? `CMS overall rating: ${rating} out of 5`
-          : "CMS overall rating not available"
+          ? (
+              messages?.cmsRatingAria ?? "CMS overall rating: {rating} out of 5"
+            ).replace("{rating}", String(rating))
+          : (messages?.cmsRatingAriaUnavailable ??
+            "CMS overall rating not available")
       }
     >
       <span aria-hidden="true">★</span>{" "}
-      {rating ? `${rating}/5 CMS` : "CMS rating unavailable"}
+      {rating
+        ? (messages?.cmsRatingValue ?? "{rating}/5 CMS").replace(
+            "{rating}",
+            String(rating),
+          )
+        : (messages?.cmsRatingUnavailable ?? "CMS rating unavailable")}
     </span>
   );
 }
 
-export function CoverageNotice({ children }: { children: React.ReactNode }) {
+export function CoverageNotice({
+  children,
+  messages,
+}: {
+  children: React.ReactNode;
+  messages?: Messages;
+}) {
   return (
     <aside className="notice coverage-notice">
       <span aria-hidden="true">ⓘ</span>
       <div>
-        <strong>Coverage transparency</strong>
+        <strong>
+          {messages?.coverageTransparency ?? "Coverage transparency"}
+        </strong>
         <p>{children}</p>
       </div>
     </aside>
   );
 }
 
-export function PricingDisclaimer() {
+export function PricingDisclaimer({ messages }: { messages?: Messages }) {
   return (
     <details className="disclosure">
-      <summary>Important price information</summary>
+      <summary>
+        {messages?.importantPriceInfo ?? "Important price information"}
+      </summary>
       <p>
-        Published prices come from hospital transparency files. Your final bill
-        may differ. Professional fees, anesthesia, pathology, labs, medications,
-        implants, and other services may be billed separately. Insurance cost
-        depends on your deductible, coinsurance, copay, network, authorization,
-        and actual services received.
+        {messages?.pricingDisclaimerBody ??
+          "Published prices come from hospital transparency files. Your final bill may differ. Professional fees, anesthesia, pathology, labs, medications, implants, and other services may be billed separately. Insurance cost depends on your deductible, coinsurance, copay, network, authorization, and actual services received."}
       </p>
     </details>
   );
@@ -94,23 +131,31 @@ export function SourceAttribution({
   quality = false,
   showLink = true,
   context,
+  messages,
 }: {
   updated?: string;
   url?: string;
   quality?: boolean;
   showLink?: boolean;
   context?: string;
+  messages?: Messages;
 }) {
   return (
     <div className="source-attribution">
       <span>
-        <strong>Data source:</strong>{" "}
-        {quality ? "CMS Care Compare" : "Hospital machine-readable file"}
+        <strong>{messages?.dataSource ?? "Data source:"}</strong>{" "}
+        {quality
+          ? (messages?.sourceCmsCareCompare ?? "CMS Care Compare")
+          : (messages?.sourceHospitalFile ?? "Hospital machine-readable file")}
         {context ? ` · ${context}` : ""}
       </span>
       {updated && (
         <span>
-          <strong>{quality ? "Source updated:" : "Carevero refresh:"}</strong>{" "}
+          <strong>
+            {quality
+              ? (messages?.sourceUpdated ?? "Source updated:")
+              : (messages?.careveroRefresh ?? "Carevero refresh:")}
+          </strong>{" "}
           {new Date(updated).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
@@ -121,7 +166,7 @@ export function SourceAttribution({
       )}
       {url && showLink && (
         <a href={url} target="_blank" rel="noreferrer">
-          View official source file (external)
+          {messages?.viewSourceFile ?? "View official source file (external)"}
         </a>
       )}
     </div>
@@ -149,30 +194,36 @@ export function EmptyState({
 export function ErrorState({
   retryHref,
   onRetry,
+  messages,
 }: {
   retryHref?: string;
   onRetry?: () => void;
+  messages?: Messages;
 }) {
+  const tryAgain = messages?.tryAgain ?? "Try again";
   return (
     <section className="state-card error" role="alert">
-      <h2>We couldn’t load this information</h2>
-      <p>Please try again. No missing prices will be estimated or filled in.</p>
+      <h2>{messages?.errorTitle ?? "We couldn’t load this information"}</h2>
+      <p>
+        {messages?.errorBody ??
+          "Please try again. No missing prices will be estimated or filled in."}
+      </p>
       {onRetry ? (
         <button className="button secondary" type="button" onClick={onRetry}>
-          Try again
+          {tryAgain}
         </button>
       ) : retryHref ? (
         <Link className="button secondary" href={retryHref}>
-          Try again
+          {tryAgain}
         </Link>
       ) : null}
     </section>
   );
 }
 
-export function LoadingSkeleton() {
+export function LoadingSkeleton({ messages }: { messages?: Messages }) {
   return (
-    <div className="skeleton-grid" aria-label="Loading">
+    <div className="skeleton-grid" aria-label={messages?.loading ?? "Loading"}>
       <div />
       <div />
       <div />
@@ -261,6 +312,7 @@ export function ComparisonFacilityCard({
   planName,
   planId,
   messages,
+  locale,
 }: {
   item: ProcedureComparisonItem;
   procedureName: string;
@@ -269,6 +321,7 @@ export function ComparisonFacilityCard({
   planName?: string;
   planId?: string;
   messages?: Messages;
+  locale?: Locale;
 }) {
   const locationLabel = item.location_name
     ? `${item.location_name} · ${item.city}, ${item.state}`
@@ -311,19 +364,26 @@ export function ComparisonFacilityCard({
           </div>
           {item.price_available ? (
             <span className="verified">
-              <span aria-hidden="true">✓</span> Verified published source
+              <span aria-hidden="true">✓</span>{" "}
+              {messages?.verifiedPublishedSource ?? "Verified published source"}
             </span>
           ) : (
-            <span className="badge unavailable">No published price</span>
+            <span className="badge unavailable">
+              {messages?.noPublishedPrice ?? "No published price"}
+            </span>
           )}
         </div>
-        <div className="facility-facts" aria-label="Facility facts">
-          <QualityRating value={item.cms_overall_rating} />
+        <div
+          className="facility-facts"
+          aria-label={messages?.facilityFacts ?? "Facility facts"}
+        >
+          <QualityRating value={item.cms_overall_rating} messages={messages} />
           <span>{item.facility_type ?? "Hospital"}</span>
           <span>
             {item.service_settings.length
               ? item.service_settings.join(", ").replaceAll("_", " ")
-              : "Service setting unavailable"}
+              : (messages?.serviceSettingUnavailable ??
+                "Service setting unavailable")}
           </span>
         </div>
         {item.price_available ? (
@@ -331,13 +391,14 @@ export function ComparisonFacilityCard({
             <div>
               <span>
                 {item.cash_price_value_count && item.cash_price_value_count > 1
-                  ? "Published cash prices"
-                  : "Published cash price"}
+                  ? (messages?.publishedCashPrices ?? "Published cash prices")
+                  : (messages?.publishedCashPrice ?? "Published cash price")}
               </span>
               <strong>
                 <PriceRange
                   min={item.cash_price_min}
                   max={item.cash_price_max}
+                  messages={messages}
                 />
               </strong>
               {item.lower_priced_nearby_option ? (
@@ -397,29 +458,39 @@ export function ComparisonFacilityCard({
                 </small>
               ) : null}
               <Link className="price-detail-link" href={detailHref}>
-                View price details
+                {messages?.priceDetails ?? "View price details"}
               </Link>
             </div>
             <div>
               {payerName ? (
                 <>
                   <span className="selected-insurance-label">
-                    Your selected insurance
+                    {messages?.yourSelectedInsurance ??
+                      "Your selected insurance"}
                   </span>
                   <strong className="insurance-name">
                     {payerName}
                     {planName ? ` · ${planName}` : ""}
                   </strong>
-                  <span>Published matching negotiated rates</span>
+                  <span>
+                    {messages?.matchingRates ??
+                      "Published matching negotiated rates"}
+                  </span>
                   <strong>
                     <PriceRange
                       min={item.negotiated_price_min}
                       max={item.negotiated_price_max}
+                      messages={messages}
                     />
                   </strong>
                   <small className="price-context">
-                    {item.matching_negotiated_rate_count ?? 0} matching
-                    published rate records
+                    {(
+                      messages?.matchingRateRecords ??
+                      "{count} matching published rate records"
+                    ).replace(
+                      "{count}",
+                      String(item.matching_negotiated_rate_count ?? 0),
+                    )}
                   </small>
                 </>
               ) : (
@@ -451,66 +522,84 @@ export function ComparisonFacilityCard({
           </div>
         ) : (
           <div className="no-price-message">
-            <strong>Price not currently available</strong>
+            <strong>
+              {messages?.priceNotAvailable ?? "Price not currently available"}
+            </strong>
             <p>
-              This hospital remains visible because missing data is different
-              from the service being unavailable.
+              {messages?.noPriceExplanation ??
+                "This hospital remains visible because missing data is different from the service being unavailable."}
             </p>
           </div>
         )}
         {item.price_available && (
           <>
             <details className="price-details">
-              <summary>Price details and source</summary>
+              <summary>
+                {messages?.priceDetailsAndSource ?? "Price details and source"}
+              </summary>
               <dl>
                 <div>
-                  <dt>Procedure</dt>
+                  <dt>{messages?.procedure ?? "Procedure"}</dt>
                   <dd>{procedureName}</dd>
                 </div>
                 <div>
-                  <dt>Service setting</dt>
+                  <dt>{messages?.serviceSetting ?? "Service setting"}</dt>
                   <dd>
                     {item.service_settings.length
                       ? item.service_settings.join(", ").replaceAll("_", " ")
-                      : "Not published"}
+                      : (messages?.notPublished ?? "Not published")}
                   </dd>
                 </div>
                 <div>
-                  <dt>Published summary groups</dt>
+                  <dt>
+                    {messages?.publishedSummaryGroups ??
+                      "Published summary groups"}
+                  </dt>
                   <dd>{item.summary_count}</dd>
                 </div>
                 <div>
-                  <dt>Price-data completeness</dt>
+                  <dt>
+                    {messages?.priceDataCompleteness ??
+                      "Price-data completeness"}
+                  </dt>
                   <dd>
                     {item.data_completeness === "high_data_completeness"
-                      ? "High data completeness"
+                      ? (messages?.highDataCompleteness ??
+                        "High data completeness")
                       : item.data_completeness === "some_details_unavailable"
-                        ? "Some details unavailable"
-                        : "Limited pricing detail"}
+                        ? (messages?.someDetailsUnavailable ??
+                          "Some details unavailable")
+                        : (messages?.limitedPricingDetail ??
+                          "Limited pricing detail")}
                   </dd>
                 </div>
                 <div>
-                  <dt>All published negotiated rates</dt>
+                  <dt>
+                    {messages?.allPublishedNegotiatedRates ??
+                      "All published negotiated rates"}
+                  </dt>
                   <dd>
                     <PriceRange
                       min={item.all_published_negotiated_min ?? null}
                       max={item.all_published_negotiated_max ?? null}
+                      messages={messages}
                     />
                   </dd>
                 </div>
               </dl>
               <p>
-                Published prices may not equal your final out-of-pocket cost. A
-                published rate does not verify network participation or
-                coverage. Separately billed professional services may apply.
+                {messages?.priceDetailsDisclaimer ??
+                  "Published prices may not equal your final out-of-pocket cost. A published rate does not verify network participation or coverage. Separately billed professional services may apply."}
               </p>
               <Link className="text-link" href={detailHref}>
-                View all price and source details
+                {messages?.viewAllPriceDetails ??
+                  "View all price and source details"}
               </Link>
             </details>
             <SourceAttribution
               updated={item.latest_updated ?? undefined}
               url={item.source_url ?? undefined}
+              messages={messages}
             />
           </>
         )}
@@ -523,6 +612,7 @@ export function ComparisonFacilityCard({
             locationId={item.facility_location_id}
             name={locationLabel}
             procedureSlug={procedureSlug}
+            locale={locale}
           />
         </div>
       </div>

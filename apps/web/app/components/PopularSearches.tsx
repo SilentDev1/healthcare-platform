@@ -1,6 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { localePath, type Locale } from "../../lib/i18n";
+import {
+  localePath,
+  messages,
+  type Locale,
+  type Messages,
+} from "../../lib/i18n";
 
 /**
  * Phase 4.8 (§2, §32): popular-procedure shortcuts with clear, accessible icons.
@@ -11,7 +16,7 @@ import { localePath, type Locale } from "../../lib/i18n";
  */
 
 interface PopularSearch {
-  label: string;
+  labelKey: keyof Messages;
   query: string;
   icon: ReactNode;
 }
@@ -33,7 +38,7 @@ const strokeIcon = (children: ReactNode): ReactNode => (
 
 const POPULAR: PopularSearch[] = [
   {
-    label: "MRI Knee",
+    labelKey: "popularMriKnee",
     query: "MRI knee",
     icon: strokeIcon(
       <>
@@ -43,7 +48,7 @@ const POPULAR: PopularSearch[] = [
     ),
   },
   {
-    label: "CT Scan",
+    labelKey: "popularCtScan",
     query: "CT scan",
     icon: strokeIcon(
       <>
@@ -53,17 +58,17 @@ const POPULAR: PopularSearch[] = [
     ),
   },
   {
-    label: "Colonoscopy",
+    labelKey: "popularColonoscopy",
     query: "colonoscopy",
     icon: strokeIcon(<path d="M5 4v7a7 7 0 0 0 14 0M19 11V9" />),
   },
   {
-    label: "Knee Replacement",
+    labelKey: "popularKneeReplacement",
     query: "knee replacement",
     icon: strokeIcon(<path d="M8 3v6a4 4 0 0 0 4 4 4 4 0 0 1 4 4v4M8 13v8" />),
   },
   {
-    label: "Childbirth (Vaginal)",
+    labelKey: "popularChildbirthVaginal",
     query: "childbirth",
     icon: strokeIcon(
       <>
@@ -73,7 +78,7 @@ const POPULAR: PopularSearch[] = [
     ),
   },
   {
-    label: "Gallbladder Removal",
+    labelKey: "popularGallbladderRemoval",
     query: "gallbladder removal",
     icon: strokeIcon(
       <path d="M9 4h6a2 2 0 0 1 2 2c0 6-2.5 12-5 12S7 12 7 6a2 2 0 0 1 2-2Z" />,
@@ -90,6 +95,7 @@ export function PopularSearches({
   heading: string;
   viewAllLabel: string;
 }) {
+  const t = messages[locale];
   return (
     <section className="popular-search-bar" aria-label={heading}>
       <span className="popular-search-heading">{heading}</span>
@@ -103,7 +109,7 @@ export function PopularSearches({
             <span className="popular-chip-icon" aria-hidden="true">
               {item.icon}
             </span>
-            {item.label}
+            {t[item.labelKey]}
           </Link>
         ))}
       </div>

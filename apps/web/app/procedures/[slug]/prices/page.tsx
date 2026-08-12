@@ -138,7 +138,7 @@ export default async function ProcedurePrices({
             id="location"
             name="location"
             defaultValue={filters.location ?? ""}
-            placeholder="ZIP or city"
+            placeholder={messages.searchLocationPlaceholder}
           />
           <p className="field-help">{messages.enterLocationForDistance}</p>
         </div>
@@ -153,34 +153,38 @@ export default async function ProcedurePrices({
           </select>
         </div>
         <div className="filter-group">
-          <label htmlFor="availability">Price availability</label>
+          <label htmlFor="availability">{messages.priceAvailability}</label>
           <select
             id="availability"
             name="availability"
             defaultValue={filters.availability ?? ""}
           >
-            <option value="">All hospitals</option>
-            <option value="available">Published price available</option>
-            <option value="unavailable">Price not available</option>
+            <option value="">{messages.availabilityAll}</option>
+            <option value="available">{messages.availabilityAvailable}</option>
+            <option value="unavailable">
+              {messages.availabilityUnavailable}
+            </option>
           </select>
         </div>
         <div className="filter-group">
-          <label htmlFor="setting">Service setting</label>
+          <label htmlFor="setting">{messages.serviceSetting}</label>
           <select
             id="setting"
             name="setting"
             defaultValue={filters.setting ?? ""}
           >
-            <option value="">All settings</option>
-            <option value="outpatient">Outpatient</option>
-            <option value="inpatient">Inpatient</option>
-            <option value="emergency_department">Emergency department</option>
+            <option value="">{messages.settingAll}</option>
+            <option value="outpatient">{messages.settingOutpatient}</option>
+            <option value="inpatient">{messages.settingInpatient}</option>
+            <option value="emergency_department">
+              {messages.settingEmergency}
+            </option>
           </select>
         </div>
         <div className="filter-group">
           <label htmlFor="payer">{messages.insurance}</label>
           <select id="payer" name="payer" defaultValue={filters.payer ?? ""}>
-            <option value="">All available payers</option>
+            <option value="">{messages.allAvailablePayers}</option>
             {payers.map((payer) => (
               <option key={payer.slug} value={payer.slug}>
                 {payer.name}
@@ -197,34 +201,32 @@ export default async function ProcedurePrices({
             defaultValue={filters.plan ?? ""}
             disabled={!filters.payer}
           >
-            <option value="">All published plans</option>
+            <option value="">{messages.allPublishedPlans}</option>
             {plans.map((plan) => (
               <option key={plan.id} value={plan.id}>
                 {plan.name}
               </option>
             ))}
           </select>
-          <p className="field-help">
-            Select a payer and apply filters before narrowing to a plan.
-          </p>
+          <p className="field-help">{messages.planHelp}</p>
         </div>
         <div className="filter-group">
-          <label htmlFor="rating">Minimum CMS rating</label>
+          <label htmlFor="rating">{messages.minimumCmsRating}</label>
           <select id="rating" name="rating" defaultValue={filters.rating ?? ""}>
-            <option value="">Any rating</option>
-            <option value="3">3+ stars</option>
-            <option value="4">4+ stars</option>
-            <option value="5">5 stars</option>
+            <option value="">{messages.ratingAny}</option>
+            <option value="3">{messages.ratingThreePlus}</option>
+            <option value="4">{messages.ratingFourPlus}</option>
+            <option value="5">{messages.ratingFive}</option>
           </select>
         </div>
         <div className="filter-group">
-          <label htmlFor="facility_type">Facility type</label>
+          <label htmlFor="facility_type">{messages.facilityType}</label>
           <select
             id="facility_type"
             name="facility_type"
             defaultValue={filters.facility_type ?? ""}
           >
-            <option value="">All facility types</option>
+            <option value="">{messages.facilityTypeAll}</option>
             {facilityTypes.map((type) => (
               <option key={type} value={type}>
                 {type}
@@ -236,10 +238,10 @@ export default async function ProcedurePrices({
           <input type="hidden" name="sort" value={filters.sort} />
         )}
         <button className="button" type="submit">
-          Apply filters
+          {messages.applyFilters}
         </button>
         <Link className="text-link" href={`/procedures/${slug}/prices`}>
-          Clear filters
+          {messages.clearFilters}
         </Link>
       </form>
     );
@@ -251,24 +253,26 @@ export default async function ProcedurePrices({
           heading={messages.popular}
           viewAllLabel={messages.viewAllProcedures}
         />
-        <nav className="breadcrumbs" aria-label="Breadcrumb">
-          <Link href="/">Home</Link>
+        <nav className="breadcrumbs" aria-label={messages.breadcrumb}>
+          <Link href="/">{messages.home}</Link>
           <span>/</span>
-          <Link href="/procedures">Procedures</Link>
+          <Link href="/procedures">{messages.procedures}</Link>
           <span>/</span>
           <Link href={`/procedures/${slug}`}>{procedure.consumer_name}</Link>
           <span>/</span>
-          <span>Compare prices</span>
+          <span>{messages.comparePrices}</span>
         </nav>
         <div className="page-heading comparison-heading">
           <p className="eyebrow">{messages.compareServiceLocations}</p>
           <h1>{procedure.consumer_name}</h1>
           <p className="lede">
-            Published hospital prices in {launchRegion.name}. These are not
-            personalized estimates, and lower price does not mean better care.
+            {messages.ledeSummary.replace("{region}", launchRegion.name)}
           </p>
         </div>
-        <dl className="decision-context" aria-label="Comparison context">
+        <dl
+          className="decision-context"
+          aria-label={messages.comparisonContext}
+        >
           <div>
             <dt>{messages.location}</dt>
             <dd>{filters.location || launchRegion.name}</dd>
@@ -282,16 +286,27 @@ export default async function ProcedurePrices({
             </dd>
           </div>
         </dl>
-        <CoverageNotice>
+        <CoverageNotice messages={messages}>
           {filters.payer && data.facilities_with_prices === 0
-            ? `No published negotiated rate found for ${payerName ?? "this payer"}. This does not mean the payer is not accepted, the hospital is out of network, or the service is not covered.`
-            : `Published prices are available from ${data.facilities_with_prices} of ${data.active_facilities} active hospitals for this procedure. All matching hospitals remain visible, including those without a publishable price.`}
+            ? messages.coverageNoRateForPayer.replace(
+                "{payer}",
+                payerName ?? messages.thisPayer,
+              )
+            : messages.coveragePublishedSummary
+                .replace("{withPrices}", String(data.facilities_with_prices))
+                .replace("{active}", String(data.active_facilities))}
         </CoverageNotice>
         <div className="toolbar comparison-toolbar">
           <strong>
-            {items.length} service location{items.length === 1 ? "" : "s"}
+            {(items.length === 1
+              ? messages.serviceLocationCountOne
+              : messages.serviceLocationCountOther
+            ).replace("{count}", String(items.length))}
             {activeFilterCount
-              ? ` · ${activeFilterCount} active filter${activeFilterCount === 1 ? "" : "s"}`
+              ? ` · ${(activeFilterCount === 1
+                  ? messages.activeFilterCountOne
+                  : messages.activeFilterCountOther
+                ).replace("{count}", String(activeFilterCount))}`
               : ""}
           </strong>
           <form className="sort-form">
@@ -300,43 +315,43 @@ export default async function ProcedurePrices({
               .map(([key, value]) => (
                 <input key={key} type="hidden" name={key} value={value} />
               ))}
-            <label htmlFor="sort">Sort</label>
+            <label htmlFor="sort">{messages.sortLabel}</label>
             <select
               id="sort"
               name="sort"
               defaultValue={filters.sort ?? "recommended"}
             >
-              <option value="recommended">Price availability, then name</option>
+              <option value="recommended">{messages.sortRecommended}</option>
               <option value="distance">{messages.nearestFirst}</option>
-              <option value="cash">Lowest published cash price</option>
-              <option value="rating">Highest CMS rating</option>
-              <option value="name">Hospital name</option>
+              <option value="cash">{messages.sortLowestCash}</option>
+              <option value="rating">{messages.sortHighestRating}</option>
+              <option value="name">{messages.sortHospitalName}</option>
             </select>
-            <button className="button secondary">Apply</button>
+            <button className="button secondary">{messages.apply}</button>
           </form>
         </div>
         <FilterPanel>{filterForm}</FilterPanel>
         <div className="marketplace-results-layout">
-          <section className="result-list" aria-label="Facility results">
+          <section
+            className="result-list"
+            aria-label={messages.facilityResults}
+          >
             {items.length === 0 ? (
-              <EmptyState title="No hospitals match these filters">
-                <p>
-                  Try removing a filter. A missing result does not mean the
-                  service is unavailable, not accepted, or not covered.
-                </p>
+              <EmptyState title={messages.noHospitalsMatch}>
+                <p>{messages.emptyStateHelp}</p>
                 <div className="card-actions">
                   <Link
                     className="button secondary"
                     href={`/procedures/${slug}/prices`}
                   >
-                    Clear all filters
+                    {messages.clearAllFilters}
                   </Link>
                   {filters.payer && (
                     <Link
                       className="button secondary"
                       href={`/procedures/${slug}/prices?availability=${filters.availability ?? ""}`}
                     >
-                      Clear payer
+                      {messages.clearPayer}
                     </Link>
                   )}
                 </div>
@@ -352,6 +367,7 @@ export default async function ProcedurePrices({
                   planName={planName}
                   planId={filters.plan}
                   messages={messages}
+                  locale={locale}
                 />
               ))
             )}
@@ -362,20 +378,25 @@ export default async function ProcedurePrices({
             items={items}
             payer={filters.payer}
             plan={filters.plan}
+            locale={locale}
           />
         </div>
-        <PricingDisclaimer />
+        <PricingDisclaimer messages={messages} />
         <CompareTray
           procedureSlug={slug}
           payer={filters.payer}
           plan={filters.plan}
+          locale={locale}
         />
       </main>
     );
   } catch {
     return (
       <main>
-        <ErrorState retryHref={`/procedures/${slug}/prices`} />
+        <ErrorState
+          retryHref={`/procedures/${slug}/prices`}
+          messages={messages}
+        />
       </main>
     );
   }

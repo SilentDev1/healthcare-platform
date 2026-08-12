@@ -3097,13 +3097,13 @@ body .comparison-toolbar .sort-form .button {
   background: linear-gradient(
     150deg,
     var(--facility-accent-soft),
-    var(--paper)
+    color-mix(in srgb, var(--facility-accent-soft) 55%, var(--paper))
   );
   border: 1px solid var(--line);
 }
 .facility-image-placeholder svg {
-  width: 46%;
-  height: 46%;
+  width: 56%;
+  height: 56%;
   color: var(--facility-accent);
 }
 .facility-image-placeholder svg rect {
@@ -3351,8 +3351,17 @@ body .comparison-toolbar .sort-form .button {
   line-height: 1.3;
 }
 .save-comparison {
-  margin-top: 0.6rem;
+  margin-top: 0;
+  padding: 0.55rem 1rem 0.7rem;
   font-size: 0.8rem;
+}
+/* The comparison panel body children should never sit flush to the edge. */
+.inline-compare > *:not(.inline-compare-table-wrap) {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.inline-compare-table-wrap {
+  padding: 0 0.5rem;
 }
 .save-comparison > summary {
   cursor: pointer;
@@ -3385,10 +3394,11 @@ body .comparison-toolbar .sort-form .button {
    tighter spacing, and a natural-language nearby-savings badge.
    ============================================================ */
 .marketplace-results-layout .facility-card.facility-card-media-layout {
-  padding: 0.6rem;
+  padding: 0.9rem 1rem;
+  gap: 1rem;
 }
 .marketplace-results-layout .facility-card-media-layout .facility-card-body {
-  gap: 0.3rem;
+  gap: 0.35rem;
 }
 .marketplace-results-layout .facility-card-media-layout .card-actions {
   display: flex;
