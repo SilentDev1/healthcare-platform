@@ -24,6 +24,11 @@ export function LanguageSelector({
     const query = params.toString();
     document.cookie = `carevero-locale=${nextLocale}; Path=/; Max-Age=31536000; SameSite=Lax`;
     router.push(`${localized}${query ? `?${query}` : ""}`);
+    // The locale-prefix rewrite in proxy.ts collapses every locale to the same
+    // rewritten path, so the App Router cache can serve a stale RSC payload for
+    // the previous language. Invalidate it so the new locale renders immediately
+    // (no full-page reload; client state and query params are preserved).
+    router.refresh();
   }
 
   return (
