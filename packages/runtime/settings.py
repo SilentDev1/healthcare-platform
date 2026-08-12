@@ -31,6 +31,10 @@ class RuntimeSettings(BaseSettings):
     data_dir: Path = Path("data")
     source_download_dir: Path = Path("data/raw/hospital_prices")
     source_storage_bucket: str | None = None
+    # Carevero-controlled bucket for verified facility imagery (state-neutral).
+    facility_media_bucket: str | None = None
+    # Public base URL used to build image URLs for objects in the media bucket.
+    facility_media_public_base_url: str | None = None
     scheduler_enabled: bool = False
     beta_mode: bool = False
     seo_indexing_enabled: bool = True

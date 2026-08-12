@@ -35,6 +35,11 @@ class FacilityResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     locations: list[FacilityLocationResponse]
+    # Verified facility imagery (None -> web renders the neutral placeholder).
+    image_url: str | None = None
+    image_alt: str | None = None
+    image_attribution: str | None = None
+    image_source: str | None = None
 
 
 class FacilityPage(BaseModel):
@@ -171,6 +176,31 @@ class AdminFacilityResponse(BaseModel):
 
 class AdminFacilityPage(PageMetadata):
     items: list[AdminFacilityResponse]
+
+
+class AdminFacilityMediaItem(BaseModel):
+    id: uuid.UUID
+    facility_id: uuid.UUID
+    facility_name: str
+    service_location_id: uuid.UUID | None
+    verification_status: str
+    is_primary: bool
+    media_type: str
+    image_url: str | None
+    source_type: str
+    source_name: str | None
+    source_url: str | None
+    license_type: str | None
+    attribution_text: str | None
+    width: int | None
+    height: int | None
+    review_notes: str | None
+    created_at: datetime
+
+
+class AdminFacilityMediaPage(PageMetadata):
+    items: list[AdminFacilityMediaItem]
+    status_counts: dict[str, int]
 
 
 class AdminFacilityDetailResponse(BaseModel):
@@ -429,6 +459,12 @@ class ProcedureComparisonItem(BaseModel):
     # Stable, locale-agnostic reason codes for the cash-price explanation so the
     # consumer app can localize the sentence (the API stays locale-neutral).
     cash_price_reason_codes: list[str] = Field(default_factory=list)
+    # Verified imagery for this exact service location (falls back to a verified
+    # facility-level photo, else None -> the web renders the neutral placeholder).
+    image_url: str | None = None
+    image_alt: str | None = None
+    image_attribution: str | None = None
+    image_source: str | None = None
     matching_negotiated_rate_count: int = 0
     distinct_payer_count: int = 0
     distinct_plan_count: int = 0

@@ -16,6 +16,7 @@ import {
   SourceAttribution,
 } from "../../components/ui";
 import { FacilityPrices } from "../../components/FacilityPrices";
+import { FacilityImage } from "../../components/FacilityImage";
 import { localePath } from "../../../lib/i18n";
 import { requestLocale, requestMessages } from "../../../lib/i18n-server";
 
@@ -99,6 +100,19 @@ export default async function FacilityPage({
           <span>/</span>
           <span>{facility.display_name}</span>
         </nav>
+        {facility.image_url && (
+          <FacilityImage
+            name={facility.display_name}
+            imageUrl={facility.image_url}
+            imageAlt={
+              facility.image_alt ??
+              t.imageAltPhotoOf.replace("{hospital}", facility.display_name)
+            }
+            attribution={facility.image_attribution ?? undefined}
+            variant="card"
+            className="facility-hero-media"
+          />
+        )}
         <div className="page-heading">
           <p className="eyebrow">
             {facility.facility_type ?? t.facilityTypeHospital}

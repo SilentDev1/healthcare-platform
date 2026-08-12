@@ -150,6 +150,29 @@ export interface FacilityScore {
   calculated_at: string;
 }
 
+export interface FacilityMediaItem {
+  id: string;
+  facility_id: string;
+  facility_name: string;
+  service_location_id: string | null;
+  verification_status: string;
+  is_primary: boolean;
+  media_type: string;
+  image_url: string | null;
+  source_type: string;
+  source_name: string | null;
+  source_url: string | null;
+  license_type: string | null;
+  attribution_text: string | null;
+  width: number | null;
+  height: number | null;
+  review_notes: string | null;
+  created_at: string;
+}
+export interface FacilityMediaPage extends Page<FacilityMediaItem> {
+  status_counts: Record<string, number>;
+}
+
 export function formatDate(value: string | null): string {
   return value
     ? new Intl.DateTimeFormat("en-US", {

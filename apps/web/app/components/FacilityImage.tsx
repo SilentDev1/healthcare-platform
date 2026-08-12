@@ -32,12 +32,18 @@ export function FacilityImage({
   name,
   imageUrl,
   imageAlt,
+  attribution,
+  placeholderLabel,
   variant = "card",
   className,
 }: {
   name: string;
   imageUrl?: string | null;
   imageAlt?: string | null;
+  /** Visible credit for licensed imagery (e.g. CC-BY); rendered when present. */
+  attribution?: string | null;
+  /** Localized aria-label for the neutral placeholder. */
+  placeholderLabel?: string | null;
   variant?: "card" | "thumb";
   className?: string;
 }) {
@@ -55,6 +61,11 @@ export function FacilityImage({
           loading="lazy"
           decoding="async"
         />
+        {attribution ? (
+          <span className="facility-image-credit" title={attribution}>
+            {attribution}
+          </span>
+        ) : null}
       </span>
     );
   }
@@ -70,7 +81,11 @@ export function FacilityImage({
       className={`${baseClass} facility-image-placeholder`}
       style={style}
       role="img"
-      aria-label={`${name} — no verified photo available`}
+      aria-label={
+        placeholderLabel
+          ? `${name} — ${placeholderLabel}`
+          : `${name} — no verified photo available`
+      }
     >
       <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
         <rect x="14" y="22" width="36" height="30" rx="2" />

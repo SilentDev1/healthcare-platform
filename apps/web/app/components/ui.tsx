@@ -279,6 +279,18 @@ export function ComparisonFacilityCard({
     >
       <FacilityImage
         name={item.facility_name}
+        imageUrl={item.image_url}
+        imageAlt={
+          item.image_url
+            ? (item.image_alt ??
+              (messages?.imageAltPhotoOf ?? "Photo of {hospital}").replace(
+                "{hospital}",
+                item.facility_name,
+              ))
+            : undefined
+        }
+        attribution={item.image_attribution ?? undefined}
+        placeholderLabel={messages?.imageNoPhoto}
         variant="card"
         className="facility-card-media"
       />

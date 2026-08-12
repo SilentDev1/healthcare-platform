@@ -251,6 +251,17 @@ export function InlineComparePanel({
                     <div className="compare-col-head">
                       <FacilityImage
                         name={item.facility_name}
+                        imageUrl={item.image_url}
+                        imageAlt={
+                          item.image_url
+                            ? (item.image_alt ??
+                              t.imageAltPhotoOf.replace(
+                                "{hospital}",
+                                item.facility_name,
+                              ))
+                            : undefined
+                        }
+                        placeholderLabel={t.imageNoPhoto}
                         variant="thumb"
                       />
                       <span className="compare-col-name">

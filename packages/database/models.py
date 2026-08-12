@@ -12,6 +12,7 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     Index,
+    Integer,
     Numeric,
     String,
     Text,
@@ -111,6 +112,100 @@ class FacilityLocation(TimestampMixin, Base):
     longitude: Mapped[Decimal | None] = mapped_column(Numeric(9, 6))
 
     facility: Mapped[Facility] = relationship(back_populates="locations")
+
+
+class MediaVerificationStatus(str, enum.Enum):
+    """Lifecycle of a facility image. Only VERIFIED media may ever become the
+    public primary photo; everything else falls back to the neutral placeholder."""
+
+    PENDING = "pending"  # discovered or uploaded, not yet reviewed
+    VERIFIED = "verified"  # reviewed, licensing established, eligible to publish
+    REJECTED = "rejected"  # reviewed and not usable (wrong building, licensing, quality)
+    BROKEN = "broken"  # a previously-usable asset failed retrieval/validation
+
+
+class FacilityMediaSourceType(str, enum.Enum):
+    """Provenance category. Governs whether an asset may be verified for public use;
+    see docs/FACILITY_MEDIA_POLICY.md. State-neutral: applies to any US facility."""
+
+    OFFICIAL_HOSPITAL = "official_hospital"
+    OFFICIAL_WEBSITE = "official_website"
+    GOVERNMENT_PUBLIC_DOMAIN = "government_public_domain"
+    WIKIMEDIA = "wikimedia"
+    MEDIA_KIT = "media_kit"
+    ADMIN_UPLOAD = "admin_upload"
+
+
+class FacilityMedia(TimestampMixin, Base):
+    """State-neutral facility / service-location imagery with full provenance,
+    licensing, verification lifecycle, and deterministic primary selection.
+
+    Scale contract (NH -> MA -> nationwide): identity is by facility_id (and an
+    optional service_location_id for location-specific photos), never by state.
+    A row only becomes a public primary image when verification_status is
+    'verified'; the selection layer prefers a verified location-specific photo,
+    then a verified facility photo, else the neutral placeholder.
+    """
+
+    __tablename__ = "facility_media"
+    __table_args__ = (
+        Index(
+            "ix_facility_media_facility_status_primary",
+            "facility_id",
+            "verification_status",
+            "is_primary",
+            "display_order",
+        ),
+        Index("ix_facility_media_location_status", "service_location_id", "verification_status"),
+        Index("ix_facility_media_checksum", "checksum_sha256"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), index=True)
+    # Location-specific imagery. NULL means the photo represents the facility as a
+    # whole (used only when an exact-location photo is unavailable).
+    service_location_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("facility_locations.id"), nullable=True
+    )
+    media_type: Mapped[str] = mapped_column(String(30), default="photo", server_default="photo")
+
+    # Delivery: a Carevero-controlled object key (preferred when licensing permits
+    # copying) and/or an external reference. At least one must be populated.
+    storage_key: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    source_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    cdn_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+
+    # Provenance + licensing (see FacilityMediaSourceType / media policy).
+    source_type: Mapped[str] = mapped_column(String(40))
+    source_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    license_type: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    license_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    attribution_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    copyright_owner: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    # Verification lifecycle + display selection.
+    verification_status: Mapped[str] = mapped_column(
+        String(20), default="pending", server_default="pending", index=True
+    )
+    is_primary: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    display_order: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+
+    # Technical metadata (from validation).
+    width: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    height: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    mime_type: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    file_size: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    checksum_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+
+    # Optional curator-provided alt text; the consumer UI otherwise localizes a
+    # neutral "Photo of {hospital}" string per locale.
+    alt_text: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    captured_at: Mapped[date | None] = mapped_column(Date, nullable=True)
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    verified_by: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    review_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class SourceFile(Base):

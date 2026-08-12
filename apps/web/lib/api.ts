@@ -34,6 +34,10 @@ export interface Facility {
   website_url: string | null;
   updated_at: string;
   locations: Location[];
+  image_url?: string | null;
+  image_alt?: string | null;
+  image_attribution?: string | null;
+  image_source?: string | null;
 }
 export interface FacilityPage {
   items: Facility[];
@@ -148,6 +152,10 @@ export interface ProcedureComparisonItem {
   cash_price_record_count?: number;
   cash_price_explanation?: string | null;
   cash_price_reason_codes?: string[];
+  image_url?: string | null;
+  image_alt?: string | null;
+  image_attribution?: string | null;
+  image_source?: string | null;
   matching_negotiated_rate_count?: number;
   distinct_payer_count?: number;
   distinct_plan_count?: number;

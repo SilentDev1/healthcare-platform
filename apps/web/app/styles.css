@@ -3069,6 +3069,7 @@ body .comparison-toolbar .sort-form .button {
 
 .facility-image {
   display: block;
+  position: relative;
   overflow: hidden;
   border-radius: 0.5rem;
   background: var(--brand-soft);
@@ -3079,6 +3080,30 @@ body .comparison-toolbar .sort-form .button {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+.facility-image-credit {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 2px 6px;
+  font-size: 0.62rem;
+  line-height: 1.25;
+  color: #fff;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+.facility-image-thumb .facility-image-credit {
+  display: none;
+}
+.facility-hero-media {
+  width: 100%;
+  max-width: 460px;
+  aspect-ratio: 16 / 9;
+  min-height: 0;
+  margin-bottom: 1rem;
 }
 .facility-image-card {
   width: 132px;

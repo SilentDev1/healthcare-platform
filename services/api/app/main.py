@@ -2,7 +2,7 @@ import time
 import uuid
 from collections import defaultdict, deque
 from collections.abc import Awaitable, Callable
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 
 import structlog
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response, status
@@ -22,6 +22,7 @@ from packages.database import (
     Facility,
     FacilityIdentityCandidate,
     FacilityLocation,
+    FacilityMedia,
     FacilityPriceSource,
     FacilityProcedurePriceObservation,
     FacilityProcedurePriceSummary,
@@ -53,10 +54,17 @@ from packages.search import search
 from services.api.app.comparison_insights import annotate as annotate_comparison
 from services.api.app.comparison_insights import summarize_cash_components
 from services.api.app.coverage import consumer_pricing_status, pricing_status_matches
+from services.api.app.facility_media import (
+    media_fields,
+    pick_media,
+    resolve_facility_media,
+)
 from services.api.app.logging import configure_logging
 from services.api.app.schemas import (
     AdminDashboardResponse,
     AdminFacilityDetailResponse,
+    AdminFacilityMediaItem,
+    AdminFacilityMediaPage,
     AdminFacilityPage,
     ConsumerPriceDetailResponse,
     DataHealthPage,
@@ -263,7 +271,14 @@ def list_facilities(
         .limit(page_size)
     ).all()
     total = session.scalar(count_query.where(*filters)) or 0
-    return FacilityPage(items=list(items), page=page, page_size=page_size, total=total)
+    media = resolve_facility_media(session, [f.id for f in items], api_settings)
+    responses = [
+        FacilityResponse.model_validate(facility).model_copy(
+            update=media_fields(pick_media(media, facility.id, None))
+        )
+        for facility in items
+    ]
+    return FacilityPage(items=responses, page=page, page_size=page_size, total=total)
 
 
 @app.get("/api/v1/facilities/map-data", response_model=MapDataResponse, tags=["facilities"])
@@ -330,7 +345,7 @@ def facilities_map_data(
 @app.get("/api/v1/facilities/{facility_id}", response_model=FacilityResponse, tags=["facilities"])
 def get_facility(
     facility_id: uuid.UUID, session: Annotated[Session, Depends(get_session)]
-) -> Facility:
+) -> FacilityResponse:
     facility = session.scalar(
         select(Facility)
         .options(selectinload(Facility.locations.and_(FacilityLocation.active.is_(True))))
@@ -338,7 +353,10 @@ def get_facility(
     )
     if facility is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="facility not found")
-    return facility
+    media = resolve_facility_media(session, [facility.id], api_settings)
+    return FacilityResponse.model_validate(facility).model_copy(
+        update=media_fields(pick_media(media, facility.id, None))
+    )
 
 
 @app.get("/api/v1/quality-measures", response_model=QualityMeasurePage, tags=["quality"])
@@ -567,6 +585,80 @@ def admin_source_files(
     ).all()
     total = session.scalar(select(func.count(SourceFile.id)).where(*filters)) or 0
     return SourceFilePage(items=list(items), page=page, page_size=page_size, total=total)
+
+
+@app.get(
+    "/api/v1/admin/facility-media",
+    response_model=AdminFacilityMediaPage,
+    tags=["admin"],
+)
+def admin_facility_media(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 50,
+    verification_status: Annotated[
+        str | None, Query(alias="status", max_length=20)
+    ] = None,
+) -> AdminFacilityMediaPage:
+    """Review queue for facility imagery. Read-only: verify/reject/set-primary
+    are auditable actions run via `scripts.facility_media` (verified_by /
+    review_notes are recorded), matching the existing admin mutation pattern."""
+    filters = (
+        [FacilityMedia.verification_status == verification_status]
+        if verification_status
+        else []
+    )
+    rows = session.execute(
+        select(FacilityMedia, Facility.display_name)
+        .join(Facility, Facility.id == FacilityMedia.facility_id)
+        .where(*filters)
+        .order_by(desc(FacilityMedia.created_at), FacilityMedia.id)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    total = session.scalar(select(func.count(FacilityMedia.id)).where(*filters)) or 0
+    counts_rows = session.execute(
+        select(FacilityMedia.verification_status, func.count(FacilityMedia.id)).group_by(
+            FacilityMedia.verification_status
+        )
+    ).all()
+    base = api_settings.facility_media_public_base_url
+    items = [
+        AdminFacilityMediaItem(
+            id=media.id,
+            facility_id=media.facility_id,
+            facility_name=display_name,
+            service_location_id=media.service_location_id,
+            verification_status=media.verification_status,
+            is_primary=media.is_primary,
+            media_type=media.media_type,
+            image_url=(
+                media.cdn_url
+                or (
+                    f"{base.rstrip('/')}/{media.storage_key.lstrip('/')}"
+                    if media.storage_key and base
+                    else media.source_url
+                )
+            ),
+            source_type=media.source_type,
+            source_name=media.source_name,
+            source_url=media.source_url,
+            license_type=media.license_type,
+            attribution_text=media.attribution_text,
+            width=media.width,
+            height=media.height,
+            review_notes=media.review_notes,
+            created_at=media.created_at,
+        )
+        for media, display_name in rows
+    ]
+    return AdminFacilityMediaPage(
+        items=items,
+        page=page,
+        page_size=page_size,
+        total=total,
+        status_counts={status: count for status, count in counts_rows},
+    )
 
 
 @app.get("/api/v1/admin/unmatched-records", response_model=UnmatchedRecordPage, tags=["admin"])
@@ -1783,6 +1875,23 @@ def procedure_comparison(
     items = annotate_comparison(
         items, coords=location_coords, origin=origin, radius_miles=radius_miles
     )
+    # Attach verified imagery per (facility, service location) in one batched
+    # lookup (no per-card query), with exact-location-then-facility precedence.
+    media = resolve_facility_media(
+        session,
+        [cast("uuid.UUID", item["facility_id"]) for item in items],
+        api_settings,
+    )
+    for item in items:
+        item.update(
+            media_fields(
+                pick_media(
+                    media,
+                    cast("uuid.UUID", item["facility_id"]),
+                    cast("uuid.UUID | None", item["facility_location_id"]),
+                )
+            )
+        )
     return ProcedureComparisonResponse(
         procedure_slug=procedure.slug,
         procedure_name=procedure.consumer_name,

@@ -301,6 +301,9 @@ const en = {
     "Published hospital prices are not personalized estimates. Separately billed professional services may apply. A published negotiated rate does not verify network participation or coverage.",
   procBillingNoticeDefault:
     "Final treatment and billing may involve multiple services.",
+  imageAltPhotoOf: "Photo of {hospital}",
+  imageNoPhoto: "No verified photo available",
+  imagePhotoCredit: "Photo: {source}",
 
   // Procedure directory
   procDirEyebrow: "Care catalog",
@@ -879,6 +882,9 @@ export const messages: Record<Locale, Messages> = {
       "Los precios publicados por los hospitales no son estimaciones personalizadas. Pueden aplicarse servicios profesionales facturados por separado. Una tarifa negociada publicada no verifica la participación en la red ni la cobertura.",
     procBillingNoticeDefault:
       "El tratamiento y la facturación finales pueden involucrar varios servicios.",
+    imageAltPhotoOf: "Foto de {hospital}",
+    imageNoPhoto: "No hay foto verificada disponible",
+    imagePhotoCredit: "Foto: {source}",
     procDirEyebrow: "Catálogo de atención",
     procDirTitle: "Explore servicios de salud comunes",
     procDirLede:
@@ -1426,6 +1432,9 @@ export const messages: Record<Locale, Messages> = {
       "Giá bệnh viện công bố không phải là ước tính riêng cho bạn. Có thể phát sinh các dịch vụ chuyên môn được tính phí riêng. Mức giá thương lượng đã công bố không xác nhận tình trạng trong mạng lưới hay quyền lợi được chi trả.",
     procBillingNoticeDefault:
       "Việc điều trị và lập hóa đơn cuối cùng có thể bao gồm nhiều dịch vụ.",
+    imageAltPhotoOf: "Ảnh của {hospital}",
+    imageNoPhoto: "Chưa có ảnh đã xác minh",
+    imagePhotoCredit: "Ảnh: {source}",
     procDirEyebrow: "Danh mục dịch vụ chăm sóc",
     procDirTitle: "Tìm hiểu các dịch vụ y tế thường gặp",
     procDirLede:
@@ -1946,6 +1955,9 @@ export const messages: Record<Locale, Messages> = {
     pdDisclaimerBody:
       "醫院公布的價格並非個別化估算。可能適用另行計費的專業服務。公布的協議費率並不代表網路資格或承保。",
     procBillingNoticeDefault: "最終的治療與帳單可能涉及多項服務。",
+    imageAltPhotoOf: "{hospital}的照片",
+    imageNoPhoto: "尚無經驗證的照片",
+    imagePhotoCredit: "照片：{source}",
     procDirEyebrow: "醫療服務目錄",
     procDirTitle: "探索常見的醫療服務",
     procDirLede: "以淺白語言提供指引與公布價格比較 — 無需醫療帳單代碼。",
@@ -2446,6 +2458,9 @@ export const messages: Record<Locale, Messages> = {
     pdDisclaimerBody:
       "医院公布的价格并非个性化估算。可能存在单独计费的专业服务。公布的协议费率并不代表网络资格或承保。",
     procBillingNoticeDefault: "最终的治疗与账单可能涉及多项服务。",
+    imageAltPhotoOf: "{hospital}的照片",
+    imageNoPhoto: "尚无经验证的照片",
+    imagePhotoCredit: "照片：{source}",
     procDirEyebrow: "医疗目录",
     procDirTitle: "探索常见医疗服务",
     procDirLede: "通俗易懂的指引和公布价格比较——无需医疗账单代码。",
