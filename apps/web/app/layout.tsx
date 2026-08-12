@@ -56,7 +56,9 @@ export default async function Layout({
               height="48"
             />
             <span className="brand-name">{brand.logoText}</span>
-            {betaMode && <span className="beta-badge">Private Beta</span>}
+            {betaMode && (
+              <span className="beta-badge">{t.privateBetaBadge}</span>
+            )}
           </Link>
           <nav aria-label={t.mainNavigation}>
             <Link className="nav-primary" href={localePath(locale, "/search")}>
@@ -79,7 +81,7 @@ export default async function Layout({
             <div>
               <strong>{brand.name}</strong>
               <p>{brand.tagline}</p>
-              <nav aria-label="Footer navigation">
+              <nav aria-label={t.footerNavigation}>
                 <Link href={localePath(locale, "/about-data")}>
                   {t.aboutData}
                 </Link>
@@ -98,18 +100,12 @@ export default async function Layout({
                   <a
                     href={`mailto:${feedbackEmail}?subject=Carevero beta feedback&body=Please don't include private medical information.%0A%0APage: `}
                   >
-                    Send beta feedback
+                    {t.betaFeedbackLink}
                   </a>
                 )}
               </nav>
-              {betaMode && (
-                <p>Carevero is in beta and expanding hospital coverage.</p>
-              )}
-              {feedbackEnabled && (
-                <p>
-                  Please don’t include private medical information in feedback.
-                </p>
-              )}
+              {betaMode && <p>{t.betaExpanding}</p>}
+              {feedbackEnabled && <p>{t.feedbackNoPrivateInfo}</p>}
             </div>
             <p>{t.footerDisclaimer}</p>
           </div>

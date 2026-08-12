@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { PriceSummary, ProcedureComparisonItem } from "../../lib/api";
+import type { ProcedureComparisonItem } from "../../lib/api";
 import type { Locale, Messages } from "../../lib/i18n";
 import { CompareSelect } from "./CompareSelect";
 import { FacilityImage } from "./FacilityImage";
@@ -228,79 +228,6 @@ export function LoadingSkeleton({ messages }: { messages?: Messages }) {
       <div />
       <div />
     </div>
-  );
-}
-
-export function FacilityPriceCard({
-  item,
-  compare = true,
-}: {
-  item: PriceSummary;
-  compare?: boolean;
-}) {
-  return (
-    <article className="facility-card">
-      <div className="facility-card-top">
-        <div>
-          <span className="badge neutral">
-            {item.service_setting?.replaceAll("_", " ") || "Setting not listed"}
-          </span>
-          <h2>{item.facility_name}</h2>
-          <p className="location">
-            {item.city ?? "Location available on facility page"}
-          </p>
-        </div>
-        <span className="verified">
-          <span aria-hidden="true">✓</span> Published source
-        </span>
-      </div>
-      <div className="price-grid">
-        <div>
-          <span>Published cash price</span>
-          <strong>
-            <PriceRange min={item.cash_price_min} max={item.cash_price_max} />
-          </strong>
-        </div>
-        <div>
-          <span>Published insurance pricing</span>
-          {item.payer_name ? (
-            <strong>
-              <PriceRange
-                min={item.negotiated_price_min}
-                max={item.negotiated_price_max}
-              />
-            </strong>
-          ) : (
-            <strong>
-              {item.negotiated_price_min !== null
-                ? "Rates available — choose a payer"
-                : "No normalized payer rates published"}
-            </strong>
-          )}
-        </div>
-      </div>
-      {item.payer_name && (
-        <p className="payer-note">
-          Published rate available for {item.payer_name}
-          {item.plan_name ? ` · ${item.plan_name}` : ""}. This does not
-          guarantee network participation.
-        </p>
-      )}
-      <SourceAttribution updated={item.last_updated} url={item.source_url} />
-      <div className="card-actions">
-        <Link className="button" href={`/hospitals/${item.facility_id}`}>
-          View details
-        </Link>
-        {compare && (
-          <Link
-            className="button secondary"
-            href={`/compare?ids=${item.facility_id}`}
-          >
-            Compare
-          </Link>
-        )}
-      </div>
-    </article>
   );
 }
 
@@ -620,12 +547,21 @@ export function ComparisonFacilityCard({
   );
 }
 
-export function FilterPanel({ children }: { children: React.ReactNode }) {
+export function FilterPanel({
+  children,
+  messages,
+}: {
+  children: React.ReactNode;
+  messages?: Messages;
+}) {
   return (
     <details className="filters responsive-filters">
       <summary>
-        <span>Filter results</span>
-        <small>Location, price availability, setting, payer, and rating</small>
+        <span>{messages?.filterResultsSummary ?? "Filter results"}</span>
+        <small>
+          {messages?.filterResultsHint ??
+            "Location, price availability, setting, payer, and rating"}
+        </small>
       </summary>
       <div className="responsive-filter-body">{children}</div>
     </details>

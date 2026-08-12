@@ -5,11 +5,15 @@ import { Suspense, useEffect, useState } from "react";
 import { CareSearch } from "../components/CareSearch";
 import { EmptyState, ErrorState, LoadingSkeleton } from "../components/ui";
 import type { SearchResult } from "../../lib/api";
+import { localePath, messages } from "../../lib/i18n";
+import { useLocale } from "../components/useLocale";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 const SEARCH_TIMEOUT_MS = 10_000;
 
 function SearchContent() {
   const router = useRouter();
+  const locale = useLocale();
+  const t = messages[locale] ?? messages.en;
   const params = useSearchParams();
   const q = params.get("q") ?? "";
   const location = params.get("location") ?? "";
@@ -48,7 +52,10 @@ function SearchContent() {
           if (payer) priceParams.set("payer", payer);
           const query = priceParams.size ? `?${priceParams}` : "";
           router.replace(
-            `/procedures/${procedures[0].metadata.slug}/prices${query}`,
+            localePath(
+              locale,
+              `/procedures/${procedures[0].metadata.slug}/prices${query}`,
+            ),
           );
           return;
         }
@@ -66,43 +73,48 @@ function SearchContent() {
       clearTimeout(timeout);
       controller.abort();
     };
-  }, [q, location, payer, requestNonce, router]);
+  }, [q, location, payer, requestNonce, router, locale]);
   return (
     <main>
       <div className="page-heading">
-        <p className="eyebrow">Find care</p>
-        <h1>{q ? `Results for “${q}”` : "What care do you need?"}</h1>
-        <p className="lede">
-          Search procedures, hospitals, cities, or ZIP codes using everyday
-          language.
-        </p>
+        <p className="eyebrow">{t.searchFindCare}</p>
+        <h1>
+          {q
+            ? t.searchResultsFor.replace("{q}", q)
+            : t.searchWhatCareTitle}
+        </h1>
+        <p className="lede">{t.searchIntro}</p>
       </div>
       <CareSearch
         compact
         initialCare={q}
         initialLocation={location}
         initialPayer={payer}
+        locale={locale}
       />
       {q && (
         <div className="toolbar">
           <strong>
             {loading
-              ? "Searching…"
-              : `${items.length} matching result${items.length === 1 ? "" : "s"}`}
+              ? t.searchSearching
+              : (items.length === 1
+                  ? t.searchResultCountOne
+                  : t.searchResultCountOther
+                ).replace("{count}", String(items.length))}
           </strong>
-          <span className="muted">
-            Only verified catalog and facility records
-          </span>
+          <span className="muted">{t.searchVerifiedOnly}</span>
         </div>
       )}
       {loading ? (
-        <LoadingSkeleton />
+        <LoadingSkeleton messages={t} />
       ) : error ? (
-        <ErrorState onRetry={() => setRequestNonce((value) => value + 1)} />
+        <ErrorState
+          onRetry={() => setRequestNonce((value) => value + 1)}
+          messages={t}
+        />
       ) : q && items.length === 0 ? (
-        <EmptyState title="No matching care or hospital found">
-          Try a broader term, a nearby city, or browse the procedure catalog. A
-          missing result does not mean the service is unavailable.
+        <EmptyState title={t.searchNoMatchTitle}>
+          {t.searchNoMatchBody}
         </EmptyState>
       ) : (
         <div className="cards">
@@ -121,15 +133,21 @@ function SearchContent() {
                 className="button"
                 href={
                   item.entity_type === "facility"
-                    ? `/hospitals/${item.entity_id}`
+                    ? localePath(locale, `/hospitals/${item.entity_id}`)
                     : item.entity_type === "procedure"
-                      ? `/procedures/${item.metadata.slug}/prices?location=${encodeURIComponent(location)}${payer ? `&payer=${encodeURIComponent(payer)}` : ""}`
-                      : `/procedures?category=${item.metadata.slug}`
+                      ? localePath(
+                          locale,
+                          `/procedures/${item.metadata.slug}/prices?location=${encodeURIComponent(location)}${payer ? `&payer=${encodeURIComponent(payer)}` : ""}`,
+                        )
+                      : localePath(
+                          locale,
+                          `/procedures?category=${item.metadata.slug}`,
+                        )
                 }
               >
                 {item.entity_type === "procedure"
-                  ? "Compare published prices"
-                  : "View details"}
+                  ? t.searchCompareCta
+                  : t.viewDetails}
               </Link>
             </article>
           ))}

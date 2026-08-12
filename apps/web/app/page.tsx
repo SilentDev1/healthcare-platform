@@ -135,23 +135,26 @@ export default async function Home() {
       </section>
       <section className="section compact-trust">
         <div>
-          <p className="eyebrow">Real published data</p>
-          <h2>Prices with sources and limitations attached</h2>
-          <p>
-            Hospital files provide pricing. CMS Care Compare provides applicable
-            quality information. Missing data stays visibly missing.
-          </p>
+          <p className="eyebrow">{t.homeDataEyebrow}</p>
+          <h2>{t.homeDataHeading}</h2>
+          <p>{t.homeDataBody}</p>
         </div>
         <CoverageNotice messages={t}>
           {coverage
-            ? `Published prices are currently available for ${coverage.facilities_with_publishable_prices} of ${coverage.nh_facilities} active hospitals in the launch region, covering ${coverage.publishable_procedures} procedures.`
-            : "Coverage is incomplete and varies by hospital and procedure. Availability is always shown with each result."}
+            ? t.homeCoverageSummary
+                .replace(
+                  "{withPrices}",
+                  String(coverage.facilities_with_publishable_prices),
+                )
+                .replace("{total}", String(coverage.nh_facilities))
+                .replace("{procedures}", String(coverage.publishable_procedures))
+            : t.homeCoverageFallback}
         </CoverageNotice>
         <Link
           className="button secondary"
           href={localePath(locale, "/about-data")}
         >
-          View coverage and methodology
+          {t.homeViewCoverageMethodology}
         </Link>
       </section>
     </>

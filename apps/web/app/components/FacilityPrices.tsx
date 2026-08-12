@@ -3,13 +3,19 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { FacilityProcedureOverviewItem } from "../../lib/api";
+import { localePath, messages as allMessages, type Locale, type Messages } from "../../lib/i18n";
 import { PriceRange, SourceAttribution } from "./ui";
 
 export function FacilityPrices({
   items,
+  messages,
+  locale = "en",
 }: {
   items: FacilityProcedureOverviewItem[];
+  messages?: Messages;
+  locale?: Locale;
 }) {
+  const t = messages ?? allMessages[locale] ?? allMessages.en;
   const [query, setQuery] = useState("");
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -23,18 +29,19 @@ export function FacilityPrices({
   return (
     <>
       <div className="table-search field">
-        <label htmlFor="facility-price-search">
-          Search available procedures
-        </label>
+        <label htmlFor="facility-price-search">{t.fpSearchProcedures}</label>
         <input
           id="facility-price-search"
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="MRI, lab test, location…"
+          placeholder={t.fpSearchPlaceholder}
         />
         <span className="field-help" role="status">
-          {filtered.length} published result{filtered.length === 1 ? "" : "s"}
+          {(filtered.length === 1
+            ? t.fpResultCountOne
+            : t.fpResultCountOther
+          ).replace("{count}", String(filtered.length))}
         </span>
       </div>
       {filtered.length ? (
@@ -42,11 +49,11 @@ export function FacilityPrices({
           <table className="price-table">
             <thead>
               <tr>
-                <th scope="col">Procedure and location</th>
-                <th scope="col">Cash price</th>
-                <th scope="col">Insurance pricing</th>
-                <th scope="col">Setting</th>
-                <th scope="col">Source</th>
+                <th scope="col">{t.fpProcedureAndLocation}</th>
+                <th scope="col">{t.cashPrice}</th>
+                <th scope="col">{t.fpInsurancePricing}</th>
+                <th scope="col">{t.setting}</th>
+                <th scope="col">{t.fpSource}</th>
               </tr>
             </thead>
             <tbody>
@@ -54,39 +61,51 @@ export function FacilityPrices({
                 <tr
                   key={`${price.procedure_slug}-${price.facility_location_id}`}
                 >
-                  <td data-label="Procedure and location">
-                    <Link href={`/procedures/${price.procedure_slug}/prices`}>
+                  <td data-label={t.fpProcedureAndLocation}>
+                    <Link
+                      href={localePath(
+                        locale,
+                        `/procedures/${price.procedure_slug}/prices`,
+                      )}
+                    >
                       {price.procedure_name}
                     </Link>
                     <small>
                       {price.location_name ??
                         price.city ??
-                        "Location not labeled"}
+                        t.fpLocationNotLabeled}
                     </small>
                   </td>
-                  <td data-label="Cash price">
+                  <td data-label={t.cashPrice}>
                     <PriceRange
                       min={price.cash_price_min}
                       max={price.cash_price_max}
+                      messages={t}
                     />
                   </td>
-                  <td data-label="Insurance pricing">
+                  <td data-label={t.fpInsurancePricing}>
                     {price.negotiated_price_min !== null ? (
-                      <Link href={`/procedures/${price.procedure_slug}/prices`}>
-                        Published rates available — choose a payer
+                      <Link
+                        href={localePath(
+                          locale,
+                          `/procedures/${price.procedure_slug}/prices`,
+                        )}
+                      >
+                        {t.fpRatesAvailableChoosePayer}
                       </Link>
                     ) : (
-                      "No normalized payer rates published"
+                      t.fpNoNormalizedRates
                     )}
                   </td>
-                  <td data-label="Setting">
+                  <td data-label={t.setting}>
                     {price.service_settings.join(", ").replaceAll("_", " ")}
                   </td>
-                  <td data-label="Source">
+                  <td data-label={t.fpSource}>
                     <SourceAttribution
                       updated={price.latest_updated}
                       url={price.source_url}
                       showLink={false}
+                      messages={t}
                     />
                   </td>
                 </tr>
@@ -95,9 +114,7 @@ export function FacilityPrices({
           </table>
         </div>
       ) : (
-        <p className="inline-empty">
-          No published procedures match this search.
-        </p>
+        <p className="inline-empty">{t.fpNoProceduresMatch}</p>
       )}
     </>
   );

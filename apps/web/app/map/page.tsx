@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import type { MapData, MapFeature } from "../../lib/api";
 import { EmptyState, LoadingSkeleton } from "../components/ui";
 import { launchRegion } from "../../lib/brand";
+import { localePath, messages } from "../../lib/i18n";
+import { useLocale } from "../components/useLocale";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
@@ -31,13 +33,14 @@ const STATUS_COLORS: Record<string, string> = {
   pricing_not_available_yet: "#868e96",
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  pricing_available: "Pricing available",
-  limited_pricing: "Limited pricing",
-  pricing_not_available_yet: "Pricing data not available yet",
-};
-
 export default function MapPage() {
+  const locale = useLocale();
+  const t = messages[locale] ?? messages.en;
+  const statusLabels: Record<string, string> = {
+    pricing_available: t.mapPricingAvailable,
+    limited_pricing: t.mapLimitedPricing,
+    pricing_not_available_yet: t.mapNotAvailableYet,
+  };
   const [data, setData] = useState<MapFeature[]>([]);
   const [filter, setFilter] = useState("");
   const [error, setError] = useState("");
@@ -57,82 +60,78 @@ export default function MapPage() {
         setData(json.features);
         setLoaded(true);
       })
-      .catch(() => setError("Unable to load map data."));
-  }, [filter]);
+      .catch(() => setError(t.mapUnableToLoad));
+  }, [filter, t.mapUnableToLoad]);
 
   return (
     <main style={{ maxWidth: "100%", padding: "1.5rem" }}>
-      <p className="eyebrow">Explore by location</p>
-      <h1 style={{ fontSize: "2.5rem" }}>Hospital map</h1>
-      <p>
-        Only facilities with published coordinates appear as markers. All
-        facilities remain available in the hospital directory.
-      </p>
+      <p className="eyebrow">{t.mapExploreByLocation}</p>
+      <h1 style={{ fontSize: "2.5rem" }}>{t.mapTitle}</h1>
+      <p>{t.mapIntro}</p>
       <div style={{ marginBottom: "1rem", display: "flex", gap: "0.5rem" }}>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          aria-label="Filter by pricing availability"
+          aria-label={t.mapFilterAria}
           style={{
             padding: "0.5rem",
             border: "1px solid #9fb3ae",
             borderRadius: "0.5rem",
           }}
         >
-          <option value="">All hospitals</option>
-          <option value="pricing_available">Pricing available</option>
-          <option value="limited_pricing">Limited pricing</option>
+          <option value="">{t.availabilityAll}</option>
+          <option value="pricing_available">{t.mapPricingAvailable}</option>
+          <option value="limited_pricing">{t.mapLimitedPricing}</option>
           <option value="pricing_not_available_yet">
-            Pricing data not available yet
+            {t.mapNotAvailableYet}
           </option>
         </select>
         <span
           style={{ fontSize: "0.85rem", color: "#526862", alignSelf: "center" }}
         >
-          <span style={{ color: "#087f5b" }}>●</span> Available{" "}
-          <span style={{ color: "#e67700" }}>●</span> Limited{" "}
-          <span style={{ color: "#868e96" }}>●</span> Not available yet
+          <span style={{ color: "#087f5b" }}>●</span> {t.mapLegendAvailable}{" "}
+          <span style={{ color: "#e67700" }}>●</span> {t.mapLegendLimited}{" "}
+          <span style={{ color: "#868e96" }}>●</span> {t.mapLegendNotYet}
         </span>
         <div
           className="mobile-only"
           role="group"
-          aria-label="Choose map or list view"
+          aria-label={t.mapViewGroupAria}
         >
           <button
             className={`button ${view === "list" ? "" : "secondary"}`}
             onClick={() => setView("list")}
           >
-            List
+            {t.mapListView}
           </button>
           <button
             className={`button ${view === "map" ? "" : "secondary"}`}
             onClick={() => setView("map")}
           >
-            Map
+            {t.mapMapView}
           </button>
         </div>
       </div>
       {error && <p className="error">{error}</p>}
-      {!loaded && !error && <LoadingSkeleton />}
+      {!loaded && !error && <LoadingSkeleton messages={t} />}
       {loaded && data.length === 0 && (
-        <EmptyState title="No mapped hospitals match this filter">
-          Try another price-availability filter. Hospitals without coordinates
-          remain available in the directory.
-        </EmptyState>
+        <EmptyState title={t.mapNoMatchTitle}>{t.mapNoMatchBody}</EmptyState>
       )}
       {loaded && data.length > 0 && (
         <div className="map-shell">
           <section
             className={`map-list ${view === "map" ? "desktop-only" : ""}`}
-            aria-label="Mapped hospitals"
+            aria-label={t.mapMappedHospitalsAria}
           >
-            <strong>{data.length} mapped hospitals</strong>
+            <strong>
+              {t.mapMappedHospitalsCount.replace("{count}", String(data.length))}
+            </strong>
             <div className="result-list" style={{ marginTop: "1rem" }}>
               {data.map((feature) => (
                 <article className="card" key={feature.properties.id}>
                   <span className="badge neutral">
-                    {STATUS_LABELS[feature.properties.pricing_status] ??
-                      "Pricing status unavailable"}
+                    {statusLabels[feature.properties.pricing_status] ??
+                      t.mapPricingStatusUnavailable}
                   </span>
                   <h2>
                     {feature.properties.location_name ??
@@ -143,13 +142,19 @@ export default function MapPage() {
                   )}
                   <p>
                     {feature.properties.city} ·{" "}
-                    {feature.properties.procedure_count} published procedures
+                    {t.mapPublishedProceduresCount.replace(
+                      "{count}",
+                      String(feature.properties.procedure_count),
+                    )}
                   </p>
                   <Link
                     className="button secondary"
-                    href={`/hospitals/${feature.properties.facility_id}`}
+                    href={localePath(
+                      locale,
+                      `/hospitals/${feature.properties.facility_id}`,
+                    )}
                   >
-                    View details
+                    {t.viewDetails}
                   </Link>
                 </article>
               ))}
@@ -193,10 +198,18 @@ export default function MapPage() {
                     <br />
                     {feature.properties.city}
                     <br />
-                    {feature.properties.procedure_count} procedures
+                    {t.mapProceduresCount.replace(
+                      "{count}",
+                      String(feature.properties.procedure_count),
+                    )}
                     <br />
-                    <Link href={`/hospitals/${feature.properties.facility_id}`}>
-                      View details →
+                    <Link
+                      href={localePath(
+                        locale,
+                        `/hospitals/${feature.properties.facility_id}`,
+                      )}
+                    >
+                      {t.viewDetails} →
                     </Link>
                   </Popup>
                 </CircleMarker>

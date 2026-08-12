@@ -1,34 +1,36 @@
 "use client";
 
 import { useState } from "react";
+import { messages, type Locale } from "../../lib/i18n";
 
-export function ShareComparison() {
+export function ShareComparison({ locale = "en" }: { locale?: Locale }) {
+  const t = messages[locale] ?? messages.en;
   const [status, setStatus] = useState("");
 
   async function share() {
     const data = {
-      title: "Carevero hospital price comparison",
-      text: "Compare published hospital prices and CMS quality information on Carevero.",
+      title: t.shareTitle,
+      text: t.shareText,
       url: window.location.href,
     };
     try {
       if (navigator.share) {
         await navigator.share(data);
-        setStatus("Comparison shared.");
+        setStatus(t.shareShared);
       } else {
         await navigator.clipboard.writeText(data.url);
-        setStatus("Comparison link copied.");
+        setStatus(t.shareCopied);
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
-      setStatus("Unable to share. Copy the address from your browser.");
+      setStatus(t.shareFailed);
     }
   }
 
   return (
     <div className="share-action">
       <button className="button secondary" type="button" onClick={share}>
-        Share comparison
+        {t.shareComparison}
       </button>
       <span className="field-help" role="status" aria-live="polite">
         {status}

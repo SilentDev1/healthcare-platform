@@ -1,23 +1,27 @@
 import Link from "next/link";
+import { localePath } from "../lib/i18n";
+import { requestLocale, requestMessages } from "../lib/i18n-server";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const locale = await requestLocale();
+  const t = await requestMessages();
   return (
     <main className="narrow state-page">
-      <p className="eyebrow">Page not found</p>
-      <h1>We couldn’t find that Carevero page</h1>
-      <p>
-        The link may be outdated. Search for care or browse the current hospital
-        and procedure directories.
-      </p>
+      <p className="eyebrow">{t.nfPageNotFound}</p>
+      <h1>{t.nfTitle}</h1>
+      <p>{t.nfBody}</p>
       <div className="card-actions">
-        <Link className="button" href="/search">
-          Search Carevero
+        <Link className="button" href={localePath(locale, "/search")}>
+          {t.nfSearchCta}
         </Link>
-        <Link className="button secondary" href="/hospitals">
-          Browse hospitals
+        <Link className="button secondary" href={localePath(locale, "/hospitals")}>
+          {t.nfBrowseHospitals}
         </Link>
-        <Link className="button secondary" href="/procedures">
-          Browse procedures
+        <Link
+          className="button secondary"
+          href={localePath(locale, "/procedures")}
+        >
+          {t.nfBrowseProcedures}
         </Link>
       </div>
     </main>

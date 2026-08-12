@@ -330,7 +330,7 @@ export default async function ProcedurePrices({
             <button className="button secondary">{messages.apply}</button>
           </form>
         </div>
-        <FilterPanel>{filterForm}</FilterPanel>
+        <FilterPanel messages={messages}>{filterForm}</FilterPanel>
         <div className="marketplace-results-layout">
           <section
             className="result-list"

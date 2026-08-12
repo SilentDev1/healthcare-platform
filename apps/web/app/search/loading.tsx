@@ -1,7 +1,10 @@
-export default function Loading() {
+import { requestMessages } from "../../lib/i18n-server";
+
+export default async function Loading() {
+  const t = await requestMessages();
   return (
     <main>
-      <p>Searching…</p>
+      <p>{t.loadingSearch}</p>
     </main>
   );
 }

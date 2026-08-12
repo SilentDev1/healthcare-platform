@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { apiGet, Procedure } from "../../lib/api";
+import { localePath } from "../../lib/i18n";
+import { requestLocale, requestMessages } from "../../lib/i18n-server";
 
 export const metadata: Metadata = {
   title: "Procedures",
@@ -14,6 +16,8 @@ export default async function Procedures({
 }: {
   searchParams: Promise<{ category?: string }>;
 }) {
+  const locale = await requestLocale();
+  const t = await requestMessages();
   const category = (await searchParams).category;
   const suffix = category
     ? `?category=${encodeURIComponent(category)}&page_size=100`
@@ -24,32 +28,29 @@ export default async function Procedures({
     );
     return (
       <main>
-        <nav className="breadcrumbs" aria-label="Breadcrumb">
-          <Link href="/">Home</Link>
+        <nav className="breadcrumbs" aria-label={t.breadcrumb}>
+          <Link href={localePath(locale, "/")}>{t.home}</Link>
           <span>/</span>
-          <span>Procedures</span>
+          <span>{t.procedures}</span>
         </nav>
-        <p className="eyebrow">Care catalog</p>
-        <h1>Explore common healthcare services</h1>
-        <p className="lede">
-          Plain-language guidance and published price comparisons—without
-          requiring medical billing codes.
-        </p>
+        <p className="eyebrow">{t.procDirEyebrow}</p>
+        <h1>{t.procDirTitle}</h1>
+        <p className="lede">{t.procDirLede}</p>
         <div className="cards">
           {page.items.map((item) => (
             <article className="card" key={item.id}>
               <span className="badge neutral">{item.category.name}</span>
               <h2>
-                <Link href={`/procedures/${item.slug}`}>
+                <Link href={localePath(locale, `/procedures/${item.slug}`)}>
                   {item.consumer_name}
                 </Link>
               </h2>
               <p>{item.short_description}</p>
               <Link
                 className="button secondary"
-                href={`/procedures/${item.slug}/prices`}
+                href={localePath(locale, `/procedures/${item.slug}/prices`)}
               >
-                Compare prices
+                {t.comparePrices}
               </Link>
             </article>
           ))}
@@ -59,8 +60,8 @@ export default async function Procedures({
   } catch {
     return (
       <main>
-        <h1>Procedures</h1>
-        <p className="error">Procedure data is unavailable.</p>
+        <h1>{t.procedures}</h1>
+        <p className="error">{t.procDirUnavailable}</p>
       </main>
     );
   }

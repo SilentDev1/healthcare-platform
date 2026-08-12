@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { localePath } from "../../lib/i18n";
+import { requestLocale, requestMessages } from "../../lib/i18n-server";
 
 export const metadata: Metadata = {
   title: "How it works",
@@ -8,41 +10,35 @@ export const metadata: Metadata = {
   alternates: { canonical: "/how-it-works" },
 };
 
-export default function HowItWorksPage() {
+export default async function HowItWorksPage() {
+  const locale = await requestLocale();
+  const t = await requestMessages();
   return (
     <main className="narrow">
-      <nav className="breadcrumbs" aria-label="Breadcrumb">
-        <Link href="/">Home</Link>
+      <nav className="breadcrumbs" aria-label={t.breadcrumb}>
+        <Link href={localePath(locale, "/")}>{t.home}</Link>
         <span>/</span>
-        <span>How it works</span>
+        <span>{t.howItWorks}</span>
       </nav>
-      <p className="eyebrow">Simple, anonymous comparison</p>
-      <h1>How Carevero works</h1>
-      <p className="lede">
-        Search and compare without an account. You do not need medical billing
-        codes.
-      </p>
+      <p className="eyebrow">{t.hiwEyebrow}</p>
+      <h1>{t.hiwTitle}</h1>
+      <p className="lede">{t.hiwLede}</p>
       <ol className="process-list">
         <li>
-          <strong>Search for care.</strong> Use a familiar term such as “knee
-          MRI,” plus an optional city, ZIP, or payer.
+          <strong>{t.hiwStep1Title}</strong> {t.hiwStep1Body}
         </li>
         <li>
-          <strong>Review service locations.</strong> Compare published cash and
-          negotiated prices, CMS ratings, and coverage gaps.
+          <strong>{t.hiwStep2Title}</strong> {t.hiwStep2Body}
         </li>
         <li>
-          <strong>Compare like with like.</strong> Choose two or three physical
-          locations for the same procedure.
+          <strong>{t.hiwStep3Title}</strong> {t.hiwStep3Body}
         </li>
         <li>
-          <strong>Verify before care.</strong> Contact the hospital and insurer
-          to confirm network status, benefits, and what may be billed
-          separately.
+          <strong>{t.hiwStep4Title}</strong> {t.hiwStep4Body}
         </li>
       </ol>
-      <Link className="button" href="/search">
-        Search Carevero
+      <Link className="button" href={localePath(locale, "/search")}>
+        {t.hiwSearchCta}
       </Link>
     </main>
   );

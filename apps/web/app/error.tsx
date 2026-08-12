@@ -1,21 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { localePath, messages } from "../lib/i18n";
+import { useLocale } from "./components/useLocale";
 
 export default function GlobalError({ reset }: { reset: () => void }) {
+  const locale = useLocale();
+  const t = messages[locale] ?? messages.en;
   return (
     <main className="narrow state-page">
-      <p className="eyebrow">Temporary problem</p>
-      <h1>Carevero couldn’t load this page</h1>
-      <p>
-        No prices have been estimated or filled in. Try again or start over.
-      </p>
+      <p className="eyebrow">{t.errTemporaryProblem}</p>
+      <h1>{t.errCouldntLoadPage}</h1>
+      <p>{t.errNoPricesEstimated}</p>
       <div className="card-actions">
         <button className="button" type="button" onClick={reset}>
-          Try again
+          {t.tryAgain}
         </button>
-        <Link className="button secondary" href="/">
-          Return home
+        <Link className="button secondary" href={localePath(locale, "/")}>
+          {t.errReturnHome}
         </Link>
       </div>
     </main>

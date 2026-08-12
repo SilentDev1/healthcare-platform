@@ -13,6 +13,8 @@ import {
 } from "../components/ui";
 import { launchRegion } from "../../lib/brand";
 import { ShareComparison } from "../components/ShareComparison";
+import { localePath } from "../../lib/i18n";
+import { requestLocale, requestMessages } from "../../lib/i18n-server";
 
 export const metadata: Metadata = {
   title: "Compare hospital prices",
@@ -29,6 +31,8 @@ export default async function ComparePage({
     plan?: string;
   }>;
 }) {
+  const locale = await requestLocale();
+  const t = await requestMessages();
   const values = await searchParams;
   const procedure = values.procedure ?? "";
   const payer = values.payer ?? "";
@@ -37,14 +41,11 @@ export default async function ComparePage({
   if (!procedure || selected.length < 2) {
     return (
       <main className="narrow">
-        <p className="eyebrow">Side-by-side comparison</p>
-        <h1>Choose two or three service locations</h1>
-        <p className="lede">
-          Start from a procedure price page so every price in the comparison
-          refers to the same service.
-        </p>
-        <Link className="button" href="/procedures">
-          Find a procedure
+        <p className="eyebrow">{t.cmpSideBySide}</p>
+        <h1>{t.cmpChooseTwoOrThreeTitle}</h1>
+        <p className="lede">{t.cmpStartFromProcedure}</p>
+        <Link className="button" href={localePath(locale, "/procedures")}>
+          {t.cmpFindProcedure}
         </Link>
       </main>
     );
@@ -75,9 +76,9 @@ export default async function ComparePage({
   } catch {
     return (
       <main>
-        <h1>Comparison unavailable</h1>
+        <h1>{t.cmpUnavailableTitle}</h1>
         <p className="error" role="alert">
-          We couldn’t load these published prices right now.
+          {t.cmpUnavailableBody}
         </p>
       </main>
     );
@@ -94,10 +95,13 @@ export default async function ComparePage({
   if (items.length < 2) {
     return (
       <main className="narrow">
-        <h1>Comparison selections expired</h1>
-        <p>Select the hospitals again from the procedure results page.</p>
-        <Link className="button" href={`/procedures/${procedure}/prices`}>
-          Return to results
+        <h1>{t.cmpSelectionsExpiredTitle}</h1>
+        <p>{t.cmpSelectionsExpiredBody}</p>
+        <Link
+          className="button"
+          href={localePath(locale, `/procedures/${procedure}/prices`)}
+        >
+          {t.cmpReturnToResults}
         </Link>
       </main>
     );
@@ -123,42 +127,44 @@ export default async function ComparePage({
   );
   return (
     <main>
-      <nav className="breadcrumbs" aria-label="Breadcrumb">
-        <Link href="/">Home</Link>
+      <nav className="breadcrumbs" aria-label={t.breadcrumb}>
+        <Link href={localePath(locale, "/")}>{t.home}</Link>
         <span>/</span>
-        <Link href={`/procedures/${procedure}/prices`}>
+        <Link href={localePath(locale, `/procedures/${procedure}/prices`)}>
           {data.procedure_name}
         </Link>
         <span>/</span>
-        <span>Compare</span>
+        <span>{t.cmpBreadcrumbCompare}</span>
       </nav>
-      <p className="eyebrow">Side-by-side comparison</p>
-      <h1>Compare {data.procedure_name}</h1>
-      <p className="lede">
-        Review published differences without treating price or a single quality
-        measure as a “best hospital” ranking.
-      </p>
-      <ShareComparison />
+      <p className="eyebrow">{t.cmpSideBySide}</p>
+      <h1>{t.cmpCompareProcedure.replace("{procedure}", data.procedure_name)}</h1>
+      <p className="lede">{t.cmpLede}</p>
+      <ShareComparison locale={locale} />
       <div className="comparison-key" role="note">
-        <strong>Negotiated-price context:</strong>{" "}
+        <strong>{t.cmpNegotiatedContextLabel}</strong>{" "}
         {payer
-          ? `Only rates published for ${payerName}${planName ? ` · ${planName}` : ""} are included.`
-          : "No insurance is selected; payer availability is shown without promoting a global range."}{" "}
-        This does not guarantee network participation or coverage.
+          ? t.cmpOnlyRatesFor.replace(
+              "{payer}",
+              `${payerName}${planName ? ` · ${planName}` : ""}`,
+            )
+          : t.cmpNoInsuranceSelected}{" "}
+        {t.cmpDoesNotGuarantee}
       </div>
       <div className="table-wrap compare-wrap">
         <table className="compare-table">
           <thead>
             <tr>
-              <th>Measure</th>
+              <th>{t.cmpMeasure}</th>
               {items.map((item) => (
                 <th scope="col" key={item.facility_location_id}>
                   <span className="compare-location-name">
                     {item.location_name ?? item.facility_name}
                   </span>
                   {item.location_name && <small>{item.facility_name}</small>}
-                  <Link href={`/hospitals/${item.facility_id}`}>
-                    View details
+                  <Link
+                    href={localePath(locale, `/hospitals/${item.facility_id}`)}
+                  >
+                    {t.viewDetails}
                   </Link>
                 </th>
               ))}
@@ -166,17 +172,18 @@ export default async function ComparePage({
           </thead>
           <tbody>
             {row(
-              "Location",
+              t.location,
               (item) => `${item.city}, ${item.state} ${item.postal_code}`,
             )}
-            {row("CMS overall rating", (item) => (
-              <QualityRating value={item.cms_overall_rating} />
+            {row(t.cmpRowCmsOverall, (item) => (
+              <QualityRating value={item.cms_overall_rating} messages={t} />
             ))}
-            {row("Published cash price", (item) => (
+            {row(t.publishedCashPrice, (item) => (
               <>
                 <PriceRange
                   min={item.cash_price_min}
                   max={item.cash_price_max}
+                  messages={t}
                 />
                 {item.cash_price_explanation && (
                   <small>{item.cash_price_explanation}</small>
@@ -184,62 +191,75 @@ export default async function ComparePage({
               </>
             ))}
             {row(
-              payer
-                ? "Published matching negotiated rates"
-                : "Published insurance rates",
+              payer ? t.matchingRates : t.cmpPublishedInsuranceRates,
               (item) =>
                 payer ? (
                   <>
                     <PriceRange
                       min={item.negotiated_price_min}
                       max={item.negotiated_price_max}
+                      messages={t}
                     />
                     <small>
-                      {item.matching_negotiated_rate_count ?? 0} matching
-                      records
+                      {t.cmpMatchingRecords.replace(
+                        "{count}",
+                        String(item.matching_negotiated_rate_count ?? 0),
+                      )}
                     </small>
                   </>
                 ) : item.distinct_payer_count ? (
-                  `${item.distinct_payer_count} payers publish negotiated rates`
+                  t.cmpPayersPublish.replace(
+                    "{count}",
+                    String(item.distinct_payer_count),
+                  )
                 ) : (
-                  "No normalized payer rates published"
+                  t.cmpNoNormalizedPayerRates
                 ),
             )}
-            {row("Service setting", (item) =>
+            {row(t.serviceSetting, (item) =>
               item.service_settings.length
                 ? item.service_settings.join(", ").replaceAll("_", " ")
-                : "Not available",
+                : t.notAvailable,
             )}
-            {row("Facility type", (item) => item.facility_type ?? "Not listed")}
-            {row("Price coverage", (item) =>
+            {row(t.facilityType, (item) => item.facility_type ?? t.cmpNotListed)}
+            {row(t.cmpPriceCoverage, (item) =>
               item.price_available
-                ? `${item.summary_count} publishable rate summaries`
-                : "Price not currently available",
+                ? t.cmpSummaries.replace(
+                    "{count}",
+                    String(item.summary_count),
+                  )
+                : t.priceNotAvailable,
             )}
-            {row("Quality measures", (item) => (
-              <Link href={`/hospitals/${item.facility_id}#quality`}>
-                Review CMS measures
+            {row(t.cmpQualityMeasuresRow, (item) => (
+              <Link
+                href={localePath(
+                  locale,
+                  `/hospitals/${item.facility_id}#quality`,
+                )}
+              >
+                {t.cmpReviewCmsMeasures}
               </Link>
             ))}
-            {row("Source and freshness", (item) =>
+            {row(t.cmpSourceAndFreshness, (item) =>
               item.price_available ? (
                 <SourceAttribution
                   updated={item.latest_updated ?? undefined}
                   url={item.source_url ?? undefined}
+                  messages={t}
                 />
               ) : (
-                "No publishable source for this procedure"
+                t.cmpNoPublishableSource
               ),
             )}
-            {row("Important notes", (item) =>
+            {row(t.cmpImportantNotes, (item) =>
               item.price_available
-                ? "Published hospital rate; separately billed services may apply."
-                : "The hospital may offer this service even though no price is publishable.",
+                ? t.cmpPublishedRateNote
+                : t.cmpMayOfferNote,
             )}
           </tbody>
         </table>
       </div>
-      <PricingDisclaimer />
+      <PricingDisclaimer messages={t} />
     </main>
   );
 }

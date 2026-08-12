@@ -9,6 +9,8 @@ import {
   SourceAttribution,
 } from "../../components/ui";
 import { launchRegion } from "../../../lib/brand";
+import { localePath } from "../../../lib/i18n";
+import { requestLocale, requestMessages } from "../../../lib/i18n-server";
 
 export async function generateMetadata({
   params,
@@ -36,6 +38,8 @@ export default async function ProcedureDetail({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const locale = await requestLocale();
+  const t = await requestMessages();
   let item: Procedure;
   let comparison: ProcedureComparison | null = null;
   try {
@@ -73,10 +77,10 @@ export default async function ProcedureDetail({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <nav className="breadcrumbs" aria-label="Breadcrumb">
-        <Link href="/">Home</Link>
+      <nav className="breadcrumbs" aria-label={t.breadcrumb}>
+        <Link href={localePath(locale, "/")}>{t.home}</Link>
         <span>/</span>
-        <Link href="/procedures">Procedures</Link>
+        <Link href={localePath(locale, "/procedures")}>{t.procedures}</Link>
         <span>/</span>
         <span>{item.consumer_name}</span>
       </nav>
@@ -85,19 +89,16 @@ export default async function ProcedureDetail({
       <p className="lede">{item.long_description}</p>
       <div className="feature-grid">
         <section className="card">
-          <h2>Typical setting</h2>
+          <h2>{t.procTypicalSetting}</h2>
           <p>{item.service_setting.replaceAll("_", " ")}</p>
         </section>
         <section className="card">
-          <h2>What the price may include</h2>
+          <h2>{t.procWhatIncluded}</h2>
           <p>{item.billing_notice}</p>
         </section>
         <section className="card">
-          <h2>What may be separate</h2>
-          <p>
-            Professional fees, anesthesia, pathology, labs, medications,
-            implants, or related services can be billed separately.
-          </p>
+          <h2>{t.procWhatSeparate}</h2>
+          <p>{t.procWhatSeparateBody}</p>
         </section>
       </div>
       <section
@@ -105,14 +106,14 @@ export default async function ProcedureDetail({
         aria-labelledby="price-overview-heading"
       >
         <div className="section-heading">
-          <p className="eyebrow">Price overview</p>
+          <p className="eyebrow">{t.procPriceOverview}</p>
           <h2 id="price-overview-heading">
-            Published ranges in {launchRegion.name}
+            {t.procPublishedRangesIn.replace("{region}", launchRegion.name)}
           </h2>
         </div>
         <div className="price-overview-grid">
           <article>
-            <span>Published cash range across listed settings</span>
+            <span>{t.procCashRangeLabel}</span>
             <strong>
               <PriceRange
                 min={
@@ -125,58 +126,53 @@ export default async function ProcedureDetail({
                     ? String(Math.max(...cashMaxes.map(Number)))
                     : null
                 }
+                messages={t}
               />
             </strong>
           </article>
           <article>
-            <span>Locations with published insurance rates</span>
+            <span>{t.procLocationsWithInsurance}</span>
             <strong>{locationsWithInsuranceRates}</strong>
-            <small>
-              Choose a payer in comparison results to see matching rates.
-            </small>
+            <small>{t.procChoosePayerHint}</small>
           </article>
           <article>
-            <span>Hospitals with prices</span>
+            <span>{t.procHospitalsWithPrices}</span>
             <strong>{comparison?.facilities_with_prices ?? 0}</strong>
           </article>
         </div>
-        <p className="field-help">
-          The cash range can combine different service settings. Use the
-          comparison filters to review like-for-like settings and select payer
-          context.
-        </p>
+        <p className="field-help">{t.procCashRangeNote}</p>
       </section>
       <section className="section" style={{ paddingInline: 0 }}>
         <div className="section-heading">
-          <p className="eyebrow">Nearby comparisons</p>
-          <h2>Published price availability</h2>
+          <p className="eyebrow">{t.procNearbyComparisons}</p>
+          <h2>{t.procPublishedAvailability}</h2>
         </div>
-        <CoverageNotice>
-          This procedure currently has published prices from{" "}
-          {comparison?.facilities_with_prices ?? 0} of{" "}
-          {comparison?.active_facilities ?? "the"} active hospitals in the
-          launch region. Hospitals without a publishable price remain visible in
-          comparison results.
+        <CoverageNotice messages={t}>
+          {t.procAvailabilityNotice
+            .replace(
+              "{withPrices}",
+              String(comparison?.facilities_with_prices ?? 0),
+            )
+            .replace("{active}", String(comparison?.active_facilities ?? 0))}
         </CoverageNotice>
-        <Link className="button" href={`/procedures/${item.slug}/prices`}>
-          Compare facilities
+        <Link
+          className="button"
+          href={localePath(locale, `/procedures/${item.slug}/prices`)}
+        >
+          {t.procCompareFacilities}
         </Link>
       </section>
       <section className="card">
-        <h2>Quality considerations</h2>
+        <h2>{t.procQualityConsiderations}</h2>
+        <p>{t.procQualityConsiderationsBody}</p>
         <p>
-          CMS quality measures can add context, but no single measure determines
-          which facility is right for you. Discuss clinical needs with a
-          qualified healthcare professional.
+          {t.procRelatedTerms}{" "}
+          {item.aliases.join(", ") || t.procNoneListed}
         </p>
-        <p>Related terms: {item.aliases.join(", ") || "None listed"}</p>
       </section>
-      <SourceAttribution quality />
-      <PricingDisclaimer />
-      <p className="muted">
-        This is general educational information, not individualized medical
-        advice.
-      </p>
+      <SourceAttribution quality messages={t} />
+      <PricingDisclaimer messages={t} />
+      <p className="muted">{t.procEducationalNote}</p>
     </main>
   );
 }

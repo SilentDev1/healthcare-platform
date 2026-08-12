@@ -16,6 +16,8 @@ import {
   SourceAttribution,
 } from "../../components/ui";
 import { FacilityPrices } from "../../components/FacilityPrices";
+import { localePath } from "../../../lib/i18n";
+import { requestLocale, requestMessages } from "../../../lib/i18n-server";
 
 export async function generateMetadata({
   params,
@@ -41,6 +43,8 @@ export default async function FacilityPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const locale = await requestLocale();
+  const t = await requestMessages();
   try {
     const [facility, quality, prices] = await Promise.all([
       apiGet<Facility>(`/api/v1/facilities/${id}`),
@@ -88,39 +92,41 @@ export default async function FacilityPage({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
-        <nav className="breadcrumbs">
-          <Link href="/">Home</Link>
+        <nav className="breadcrumbs" aria-label={t.breadcrumb}>
+          <Link href={localePath(locale, "/")}>{t.home}</Link>
           <span>/</span>
-          <Link href="/hospitals">Hospitals</Link>
+          <Link href={localePath(locale, "/hospitals")}>{t.hospitals}</Link>
           <span>/</span>
           <span>{facility.display_name}</span>
         </nav>
         <div className="page-heading">
-          <p className="eyebrow">{facility.facility_type ?? "Hospital"}</p>
+          <p className="eyebrow">
+            {facility.facility_type ?? t.facilityTypeHospital}
+          </p>
           <h1>{facility.display_name}</h1>
           <p className="lede">
             {location
               ? `${location.city}, ${location.state}`
-              : "Location not published"}{" "}
-            · <QualityRating value={overall?.score} />
+              : t.hospLocationNotPublished}{" "}
+            · <QualityRating value={overall?.score} messages={t} />
           </p>
         </div>
-        <div className="toolbar" aria-label="Page sections">
+        <div className="toolbar" aria-label={t.hospPageSections}>
           <div className="toolbar-group">
-            <a href="#overview">Overview</a>
-            <a href="#prices">Prices</a>
-            <a href="#quality">Quality</a>
-            <a href="#sources">Data sources</a>
+            <a href="#overview">{t.hospOverviewNav}</a>
+            <a href="#prices">{t.hospPricesNav}</a>
+            <a href="#quality">{t.hospQualityNav}</a>
+            <a href="#sources">{t.hospDataSourcesNav}</a>
           </div>
         </div>
         <section id="overview" className="section" style={{ paddingInline: 0 }}>
           <div className="section-heading">
-            <p className="eyebrow">Overview</p>
-            <h2>Facility information</h2>
+            <p className="eyebrow">{t.hospOverviewNav}</p>
+            <h2>{t.hospFacilityInformation}</h2>
           </div>
           <div className="feature-grid">
             <article className="card">
-              <h3>Service locations</h3>
+              <h3>{t.hospServiceLocations}</h3>
               {facility.locations.length ? (
                 <ul className="plain-list">
                   {facility.locations.map((item) => (
@@ -134,70 +140,66 @@ export default async function FacilityPage({
                   ))}
                 </ul>
               ) : (
-                <p>Not available</p>
+                <p>{t.notAvailable}</p>
               )}
             </article>
             <article className="card">
-              <h3>Contact</h3>
+              <h3>{t.hospContact}</h3>
               <p>
                 {facility.phone ? (
                   <a href={`tel:${facility.phone.replace(/[^\d+]/g, "")}`}>
-                    Call {facility.phone}
+                    {t.hospCall.replace("{phone}", facility.phone)}
                   </a>
                 ) : (
-                  "Phone not available"
+                  t.hospPhoneNotAvailable
                 )}
               </p>
               {facility.website_url && (
                 <a href={facility.website_url} target="_blank" rel="noreferrer">
-                  Visit official facility website (external)
+                  {t.hospVisitWebsite}
                 </a>
               )}
             </article>
             <article className="card">
-              <h3>Facility details</h3>
+              <h3>{t.hospFacilityDetails}</h3>
               <p>
-                {facility.facility_type ?? "Type not listed"}
+                {facility.facility_type ?? t.hospTypeNotListed}
                 <br />
-                {facility.ownership_type ?? "Ownership not listed"}
+                {facility.ownership_type ?? t.hospOwnershipNotListed}
               </p>
             </article>
           </div>
         </section>
         <section id="prices" className="section" style={{ paddingInline: 0 }}>
           <div className="section-heading">
-            <p className="eyebrow">Published prices</p>
-            <h2>Available procedures</h2>
+            <p className="eyebrow">{t.hospPublishedPrices}</p>
+            <h2>{t.hospAvailableProcedures}</h2>
           </div>
           {prices.items.length ? (
             <>
-              <CoverageNotice>
-                Published pricing is currently available for{" "}
-                {prices.procedure_count} procedure
-                {prices.procedure_count === 1 ? "" : "s"} at this facility.
+              <CoverageNotice messages={t}>
+                {(prices.procedure_count === 1
+                  ? t.hospPricingCountOne
+                  : t.hospPricingCountOther
+                ).replace("{count}", String(prices.procedure_count))}
               </CoverageNotice>
-              <FacilityPrices items={prices.items} />
+              <FacilityPrices items={prices.items} messages={t} locale={locale} />
             </>
           ) : (
-            <EmptyState title="Pricing data is not currently available for this facility">
-              Hospital transparency data may still be processing or may not meet
-              publication safety rules. The facility remains listed so the
-              coverage gap is visible.
+            <EmptyState title={t.hospNoPricingTitle}>
+              {t.hospNoPricingBody}
             </EmptyState>
           )}
         </section>
         <section id="quality" className="section" style={{ paddingInline: 0 }}>
           <div className="section-heading">
-            <p className="eyebrow">CMS quality</p>
-            <h2>Quality measures</h2>
-            <p>
-              These measures provide context and should not be interpreted as a
-              complete judgment of care.
-            </p>
+            <p className="eyebrow">{t.hospCmsQuality}</p>
+            <h2>{t.hospQualityMeasures}</h2>
+            <p>{t.hospQualityMeasuresIntro}</p>
           </div>
           <article className="rating">
-            <h3>Overall rating</h3>
-            <QualityRating value={overall?.score} />
+            <h3>{t.hospOverallRating}</h3>
+            <QualityRating value={overall?.score} messages={t} />
           </article>
           {quality.items.length ? (
             <div className="cards">
@@ -208,7 +210,7 @@ export default async function FacilityPage({
                     {values?.slice(0, 5).map((q) => (
                       <li key={q.id}>
                         <span>{q.measure_name}</span>
-                        <strong>{q.score ?? "Not available"}</strong>
+                        <strong>{q.score ?? t.notAvailable}</strong>
                       </li>
                     ))}
                   </ul>
@@ -216,19 +218,20 @@ export default async function FacilityPage({
               ))}
             </div>
           ) : (
-            <EmptyState title="CMS quality measures are unavailable">
-              No quality records are currently available for this facility.
+            <EmptyState title={t.hospNoQualityTitle}>
+              {t.hospNoQualityBody}
             </EmptyState>
           )}
         </section>
         <section id="sources" className="section" style={{ paddingInline: 0 }}>
           <div className="section-heading">
-            <p className="eyebrow">Data sources</p>
-            <h2>Where this information comes from</h2>
+            <p className="eyebrow">{t.hospDataSourcesNav}</p>
+            <h2>{t.hospWhereInfoComesFrom}</h2>
           </div>
           <SourceAttribution
             quality
             updated={overall?.reporting_period_end ?? undefined}
+            messages={t}
           />
           {priceSources.map((source) => (
             <SourceAttribution
@@ -236,19 +239,20 @@ export default async function FacilityPage({
               updated={source.updated}
               url={source.url}
               context={source.context}
+              messages={t}
             />
           ))}
         </section>
-        <PricingDisclaimer />
+        <PricingDisclaimer messages={t} />
       </main>
     );
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) notFound();
     return (
       <main>
-        <h1>Hospital information unavailable</h1>
+        <h1>{t.hospInfoUnavailableTitle}</h1>
         <p className="error" role="alert">
-          We couldn’t load this facility right now.
+          {t.hospInfoUnavailableBody}
         </p>
       </main>
     );
