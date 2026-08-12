@@ -277,9 +277,6 @@ export function ComparisonFacilityCard({
     typeof item.distance_miles === "number"
       ? `${item.distance_miles} ${messages?.milesUnit ?? "miles"}`
       : null;
-  const difference = item.published_price_difference
-    ? Number(item.published_price_difference)
-    : null;
   const detailQuery = new URLSearchParams();
   if (payerName && item.published_payers?.length) {
     const selected = item.published_payers.find(
@@ -310,9 +307,6 @@ export function ComparisonFacilityCard({
               {distanceLabel && (
                 <span className="facility-distance"> · {distanceLabel}</span>
               )}
-            </p>
-            <p className="card-procedure">
-              Comparing: <strong>{procedureName}</strong>
             </p>
           </div>
           {item.price_available ? (
@@ -346,34 +340,30 @@ export function ComparisonFacilityCard({
                   max={item.cash_price_max}
                 />
               </strong>
-              {item.is_lowest_comparable_cash ? (
-                <span className="savings-badge lowest">
-                  {messages?.lowestCashShown ??
-                    "Lowest published cash price shown"}
-                </span>
-              ) : difference && difference > 0 ? (
+              {item.lower_priced_nearby_option ? (
                 <span
-                  className="savings-badge"
+                  className="savings-badge nearby"
                   title={messages?.comparedWithLowest ?? undefined}
                 >
-                  {messages?.priceDifference ?? "Published-price difference"}: +
-                  {moneyWhole(difference)}
-                </span>
-              ) : null}
-              {item.lower_priced_nearby_option && (
-                <small className="nearby-lower">
-                  {messages?.nearbyLower ?? "Nearby lower published cash price"}
-                  : {item.lower_priced_nearby_option.facility_name} · −
+                  <span aria-hidden="true">↓ </span>
                   {moneyWhole(
                     item.lower_priced_nearby_option
                       .published_price_difference ?? 0,
-                  )}
+                  )}{" "}
+                  {messages?.lowerNearbySuffix ??
+                    "lower published price nearby"}{" "}
+                  · {item.lower_priced_nearby_option.facility_name}
                   {typeof item.lower_priced_nearby_option.distance_miles ===
                   "number"
                     ? ` · ${item.lower_priced_nearby_option.distance_miles} ${messages?.milesUnit ?? "miles"}`
                     : ""}
-                </small>
-              )}
+                </span>
+              ) : item.is_lowest_comparable_cash ? (
+                <span className="savings-badge lowest">
+                  {messages?.lowestNearby ??
+                    "Lowest comparable published price nearby"}
+                </span>
+              ) : null}
               {item.additional_published_prices &&
               item.additional_published_prices.length > 0 ? (
                 <details className="component-note">
@@ -434,11 +424,15 @@ export function ComparisonFacilityCard({
                 </>
               ) : (
                 <>
-                  <span>Published negotiated rates available</span>
+                  <span>{messages?.insurancePrices ?? "Insurance prices"}</span>
                   <strong className="payer-availability">
                     {item.distinct_payer_count
-                      ? `${item.distinct_payer_count} payer${item.distinct_payer_count === 1 ? "" : "s"}`
-                      : "No normalized payer rates"}
+                      ? item.distinct_payer_count === 1
+                        ? (messages?.oneCompanyPublishesRates ??
+                          "1 company publishes rates")
+                        : `${item.distinct_payer_count} ${messages?.companiesPublishRates ?? "companies publish rates"}`
+                      : (messages?.noInsurancePrices ??
+                        "No published insurance prices")}
                   </strong>
                   {!!item.published_payers?.length && (
                     <small className="price-context">
@@ -522,7 +516,7 @@ export function ComparisonFacilityCard({
         )}
         <div className="card-actions">
           <Link className="button" href={`/hospitals/${item.facility_id}`}>
-            View details
+            {messages?.viewDetails ?? "View details"}
           </Link>
           <CompareSelect
             facilityId={item.facility_id}

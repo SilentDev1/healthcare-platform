@@ -2867,6 +2867,8 @@ body .comparison-toolbar .sort-form .button {
   overflow-wrap: anywhere;
 }
 .price-context {
+  display: block;
+  margin-top: 0.3rem;
   color: var(--muted);
 }
 .price-detail-link {
@@ -3376,4 +3378,56 @@ body .comparison-toolbar .sort-form .button {
 .component-note ul {
   margin: 0.3rem 0 0;
   padding-left: 1rem;
+}
+
+/* ============================================================
+   Phase 4.8 — compact result cards: side-by-side actions,
+   tighter spacing, and a natural-language nearby-savings badge.
+   ============================================================ */
+.marketplace-results-layout .facility-card.facility-card-media-layout {
+  padding: 0.6rem;
+}
+.marketplace-results-layout .facility-card-media-layout .facility-card-body {
+  gap: 0.3rem;
+}
+.marketplace-results-layout .facility-card-media-layout .card-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: stretch;
+  margin-top: 0.15rem;
+}
+.marketplace-results-layout
+  .facility-card-media-layout
+  .card-actions
+  > .button {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+.marketplace-results-layout
+  .facility-card-media-layout
+  .card-actions
+  .compare-actions {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.marketplace-results-layout
+  .facility-card-media-layout
+  .card-actions
+  .compare-actions
+  .button {
+  width: 100%;
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+.savings-badge.nearby {
+  display: block;
+  margin-top: 0.25rem;
+  color: #0a6b3b;
+  background: #e6f6ec;
+  border-color: #b9e3c8;
+  font-weight: 700;
 }

@@ -61,10 +61,7 @@ describe("consumer pricing components", () => {
       />,
     );
     expect(screen.getByText("$825")).toBeInTheDocument();
-    expect(
-      screen.getByText("MRI brain", { selector: ".card-procedure strong" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("1 payer")).toBeInTheDocument();
+    expect(screen.getByText("1 company publishes rates")).toBeInTheDocument();
     expect(
       screen.queryByText("Your selected insurance"),
     ).not.toBeInTheDocument();
@@ -138,13 +135,15 @@ describe("consumer pricing components", () => {
         procedureSlug="mri-knee"
       />,
     );
-    expect(screen.getByText(/8\.4 miles/)).toBeInTheDocument();
-    expect(screen.getByText(/Published-price difference/)).toBeInTheDocument();
-    expect(screen.getByText(/\+\$236/)).toBeInTheDocument();
+    // Natural-language nearby savings: "↓ $236 lower published price nearby · Lower Hospital · 11.2 miles"
     expect(
-      screen.getByText(/Nearby lower published cash price/),
+      screen.getByText(/lower published price nearby/),
     ).toBeInTheDocument();
+    expect(screen.getByText(/\$236/)).toBeInTheDocument();
     expect(screen.getByText(/Lower Hospital/)).toBeInTheDocument();
+    expect(screen.getByText(/11\.2 miles/)).toBeInTheDocument();
+    // No raw +/- difference badge is shown to consumers.
+    expect(screen.queryByText(/\+\$236/)).not.toBeInTheDocument();
   });
 
   it("labels the lowest comparable cash price and never invents savings for ranges", () => {
@@ -156,7 +155,7 @@ describe("consumer pricing components", () => {
       />,
     );
     expect(
-      screen.getByText("Lowest published cash price shown"),
+      screen.getByText("Lowest comparable published price nearby"),
     ).toBeInTheDocument();
     rerender(
       <ComparisonFacilityCard
@@ -172,10 +171,10 @@ describe("consumer pricing components", () => {
       />,
     );
     expect(
-      screen.queryByText("Lowest published cash price shown"),
+      screen.queryByText("Lowest comparable published price nearby"),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByText(/Published-price difference/),
+      screen.queryByText(/lower published price nearby/),
     ).not.toBeInTheDocument();
   });
 

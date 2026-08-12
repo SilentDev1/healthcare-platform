@@ -84,6 +84,13 @@ const en = {
   searchAnyRates: "Any published rates",
   searchPayerHelp: "Published rates do not confirm coverage or network status.",
   searchButton: "Search prices",
+  insurancePrices: "Insurance prices",
+  companiesPublishRates: "companies publish rates",
+  oneCompanyPublishesRates: "1 company publishes rates",
+  noInsurancePrices: "No published insurance prices",
+  lowerNearbySuffix: "lower published price nearby",
+  lowestNearby: "Lowest comparable published price nearby",
+  viewDetails: "View details",
 };
 
 export type Messages = typeof en;
@@ -169,6 +176,13 @@ export const messages: Record<Locale, Messages> = {
     searchPayerHelp:
       "Las tarifas publicadas no confirman cobertura ni participación en la red.",
     searchButton: "Buscar precios",
+    insurancePrices: "Precios con seguro",
+    companiesPublishRates: "compañías publican tarifas",
+    oneCompanyPublishesRates: "1 compañía publica tarifas",
+    noInsurancePrices: "Sin precios de seguro publicados",
+    lowerNearbySuffix: "menos en precio publicado cerca",
+    lowestNearby: "El precio publicado comparable más bajo cerca",
+    viewDetails: "Ver detalles",
   },
   vi: {
     skip: "Chuyển đến nội dung chính",
@@ -247,6 +261,13 @@ export const messages: Record<Locale, Messages> = {
     searchPayerHelp:
       "Giá đã công bố không xác nhận quyền lợi hay tình trạng trong mạng lưới.",
     searchButton: "Tìm giá",
+    insurancePrices: "Giá có bảo hiểm",
+    companiesPublishRates: "công ty công bố mức giá",
+    oneCompanyPublishesRates: "1 công ty công bố mức giá",
+    noInsurancePrices: "Chưa có giá bảo hiểm công bố",
+    lowerNearbySuffix: "thấp hơn ở gần (giá công bố)",
+    lowestNearby: "Giá công bố có thể so sánh thấp nhất ở gần",
+    viewDetails: "Xem chi tiết",
   },
   "zh-TW": {
     skip: "跳至主要內容",
@@ -320,6 +341,13 @@ export const messages: Record<Locale, Messages> = {
     searchAnyRates: "任何已公布費率",
     searchPayerHelp: "已公布費率不代表承保或網絡資格。",
     searchButton: "查詢價格",
+    insurancePrices: "保險價格",
+    companiesPublishRates: "家公司公布費率",
+    oneCompanyPublishesRates: "1 家公司公布費率",
+    noInsurancePrices: "尚無公布的保險價格",
+    lowerNearbySuffix: "鄰近較低的公布價格",
+    lowestNearby: "鄰近最低的可比較公布價",
+    viewDetails: "查看詳情",
   },
   "zh-CN": {
     skip: "跳至主要内容",
@@ -393,6 +421,13 @@ export const messages: Record<Locale, Messages> = {
     searchAnyRates: "任何已公布费率",
     searchPayerHelp: "已公布费率不代表承保或网络资格。",
     searchButton: "查询价格",
+    insurancePrices: "保险价格",
+    companiesPublishRates: "家公司公布费率",
+    oneCompanyPublishesRates: "1 家公司公布费率",
+    noInsurancePrices: "尚无公布的保险价格",
+    lowerNearbySuffix: "邻近较低的公布价格",
+    lowestNearby: "邻近最低的可比较公布价",
+    viewDetails: "查看详情",
   },
 };
 
