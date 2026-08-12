@@ -426,6 +426,9 @@ class ProcedureComparisonItem(BaseModel):
     cash_price_value_count: int = 0
     cash_price_record_count: int = 0
     cash_price_explanation: str | None = None
+    # Stable, locale-agnostic reason codes for the cash-price explanation so the
+    # consumer app can localize the sentence (the API stays locale-neutral).
+    cash_price_reason_codes: list[str] = Field(default_factory=list)
     matching_negotiated_rate_count: int = 0
     distinct_payer_count: int = 0
     distinct_plan_count: int = 0

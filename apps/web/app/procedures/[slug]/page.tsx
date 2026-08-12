@@ -94,7 +94,12 @@ export default async function ProcedureDetail({
         </section>
         <section className="card">
           <h2>{t.procWhatIncluded}</h2>
-          <p>{item.billing_notice}</p>
+          <p>
+            {item.billing_notice ===
+            "Final treatment and billing may involve multiple services."
+              ? t.procBillingNoticeDefault
+              : item.billing_notice}
+          </p>
         </section>
         <section className="card">
           <h2>{t.procWhatSeparate}</h2>

@@ -1670,6 +1670,7 @@ def procedure_comparison(
             and (plan is None or row_plan == plan)
         )
         cash_explanation = None
+        cash_reason_codes: list[str] = []
         if len(cash_amounts) > 1:
             qualifiers: list[str] = []
             if any(
@@ -1677,10 +1678,15 @@ def procedure_comparison(
                 for description in cash_descriptions
             ):
                 qualifiers.append("unilateral and bilateral source descriptions")
+                cash_reason_codes.append("unilateral_bilateral")
             if len(cash_settings) > 1:
                 qualifiers.append("different service settings")
+                cash_reason_codes.append("service_settings")
             if len(cash_components) > 1:
                 qualifiers.append("different billing components")
+                cash_reason_codes.append("billing_components")
+            if not cash_reason_codes:
+                cash_reason_codes.append("source_records")
             reason = ", ".join(qualifiers) if qualifiers else "different source records"
             cash_explanation = (
                 f"{len(cash_amounts)} hospital-published cash prices were found for {reason}."
@@ -1741,6 +1747,7 @@ def procedure_comparison(
                 "cash_price_value_count": len(cash_amounts),
                 "cash_price_record_count": len(cash_details),
                 "cash_price_explanation": cash_explanation,
+                "cash_price_reason_codes": cash_reason_codes,
                 "matching_negotiated_rate_count": matching_rate_count,
                 "distinct_payer_count": len(payer_groups),
                 "distinct_plan_count": len(plan_ids),

@@ -290,6 +290,17 @@ const en = {
   privateBetaBadge: "Private Beta",
   filterResultsSummary: "Filter results",
   filterResultsHint: "Location, price availability, setting, payer, and rating",
+  cashPricesFoundFor:
+    "{count} hospital-published cash prices were found for {reasons}.",
+  cashReasonBilateral: "unilateral and bilateral source descriptions",
+  cashReasonSettings: "different service settings",
+  cashReasonComponents: "different billing components",
+  cashReasonSourceRecords: "different source records",
+  listSeparator: ", ",
+  pdDisclaimerBody:
+    "Published hospital prices are not personalized estimates. Separately billed professional services may apply. A published negotiated rate does not verify network participation or coverage.",
+  procBillingNoticeDefault:
+    "Final treatment and billing may involve multiple services.",
 
   // Procedure directory
   procDirEyebrow: "Care catalog",
@@ -857,6 +868,17 @@ export const messages: Record<Locale, Messages> = {
     filterResultsSummary: "Filtrar resultados",
     filterResultsHint:
       "Ubicación, disponibilidad de precios, lugar de atención, aseguradora y calificación",
+    cashPricesFoundFor:
+      "Se encontraron {count} precios en efectivo publicados por el hospital por {reasons}.",
+    cashReasonBilateral: "descripciones de origen unilaterales y bilaterales",
+    cashReasonSettings: "distintos lugares de atención",
+    cashReasonComponents: "distintos componentes de facturación",
+    cashReasonSourceRecords: "distintos registros de origen",
+    listSeparator: ", ",
+    pdDisclaimerBody:
+      "Los precios publicados por los hospitales no son estimaciones personalizadas. Pueden aplicarse servicios profesionales facturados por separado. Una tarifa negociada publicada no verifica la participación en la red ni la cobertura.",
+    procBillingNoticeDefault:
+      "El tratamiento y la facturación finales pueden involucrar varios servicios.",
     procDirEyebrow: "Catálogo de atención",
     procDirTitle: "Explore servicios de salud comunes",
     procDirLede:
@@ -1393,6 +1415,17 @@ export const messages: Record<Locale, Messages> = {
     filterResultsSummary: "Lọc kết quả",
     filterResultsHint:
       "Địa điểm, tình trạng có giá, nơi khám chữa bệnh, hãng bảo hiểm và xếp hạng",
+    cashPricesFoundFor:
+      "Đã tìm thấy {count} giá tiền mặt do bệnh viện công bố cho {reasons}.",
+    cashReasonBilateral: "mô tả nguồn cho một bên và hai bên",
+    cashReasonSettings: "các nơi khám chữa bệnh khác nhau",
+    cashReasonComponents: "các thành phần chi phí khác nhau",
+    cashReasonSourceRecords: "các bản ghi nguồn khác nhau",
+    listSeparator: ", ",
+    pdDisclaimerBody:
+      "Giá bệnh viện công bố không phải là ước tính riêng cho bạn. Có thể phát sinh các dịch vụ chuyên môn được tính phí riêng. Mức giá thương lượng đã công bố không xác nhận tình trạng trong mạng lưới hay quyền lợi được chi trả.",
+    procBillingNoticeDefault:
+      "Việc điều trị và lập hóa đơn cuối cùng có thể bao gồm nhiều dịch vụ.",
     procDirEyebrow: "Danh mục dịch vụ chăm sóc",
     procDirTitle: "Tìm hiểu các dịch vụ y tế thường gặp",
     procDirLede:
@@ -1904,6 +1937,15 @@ export const messages: Record<Locale, Messages> = {
     privateBetaBadge: "私人測試版",
     filterResultsSummary: "篩選結果",
     filterResultsHint: "地點、價格可取得情形、就醫場所、保險公司與評分",
+    cashPricesFoundFor: "找到 {count} 筆醫院公布的現金價，原因為{reasons}。",
+    cashReasonBilateral: "單側與雙側的來源描述",
+    cashReasonSettings: "不同的就醫場所",
+    cashReasonComponents: "不同的帳單組成部分",
+    cashReasonSourceRecords: "不同的來源記錄",
+    listSeparator: "、",
+    pdDisclaimerBody:
+      "醫院公布的價格並非個別化估算。可能適用另行計費的專業服務。公布的協議費率並不代表網路資格或承保。",
+    procBillingNoticeDefault: "最終的治療與帳單可能涉及多項服務。",
     procDirEyebrow: "醫療服務目錄",
     procDirTitle: "探索常見的醫療服務",
     procDirLede: "以淺白語言提供指引與公布價格比較 — 無需醫療帳單代碼。",
@@ -2395,6 +2437,15 @@ export const messages: Record<Locale, Messages> = {
     privateBetaBadge: "私人测试版",
     filterResultsSummary: "筛选结果",
     filterResultsHint: "地点、价格可用情况、就医场所、保险公司和评分",
+    cashPricesFoundFor: "找到 {count} 笔医院公布的现金价，原因为{reasons}。",
+    cashReasonBilateral: "单侧与双侧的来源描述",
+    cashReasonSettings: "不同的就医场所",
+    cashReasonComponents: "不同的账单组成部分",
+    cashReasonSourceRecords: "不同的来源记录",
+    listSeparator: "、",
+    pdDisclaimerBody:
+      "医院公布的价格并非个性化估算。可能存在单独计费的专业服务。公布的协议费率并不代表网络资格或承保。",
+    procBillingNoticeDefault: "最终的治疗与账单可能涉及多项服务。",
     procDirEyebrow: "医疗目录",
     procDirTitle: "探索常见医疗服务",
     procDirLede: "通俗易懂的指引和公布价格比较——无需医疗账单代码。",
@@ -2625,4 +2676,33 @@ export function localePath(locale: Locale, path: string): string {
   return locale === "en"
     ? normalized
     : `/${locale}${normalized === "/" ? "" : normalized}`;
+}
+
+const CASH_REASON_KEYS: Record<string, keyof Messages> = {
+  unilateral_bilateral: "cashReasonBilateral",
+  service_settings: "cashReasonSettings",
+  billing_components: "cashReasonComponents",
+  source_records: "cashReasonSourceRecords",
+};
+
+/**
+ * Build the localized "N hospital-published cash prices were found for …"
+ * sentence from the API's locale-agnostic reason codes. Returns null when there
+ * is nothing to explain (single price, or no codes from an older API revision).
+ */
+export function formatCashExplanation(
+  messages: Messages,
+  codes: string[] | undefined,
+  count: number,
+): string | null {
+  if (!codes || codes.length === 0) return null;
+  const reasons = codes
+    .map((code) => CASH_REASON_KEYS[code])
+    .filter((key): key is keyof Messages => Boolean(key))
+    .map((key) => messages[key])
+    .join(messages.listSeparator);
+  if (!reasons) return null;
+  return messages.cashPricesFoundFor
+    .replace("{count}", String(count))
+    .replace("{reasons}", reasons);
 }

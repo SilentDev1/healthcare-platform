@@ -169,7 +169,7 @@ export default async function PriceDetailsPage({
         <span aria-hidden="true">ⓘ</span>
         <div>
           <strong>{t.pdWhatDoesPriceMean}</strong>
-          <p>{data.disclaimer}</p>
+          <p>{t.pdDisclaimerBody}</p>
         </div>
       </aside>
       {data.records_truncated && (

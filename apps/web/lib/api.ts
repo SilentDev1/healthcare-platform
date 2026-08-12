@@ -147,6 +147,7 @@ export interface ProcedureComparisonItem {
   cash_price_value_count?: number;
   cash_price_record_count?: number;
   cash_price_explanation?: string | null;
+  cash_price_reason_codes?: string[];
   matching_negotiated_rate_count?: number;
   distinct_payer_count?: number;
   distinct_plan_count?: number;

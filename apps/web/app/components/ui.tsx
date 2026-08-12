@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ProcedureComparisonItem } from "../../lib/api";
-import type { Locale, Messages } from "../../lib/i18n";
+import { formatCashExplanation, type Locale, type Messages } from "../../lib/i18n";
 import { CompareSelect } from "./CompareSelect";
 import { FacilityImage } from "./FacilityImage";
 
@@ -266,6 +266,13 @@ export function ComparisonFacilityCard({
   }
   if (planId) detailQuery.set("plan", planId);
   const detailHref = `/procedures/${procedureSlug}/prices/${item.facility_location_id}${detailQuery.size ? `?${detailQuery}` : ""}`;
+  const cashExplanation = messages
+    ? formatCashExplanation(
+        messages,
+        item.cash_price_reason_codes,
+        item.cash_price_value_count ?? 0,
+      )
+    : (item.cash_price_explanation ?? null);
   return (
     <article
       className={`facility-card facility-card-media-layout ${item.price_available ? "" : "no-price"}`}
@@ -379,10 +386,8 @@ export function ComparisonFacilityCard({
                     )}
                   </ul>
                 </details>
-              ) : item.cash_price_explanation ? (
-                <small className="price-context">
-                  {item.cash_price_explanation}
-                </small>
+              ) : cashExplanation ? (
+                <small className="price-context">{cashExplanation}</small>
               ) : null}
               <Link className="price-detail-link" href={detailHref}>
                 {messages?.priceDetails ?? "View price details"}

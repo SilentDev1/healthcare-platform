@@ -13,7 +13,7 @@ import {
 } from "../components/ui";
 import { launchRegion } from "../../lib/brand";
 import { ShareComparison } from "../components/ShareComparison";
-import { localePath } from "../../lib/i18n";
+import { formatCashExplanation, localePath } from "../../lib/i18n";
 import { requestLocale, requestMessages } from "../../lib/i18n-server";
 
 export const metadata: Metadata = {
@@ -178,18 +178,23 @@ export default async function ComparePage({
             {row(t.cmpRowCmsOverall, (item) => (
               <QualityRating value={item.cms_overall_rating} messages={t} />
             ))}
-            {row(t.publishedCashPrice, (item) => (
-              <>
-                <PriceRange
-                  min={item.cash_price_min}
-                  max={item.cash_price_max}
-                  messages={t}
-                />
-                {item.cash_price_explanation && (
-                  <small>{item.cash_price_explanation}</small>
-                )}
-              </>
-            ))}
+            {row(t.publishedCashPrice, (item) => {
+              const explanation = formatCashExplanation(
+                t,
+                item.cash_price_reason_codes,
+                item.cash_price_value_count ?? 0,
+              );
+              return (
+                <>
+                  <PriceRange
+                    min={item.cash_price_min}
+                    max={item.cash_price_max}
+                    messages={t}
+                  />
+                  {explanation && <small>{explanation}</small>}
+                </>
+              );
+            })}
             {row(
               payer ? t.matchingRates : t.cmpPublishedInsuranceRates,
               (item) =>
