@@ -27,7 +27,6 @@ def upgrade() -> None:
             sa.Uuid(),
             sa.ForeignKey("facilities.id"),
             nullable=False,
-            index=True,
         ),
         sa.Column(
             "service_location_id",
