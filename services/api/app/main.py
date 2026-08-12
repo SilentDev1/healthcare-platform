@@ -8,7 +8,7 @@ import structlog
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import case, desc, func, select, text
+from sqlalchemy import case, desc, exists, func, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.sql.elements import ColumnElement
@@ -2203,8 +2203,18 @@ def pricing_coverage(session: Annotated[Session, Depends(get_session)]) -> Prici
             )
         )
         or 0,
+        # Count facilities that have at least one parsed record with an
+        # EXISTS probe per facility (indexed on facility_id) instead of a
+        # DISTINCT scan over the multi-million-row records table, which grew
+        # too slow after statewide recovery and stalled the homepage.
         facilities_with_parsed_records=session.scalar(
-            select(func.count(func.distinct(HospitalPriceRecord.facility_id)))
+            select(func.count(Facility.id)).where(
+                exists(
+                    select(HospitalPriceRecord.id).where(
+                        HospitalPriceRecord.facility_id == Facility.id
+                    )
+                )
+            )
         )
         or 0,
         facilities_with_publishable_prices=session.scalar(
