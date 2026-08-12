@@ -3274,3 +3274,45 @@ body .comparison-toolbar .sort-form .button {
     min-height: 128px;
   }
 }
+
+/* Card body stacks cleanly beside the image (overrides the legacy 3-column
+   marketplace grid, which collapsed the name column once the image took width). */
+.marketplace-results-layout .facility-card.facility-card-media-layout {
+  align-items: flex-start;
+}
+.marketplace-results-layout .facility-card-media {
+  width: 108px;
+  min-height: 104px;
+  align-self: flex-start;
+}
+.marketplace-results-layout .facility-card-media-layout .facility-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.marketplace-results-layout .facility-card-media-layout .facility-card-top,
+.marketplace-results-layout .facility-card-media-layout .facility-facts,
+.marketplace-results-layout .facility-card-media-layout .price-grid,
+.marketplace-results-layout .facility-card-media-layout .card-actions {
+  grid-column: auto;
+  grid-row: auto;
+  margin: 0;
+}
+.marketplace-results-layout .facility-card-media-layout .facility-card-top h2 {
+  font-size: 1.02rem;
+}
+.marketplace-results-layout .facility-card-media-layout .price-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.marketplace-results-layout .facility-card-media-layout .card-actions {
+  margin-top: 0.15rem;
+}
+@media (max-width: 720px) {
+  .marketplace-results-layout .facility-card-media-layout .price-grid {
+    grid-template-columns: 1fr;
+  }
+  .marketplace-results-layout .facility-card-media {
+    width: 100%;
+  }
+}
