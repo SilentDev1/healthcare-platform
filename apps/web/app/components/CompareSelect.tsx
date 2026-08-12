@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useSyncExternalStore } from "react";
 import type { ProcedureComparisonItem } from "../../lib/api";
+import { FacilityImage } from "./FacilityImage";
 
 interface CompareChoice {
   key: string;
@@ -184,6 +185,16 @@ export function InlineComparePanel({
     sessionStorage.removeItem(storageKey(procedureSlug));
     window.dispatchEvent(new Event("carevero:selection"));
   }
+  function remove(key: string) {
+    const current = parseChoices(
+      sessionStorage.getItem(storageKey(procedureSlug)) ?? "[]",
+    );
+    sessionStorage.setItem(
+      storageKey(procedureSlug),
+      JSON.stringify(current.filter((choice) => choice.key !== key)),
+    );
+    window.dispatchEvent(new Event("carevero:selection"));
+  }
   return (
     <aside className="inline-compare" aria-live="polite">
       <div className="inline-compare-heading">
@@ -217,8 +228,30 @@ export function InlineComparePanel({
                 <th scope="col">Price</th>
                 {selectedItems.map((item) => (
                   <th scope="col" key={item.facility_location_id}>
-                    {item.location_name ?? item.facility_name}
-                    {item.location_name && <small>{item.facility_name}</small>}
+                    <div className="compare-col-head">
+                      <FacilityImage
+                        name={item.facility_name}
+                        variant="thumb"
+                      />
+                      <span className="compare-col-name">
+                        {item.location_name ?? item.facility_name}
+                        {item.location_name && (
+                          <small>{item.facility_name}</small>
+                        )}
+                      </span>
+                      <button
+                        type="button"
+                        className="compare-col-remove"
+                        onClick={() =>
+                          remove(
+                            `${item.facility_id}~${item.facility_location_id}`,
+                          )
+                        }
+                        aria-label={`Remove ${item.facility_name} from comparison`}
+                      >
+                        <span aria-hidden="true">×</span>
+                      </button>
+                    </div>
                   </th>
                 ))}
                 {Array.from({ length: 3 - selectedItems.length }).map(
@@ -272,6 +305,21 @@ export function InlineComparePanel({
                     {item.service_settings.length
                       ? item.service_settings.join(", ").replaceAll("_", " ")
                       : "Not published"}
+                  </td>
+                ))}
+                {Array.from({ length: 3 - selectedItems.length }).map(
+                  (_, index) => (
+                    <td key={index}>—</td>
+                  ),
+                )}
+              </tr>
+              <tr>
+                <th scope="row">CMS rating</th>
+                {selectedItems.map((item) => (
+                  <td key={item.facility_location_id}>
+                    {item.cms_overall_rating
+                      ? `${item.cms_overall_rating}/5 CMS`
+                      : "Not available"}
                   </td>
                 ))}
                 {Array.from({ length: 3 - selectedItems.length }).map(

@@ -14,11 +14,12 @@ import {
   PricingDisclaimer,
 } from "../../../components/ui";
 import { launchRegion } from "../../../../lib/brand";
-import { requestMessages } from "../../../../lib/i18n-server";
+import { requestLocale, requestMessages } from "../../../../lib/i18n-server";
 import {
   CompareTray,
   InlineComparePanel,
 } from "../../../components/CompareSelect";
+import { PopularSearches } from "../../../components/PopularSearches";
 
 interface Filters {
   location?: string;
@@ -62,6 +63,7 @@ export default async function ProcedurePrices({
   const { slug } = await params;
   const filters = await searchParams;
   const messages = await requestMessages();
+  const locale = await requestLocale();
   const query = new URLSearchParams({ state: launchRegion.state });
   if (filters.setting) query.set("setting", filters.setting);
   if (filters.payer) query.set("payer", filters.payer);
@@ -221,6 +223,11 @@ export default async function ProcedurePrices({
 
     return (
       <main>
+        <PopularSearches
+          locale={locale}
+          heading={messages.popular}
+          viewAllLabel={messages.viewAllProcedures}
+        />
         <nav className="breadcrumbs" aria-label="Breadcrumb">
           <Link href="/">Home</Link>
           <span>/</span>

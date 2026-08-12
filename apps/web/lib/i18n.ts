@@ -43,6 +43,7 @@ const en = {
   networkNotice:
     "A published negotiated rate does not guarantee network participation or coverage.",
   priceDetails: "View price details",
+  viewAllProcedures: "View all procedures",
 };
 
 export type Messages = typeof en;
@@ -83,6 +84,7 @@ export const messages: Record<Locale, Messages> = {
     networkNotice:
       "Una tarifa negociada publicada no garantiza la participación en la red ni la cobertura.",
     priceDetails: "Ver detalles del precio",
+    viewAllProcedures: "Ver todos los procedimientos",
   },
   vi: {
     skip: "Chuyển đến nội dung chính",
@@ -118,6 +120,7 @@ export const messages: Record<Locale, Messages> = {
     networkNotice:
       "Mức giá thương lượng đã công bố không bảo đảm tình trạng trong mạng lưới hoặc quyền lợi được chi trả.",
     priceDetails: "Xem chi tiết giá",
+    viewAllProcedures: "Xem tất cả dịch vụ",
   },
   "zh-TW": {
     skip: "跳至主要內容",
@@ -152,6 +155,7 @@ export const messages: Record<Locale, Messages> = {
     matchingRates: "符合條件的已公布協議費率",
     networkNotice: "已公布的協議費率不保證網絡資格或承保範圍。",
     priceDetails: "查看價格詳情",
+    viewAllProcedures: "查看所有醫療項目",
   },
   "zh-CN": {
     skip: "跳至主要内容",
@@ -186,6 +190,7 @@ export const messages: Record<Locale, Messages> = {
     matchingRates: "符合条件的已公布协议费率",
     networkNotice: "已公布的协议费率不保证网络资格或承保范围。",
     priceDetails: "查看价格详情",
+    viewAllProcedures: "查看所有医疗项目",
   },
 };
 

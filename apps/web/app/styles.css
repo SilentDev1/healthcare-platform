@@ -3059,3 +3059,218 @@ body .comparison-toolbar .sort-form .button {
     min-width: 0;
   }
 }
+
+/* ============================================================
+   Phase 4.8 — facility imagery, popular-search chips, and
+   comparison thumbnails for the shopping-style results experience.
+   ============================================================ */
+
+.facility-image {
+  display: block;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: var(--brand-soft);
+  flex: none;
+}
+.facility-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.facility-image-card {
+  width: 132px;
+  align-self: stretch;
+  min-height: 108px;
+}
+.facility-image-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 0.4rem;
+}
+.facility-image-placeholder {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(
+    150deg,
+    var(--facility-accent-soft),
+    var(--paper)
+  );
+  border: 1px solid var(--line);
+}
+.facility-image-placeholder svg {
+  width: 46%;
+  height: 46%;
+  color: var(--facility-accent);
+}
+.facility-image-placeholder svg rect {
+  fill: currentColor;
+  opacity: 0.9;
+}
+.facility-image-placeholder svg .win,
+.facility-image-placeholder svg .door {
+  fill: var(--paper);
+  opacity: 1;
+}
+.facility-image-placeholder svg .cross {
+  stroke: currentColor;
+  stroke-width: 2.6;
+}
+.facility-image-thumb.facility-image-placeholder svg {
+  width: 56%;
+  height: 56%;
+}
+.facility-image-initials {
+  position: absolute;
+  bottom: 4px;
+  right: 5px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--facility-accent);
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 0.3rem;
+  padding: 0 0.25rem;
+  letter-spacing: 0.02em;
+}
+.facility-image-thumb .facility-image-initials {
+  display: none;
+}
+
+/* Image-led result card layout (§8, §11) */
+.facility-card-media-layout {
+  display: flex;
+  gap: 0.9rem;
+  align-items: stretch;
+}
+.facility-card-body {
+  flex: 1;
+  min-width: 0;
+}
+.marketplace-results-layout .facility-card.facility-card-media-layout {
+  display: flex;
+  padding: 0.7rem;
+}
+.marketplace-results-layout .facility-card-media {
+  width: 118px;
+}
+.marketplace-results-layout .facility-card-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(200px, 0.75fr) auto;
+  gap: 0.7rem 1rem;
+  align-items: center;
+}
+
+/* Popular-search chips (§2, §32) */
+.popular-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  flex-wrap: wrap;
+  margin: 0 0 1.4rem;
+  padding-bottom: 0.25rem;
+}
+.popular-search-heading {
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+.popular-search-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex: 1;
+}
+.popular-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.popular-chip:hover {
+  border-color: var(--brand);
+  box-shadow: 0 4px 12px rgba(17, 50, 94, 0.08);
+}
+.popular-chip-icon {
+  display: inline-flex;
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--brand);
+}
+.popular-chip-icon svg {
+  width: 100%;
+  height: 100%;
+}
+.popular-search-all {
+  color: var(--brand);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.popular-search-all:hover {
+  text-decoration: underline;
+}
+
+/* Comparison column head: thumbnail + name + remove (§16, §20) */
+.compare-col-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  position: relative;
+  text-align: center;
+}
+.compare-col-name {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+.compare-col-name small {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+.compare-col-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1;
+  font-size: 0.9rem;
+  padding: 0;
+}
+.compare-col-remove:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* Mobile: stack card image on top (§23) */
+@media (max-width: 720px) {
+  .facility-card-media-layout,
+  .marketplace-results-layout .facility-card.facility-card-media-layout {
+    flex-direction: column;
+  }
+  .facility-card-media,
+  .marketplace-results-layout .facility-card-media {
+    width: 100%;
+    min-height: 128px;
+  }
+}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { PriceSummary, ProcedureComparisonItem } from "../../lib/api";
 import { CompareSelect } from "./CompareSelect";
+import { FacilityImage } from "./FacilityImage";
 
 export function Money({ value }: { value: string | null }) {
   const amount = value === null ? Number.NaN : Number(value);
@@ -272,176 +273,186 @@ export function ComparisonFacilityCard({
   const detailHref = `/procedures/${procedureSlug}/prices/${item.facility_location_id}${detailQuery.size ? `?${detailQuery}` : ""}`;
   return (
     <article
-      className={`facility-card ${item.price_available ? "" : "no-price"}`}
+      className={`facility-card facility-card-media-layout ${item.price_available ? "" : "no-price"}`}
     >
-      <div className="facility-card-top">
-        <div>
-          <span className="badge neutral">
-            {item.location_type.replaceAll("_", " ")}
+      <FacilityImage
+        name={item.facility_name}
+        variant="card"
+        className="facility-card-media"
+      />
+      <div className="facility-card-body">
+        <div className="facility-card-top">
+          <div>
+            <span className="badge neutral">
+              {item.location_type.replaceAll("_", " ")}
+            </span>
+            <h2>{item.facility_name}</h2>
+            <p className="location">{locationLabel}</p>
+            <p className="card-procedure">
+              Comparing: <strong>{procedureName}</strong>
+            </p>
+          </div>
+          {item.price_available ? (
+            <span className="verified">
+              <span aria-hidden="true">✓</span> Verified published source
+            </span>
+          ) : (
+            <span className="badge unavailable">No published price</span>
+          )}
+        </div>
+        <div className="facility-facts" aria-label="Facility facts">
+          <QualityRating value={item.cms_overall_rating} />
+          <span>{item.facility_type ?? "Hospital"}</span>
+          <span>
+            {item.service_settings.length
+              ? item.service_settings.join(", ").replaceAll("_", " ")
+              : "Service setting unavailable"}
           </span>
-          <h2>{item.facility_name}</h2>
-          <p className="location">{locationLabel}</p>
-          <p className="card-procedure">
-            Comparing: <strong>{procedureName}</strong>
-          </p>
         </div>
         {item.price_available ? (
-          <span className="verified">
-            <span aria-hidden="true">✓</span> Verified published source
-          </span>
-        ) : (
-          <span className="badge unavailable">No published price</span>
-        )}
-      </div>
-      <div className="facility-facts" aria-label="Facility facts">
-        <QualityRating value={item.cms_overall_rating} />
-        <span>{item.facility_type ?? "Hospital"}</span>
-        <span>
-          {item.service_settings.length
-            ? item.service_settings.join(", ").replaceAll("_", " ")
-            : "Service setting unavailable"}
-        </span>
-      </div>
-      {item.price_available ? (
-        <div className="price-grid">
-          <div>
-            <span>
-              {item.cash_price_value_count && item.cash_price_value_count > 1
-                ? "Published cash prices"
-                : "Published cash price"}
-            </span>
-            <strong>
-              <PriceRange min={item.cash_price_min} max={item.cash_price_max} />
-            </strong>
-            {item.cash_price_explanation && (
-              <small className="price-context">
-                {item.cash_price_explanation}
-              </small>
-            )}
-            <Link className="price-detail-link" href={detailHref}>
-              View price details
-            </Link>
-          </div>
-          <div>
-            {payerName ? (
-              <>
-                <span className="selected-insurance-label">
-                  Your selected insurance
-                </span>
-                <strong className="insurance-name">
-                  {payerName}
-                  {planName ? ` · ${planName}` : ""}
-                </strong>
-                <span>Published matching negotiated rates</span>
-                <strong>
-                  <PriceRange
-                    min={item.negotiated_price_min}
-                    max={item.negotiated_price_max}
-                  />
-                </strong>
+          <div className="price-grid">
+            <div>
+              <span>
+                {item.cash_price_value_count && item.cash_price_value_count > 1
+                  ? "Published cash prices"
+                  : "Published cash price"}
+              </span>
+              <strong>
+                <PriceRange
+                  min={item.cash_price_min}
+                  max={item.cash_price_max}
+                />
+              </strong>
+              {item.cash_price_explanation && (
                 <small className="price-context">
-                  {item.matching_negotiated_rate_count ?? 0} matching published
-                  rate records
+                  {item.cash_price_explanation}
                 </small>
-              </>
-            ) : (
-              <>
-                <span>Published negotiated rates available</span>
-                <strong className="payer-availability">
-                  {item.distinct_payer_count
-                    ? `${item.distinct_payer_count} payer${item.distinct_payer_count === 1 ? "" : "s"}`
-                    : "No normalized payer rates"}
-                </strong>
-                {!!item.published_payers?.length && (
+              )}
+              <Link className="price-detail-link" href={detailHref}>
+                View price details
+              </Link>
+            </div>
+            <div>
+              {payerName ? (
+                <>
+                  <span className="selected-insurance-label">
+                    Your selected insurance
+                  </span>
+                  <strong className="insurance-name">
+                    {payerName}
+                    {planName ? ` · ${planName}` : ""}
+                  </strong>
+                  <span>Published matching negotiated rates</span>
+                  <strong>
+                    <PriceRange
+                      min={item.negotiated_price_min}
+                      max={item.negotiated_price_max}
+                    />
+                  </strong>
                   <small className="price-context">
-                    {item.published_payers
-                      .slice(0, 4)
-                      .map((publishedPayer) => publishedPayer.name)
-                      .join(" · ")}
-                    {item.published_payers.length > 4
-                      ? ` · +${item.published_payers.length - 4} more`
-                      : ""}
+                    {item.matching_negotiated_rate_count ?? 0} matching
+                    published rate records
                   </small>
-                )}
-              </>
-            )}
+                </>
+              ) : (
+                <>
+                  <span>Published negotiated rates available</span>
+                  <strong className="payer-availability">
+                    {item.distinct_payer_count
+                      ? `${item.distinct_payer_count} payer${item.distinct_payer_count === 1 ? "" : "s"}`
+                      : "No normalized payer rates"}
+                  </strong>
+                  {!!item.published_payers?.length && (
+                    <small className="price-context">
+                      {item.published_payers
+                        .slice(0, 4)
+                        .map((publishedPayer) => publishedPayer.name)
+                        .join(" · ")}
+                      {item.published_payers.length > 4
+                        ? ` · +${item.published_payers.length - 4} more`
+                        : ""}
+                    </small>
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="no-price-message">
-          <strong>Price not currently available</strong>
-          <p>
-            This hospital remains visible because missing data is different from
-            the service being unavailable.
-          </p>
-        </div>
-      )}
-      {item.price_available && (
-        <>
-          <details className="price-details">
-            <summary>Price details and source</summary>
-            <dl>
-              <div>
-                <dt>Procedure</dt>
-                <dd>{procedureName}</dd>
-              </div>
-              <div>
-                <dt>Service setting</dt>
-                <dd>
-                  {item.service_settings.length
-                    ? item.service_settings.join(", ").replaceAll("_", " ")
-                    : "Not published"}
-                </dd>
-              </div>
-              <div>
-                <dt>Published summary groups</dt>
-                <dd>{item.summary_count}</dd>
-              </div>
-              <div>
-                <dt>Price-data completeness</dt>
-                <dd>
-                  {item.data_completeness === "high_data_completeness"
-                    ? "High data completeness"
-                    : item.data_completeness === "some_details_unavailable"
-                      ? "Some details unavailable"
-                      : "Limited pricing detail"}
-                </dd>
-              </div>
-              <div>
-                <dt>All published negotiated rates</dt>
-                <dd>
-                  <PriceRange
-                    min={item.all_published_negotiated_min ?? null}
-                    max={item.all_published_negotiated_max ?? null}
-                  />
-                </dd>
-              </div>
-            </dl>
+        ) : (
+          <div className="no-price-message">
+            <strong>Price not currently available</strong>
             <p>
-              Published prices may not equal your final out-of-pocket cost. A
-              published rate does not verify network participation or coverage.
-              Separately billed professional services may apply.
+              This hospital remains visible because missing data is different
+              from the service being unavailable.
             </p>
-            <Link className="text-link" href={detailHref}>
-              View all price and source details
-            </Link>
-          </details>
-          <SourceAttribution
-            updated={item.latest_updated ?? undefined}
-            url={item.source_url ?? undefined}
+          </div>
+        )}
+        {item.price_available && (
+          <>
+            <details className="price-details">
+              <summary>Price details and source</summary>
+              <dl>
+                <div>
+                  <dt>Procedure</dt>
+                  <dd>{procedureName}</dd>
+                </div>
+                <div>
+                  <dt>Service setting</dt>
+                  <dd>
+                    {item.service_settings.length
+                      ? item.service_settings.join(", ").replaceAll("_", " ")
+                      : "Not published"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Published summary groups</dt>
+                  <dd>{item.summary_count}</dd>
+                </div>
+                <div>
+                  <dt>Price-data completeness</dt>
+                  <dd>
+                    {item.data_completeness === "high_data_completeness"
+                      ? "High data completeness"
+                      : item.data_completeness === "some_details_unavailable"
+                        ? "Some details unavailable"
+                        : "Limited pricing detail"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>All published negotiated rates</dt>
+                  <dd>
+                    <PriceRange
+                      min={item.all_published_negotiated_min ?? null}
+                      max={item.all_published_negotiated_max ?? null}
+                    />
+                  </dd>
+                </div>
+              </dl>
+              <p>
+                Published prices may not equal your final out-of-pocket cost. A
+                published rate does not verify network participation or
+                coverage. Separately billed professional services may apply.
+              </p>
+              <Link className="text-link" href={detailHref}>
+                View all price and source details
+              </Link>
+            </details>
+            <SourceAttribution
+              updated={item.latest_updated ?? undefined}
+              url={item.source_url ?? undefined}
+            />
+          </>
+        )}
+        <div className="card-actions">
+          <Link className="button" href={`/hospitals/${item.facility_id}`}>
+            View details
+          </Link>
+          <CompareSelect
+            facilityId={item.facility_id}
+            locationId={item.facility_location_id}
+            name={locationLabel}
+            procedureSlug={procedureSlug}
           />
-        </>
-      )}
-      <div className="card-actions">
-        <Link className="button" href={`/hospitals/${item.facility_id}`}>
-          View details
-        </Link>
-        <CompareSelect
-          facilityId={item.facility_id}
-          locationId={item.facility_location_id}
-          name={locationLabel}
-          procedureSlug={procedureSlug}
-        />
+        </div>
       </div>
     </article>
   );
