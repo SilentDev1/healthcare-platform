@@ -101,6 +101,7 @@ export default async function Home() {
                   item={item}
                   procedureName={featured.procedure_name}
                   procedureSlug={featured.procedure_slug}
+                  messages={t}
                 />
               ))}
             </section>

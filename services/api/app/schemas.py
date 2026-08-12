@@ -447,6 +447,14 @@ class ProcedureComparisonItem(BaseModel):
     imported_at: datetime | None = None
     carevero_refresh_date: datetime | None = None
     source_url: str | None
+    # Phase 4.8 distance + deterministic comparable-price insights.
+    distance_miles: float | None = None
+    comparable_cash_price: Decimal | None = None
+    published_price_difference: Decimal | None = None
+    difference_basis: str | None = None
+    is_lowest_comparable_cash: bool = False
+    comparable_cash_facility_count: int = 0
+    lower_priced_nearby_option: dict[str, object] | None = None
 
 
 class ProcedureComparisonResponse(BaseModel):
@@ -456,6 +464,7 @@ class ProcedureComparisonResponse(BaseModel):
     active_facilities: int
     facilities_with_prices: int
     service_locations: int
+    origin_resolved: bool = False
     items: list[ProcedureComparisonItem]
 
 

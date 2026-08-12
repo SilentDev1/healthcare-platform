@@ -328,6 +328,39 @@ export function InlineComparePanel({
                   ),
                 )}
               </tr>
+              <tr>
+                <th scope="row">Distance</th>
+                {selectedItems.map((item) => (
+                  <td key={item.facility_location_id}>
+                    {typeof item.distance_miles === "number"
+                      ? `${item.distance_miles} mi`
+                      : "—"}
+                  </td>
+                ))}
+                {Array.from({ length: 3 - selectedItems.length }).map(
+                  (_, index) => (
+                    <td key={index}>—</td>
+                  ),
+                )}
+              </tr>
+              <tr>
+                <th scope="row">Published-price difference</th>
+                {selectedItems.map((item) => (
+                  <td key={item.facility_location_id}>
+                    {item.is_lowest_comparable_cash
+                      ? "Lowest shown"
+                      : item.published_price_difference &&
+                          Number(item.published_price_difference) > 0
+                        ? `+${money(item.published_price_difference)}`
+                        : "—"}
+                  </td>
+                ))}
+                {Array.from({ length: 3 - selectedItems.length }).map(
+                  (_, index) => (
+                    <td key={index}>—</td>
+                  ),
+                )}
+              </tr>
             </tbody>
           </table>
         </div>
@@ -342,6 +375,15 @@ export function InlineComparePanel({
           <span className="muted">Select at least 2 hospitals</span>
         )}
       </div>
+      {selected.length >= 2 && (
+        <details className="save-comparison">
+          <summary>Save comparison</summary>
+          <p>
+            Saving comparisons is coming soon — no account is needed to compare
+            now.
+          </p>
+        </details>
+      )}
       <p className="compare-disclaimer">
         Published prices are not a personalized estimate or guarantee of your
         final cost.

@@ -23,6 +23,7 @@ import { PopularSearches } from "../../../components/PopularSearches";
 
 interface Filters {
   location?: string;
+  radius?: string;
   setting?: string;
   payer?: string;
   plan?: string;
@@ -34,6 +35,14 @@ interface Filters {
 
 function sortItems(items: ProcedureComparisonItem[], sort: string | undefined) {
   return [...items].sort((left, right) => {
+    if (sort === "distance") {
+      const leftDistance = left.distance_miles ?? Number.POSITIVE_INFINITY;
+      const rightDistance = right.distance_miles ?? Number.POSITIVE_INFINITY;
+      return (
+        leftDistance - rightDistance ||
+        left.facility_name.localeCompare(right.facility_name)
+      );
+    }
     if (sort === "cash")
       return (
         Number(left.cash_price_min ?? Infinity) -
@@ -68,11 +77,14 @@ export default async function ProcedurePrices({
   if (filters.setting) query.set("setting", filters.setting);
   if (filters.payer) query.set("payer", filters.payer);
   if (filters.plan) query.set("plan", filters.plan);
+  // Location is the distance origin (not a hard filter): all matching hospitals
+  // stay visible; radius filtering is applied by the API from real coordinates.
   if (filters.location) {
-    if (/^\d{5}$/.test(filters.location))
-      query.set("postal_code", filters.location);
-    else query.set("city", filters.location);
+    if (/^\d{5}$/.test(filters.location.trim()))
+      query.set("origin_zip", filters.location.trim());
+    else query.set("origin_city", filters.location.trim());
   }
+  if (filters.radius) query.set("radius_miles", filters.radius);
   try {
     const [data, procedure, payers, plans] = await Promise.all([
       apiGet<ProcedureComparison>(
@@ -121,13 +133,24 @@ export default async function ProcedurePrices({
     const filterForm = (
       <form className="filter-form">
         <div className="filter-group">
-          <label htmlFor="location">{messages.location}: city or ZIP</label>
+          <label htmlFor="location">{messages.yourLocation}</label>
           <input
             id="location"
             name="location"
             defaultValue={filters.location ?? ""}
-            placeholder="Any location"
+            placeholder="ZIP or city"
           />
+          <p className="field-help">{messages.enterLocationForDistance}</p>
+        </div>
+        <div className="filter-group">
+          <label htmlFor="radius">{messages.distanceRadius}</label>
+          <select id="radius" name="radius" defaultValue={filters.radius ?? ""}>
+            <option value="">{messages.anyDistance}</option>
+            <option value="10">10 {messages.milesUnit}</option>
+            <option value="25">25 {messages.milesUnit}</option>
+            <option value="50">50 {messages.milesUnit}</option>
+            <option value="100">100 {messages.milesUnit}</option>
+          </select>
         </div>
         <div className="filter-group">
           <label htmlFor="availability">Price availability</label>
@@ -284,6 +307,7 @@ export default async function ProcedurePrices({
               defaultValue={filters.sort ?? "recommended"}
             >
               <option value="recommended">Price availability, then name</option>
+              <option value="distance">{messages.nearestFirst}</option>
               <option value="cash">Lowest published cash price</option>
               <option value="rating">Highest CMS rating</option>
               <option value="name">Hospital name</option>
@@ -327,6 +351,7 @@ export default async function ProcedurePrices({
                   payerName={payerName}
                   planName={planName}
                   planId={filters.plan}
+                  messages={messages}
                 />
               ))
             )}

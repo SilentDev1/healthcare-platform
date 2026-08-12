@@ -173,6 +173,20 @@ export interface ProcedureComparisonItem {
   imported_at?: string | null;
   carevero_refresh_date?: string | null;
   source_url: string | null;
+  distance_miles?: number | null;
+  comparable_cash_price?: string | null;
+  published_price_difference?: string | null;
+  difference_basis?: string | null;
+  is_lowest_comparable_cash?: boolean;
+  comparable_cash_facility_count?: number;
+  lower_priced_nearby_option?: {
+    facility_id: string;
+    facility_name: string;
+    facility_location_id: string;
+    comparable_cash_price: string | null;
+    published_price_difference: string | null;
+    distance_miles: number | null;
+  } | null;
 }
 
 export interface ProcedureComparison {
@@ -182,6 +196,7 @@ export interface ProcedureComparison {
   active_facilities: number;
   facilities_with_prices: number;
   service_locations: number;
+  origin_resolved?: boolean;
   items: ProcedureComparisonItem[];
 }
 

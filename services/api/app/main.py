@@ -48,7 +48,9 @@ from packages.database import (
     UnmatchedSourceRecord,
     get_session,
 )
+from packages.geo import resolve_origin
 from packages.search import search
+from services.api.app.comparison_insights import annotate as annotate_comparison
 from services.api.app.coverage import consumer_pricing_status, pricing_status_matches
 from services.api.app.logging import configure_logging
 from services.api.app.schemas import (
@@ -1384,6 +1386,9 @@ def procedure_comparison(
     payer: Annotated[str | None, Query(max_length=150)] = None,
     plan: Annotated[uuid.UUID | None, Query()] = None,
     setting: Annotated[str | None, Query(max_length=40)] = None,
+    origin_zip: Annotated[str | None, Query(min_length=5, max_length=10)] = None,
+    origin_city: Annotated[str | None, Query(max_length=100)] = None,
+    radius_miles: Annotated[float | None, Query(gt=0, le=500)] = None,
 ) -> ProcedureComparisonResponse:
     """Return one honest consumer comparison row per physical service location."""
     procedure = session.scalar(
@@ -1539,7 +1544,13 @@ def procedure_comparison(
 
     items: list[dict[str, object]] = []
     priced_facilities: set[uuid.UUID] = set()
+    location_coords: dict[uuid.UUID, tuple[float, float]] = {}
     for facility, location in locations:
+        if location.latitude is not None and location.longitude is not None:
+            location_coords[location.id] = (
+                float(location.latitude),
+                float(location.longitude),
+            )
         all_summaries = grouped.get((facility.id, location.id), [])
         selected_summaries = [
             row
@@ -1743,6 +1754,10 @@ def procedure_comparison(
                 "source_url": latest_source[1].source_url if latest_source else None,
             }
         )
+    origin = resolve_origin(postal_code=origin_zip, city=origin_city, state=state_code.upper())
+    items = annotate_comparison(
+        items, coords=location_coords, origin=origin, radius_miles=radius_miles
+    )
     return ProcedureComparisonResponse(
         procedure_slug=procedure.slug,
         procedure_name=procedure.consumer_name,
@@ -1750,6 +1765,7 @@ def procedure_comparison(
         active_facilities=len(facility_ids),
         facilities_with_prices=len(priced_facilities),
         service_locations=len(items),
+        origin_resolved=origin is not None,
         items=items,
     )
 

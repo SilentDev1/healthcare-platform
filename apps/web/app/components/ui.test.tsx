@@ -117,6 +117,68 @@ describe("consumer pricing components", () => {
     ).toBeInTheDocument();
   });
 
+  it("shows distance and deterministic comparable-cash insights", () => {
+    render(
+      <ComparisonFacilityCard
+        item={{
+          ...baseItem,
+          distance_miles: 8.4,
+          is_lowest_comparable_cash: false,
+          published_price_difference: "236",
+          lower_priced_nearby_option: {
+            facility_id: "f2",
+            facility_name: "Lower Hospital",
+            facility_location_id: "l2",
+            comparable_cash_price: "589",
+            published_price_difference: "236",
+            distance_miles: 11.2,
+          },
+        }}
+        procedureName="MRI knee"
+        procedureSlug="mri-knee"
+      />,
+    );
+    expect(screen.getByText(/8\.4 miles/)).toBeInTheDocument();
+    expect(screen.getByText(/Published-price difference/)).toBeInTheDocument();
+    expect(screen.getByText(/\+\$236/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Nearby lower published cash price/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Lower Hospital/)).toBeInTheDocument();
+  });
+
+  it("labels the lowest comparable cash price and never invents savings for ranges", () => {
+    const { rerender } = render(
+      <ComparisonFacilityCard
+        item={{ ...baseItem, is_lowest_comparable_cash: true }}
+        procedureName="MRI knee"
+        procedureSlug="mri-knee"
+      />,
+    );
+    expect(
+      screen.getByText("Lowest published cash price shown"),
+    ).toBeInTheDocument();
+    rerender(
+      <ComparisonFacilityCard
+        item={{
+          ...baseItem,
+          cash_price_min: "350",
+          cash_price_max: "428",
+          is_lowest_comparable_cash: false,
+          published_price_difference: null,
+        }}
+        procedureName="MRI knee"
+        procedureSlug="mri-knee"
+      />,
+    );
+    expect(
+      screen.queryByText("Lowest published cash price shown"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Published-price difference/),
+    ).not.toBeInTheDocument();
+  });
+
   it("renders coverage and expandable billing disclosures", () => {
     render(
       <>

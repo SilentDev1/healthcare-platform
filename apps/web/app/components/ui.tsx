@@ -1,7 +1,16 @@
 import Link from "next/link";
 import type { PriceSummary, ProcedureComparisonItem } from "../../lib/api";
+import type { Messages } from "../../lib/i18n";
 import { CompareSelect } from "./CompareSelect";
 import { FacilityImage } from "./FacilityImage";
+
+function moneyWhole(value: string | number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(Number(value));
+}
 
 export function Money({ value }: { value: string | null }) {
   const amount = value === null ? Number.NaN : Number(value);
@@ -251,6 +260,7 @@ export function ComparisonFacilityCard({
   payerName,
   planName,
   planId,
+  messages,
 }: {
   item: ProcedureComparisonItem;
   procedureName: string;
@@ -258,10 +268,18 @@ export function ComparisonFacilityCard({
   payerName?: string;
   planName?: string;
   planId?: string;
+  messages?: Messages;
 }) {
   const locationLabel = item.location_name
     ? `${item.location_name} · ${item.city}, ${item.state}`
     : `${item.city}, ${item.state}`;
+  const distanceLabel =
+    typeof item.distance_miles === "number"
+      ? `${item.distance_miles} ${messages?.milesUnit ?? "miles"}`
+      : null;
+  const difference = item.published_price_difference
+    ? Number(item.published_price_difference)
+    : null;
   const detailQuery = new URLSearchParams();
   if (payerName && item.published_payers?.length) {
     const selected = item.published_payers.find(
@@ -287,7 +305,12 @@ export function ComparisonFacilityCard({
               {item.location_type.replaceAll("_", " ")}
             </span>
             <h2>{item.facility_name}</h2>
-            <p className="location">{locationLabel}</p>
+            <p className="location">
+              {locationLabel}
+              {distanceLabel && (
+                <span className="facility-distance"> · {distanceLabel}</span>
+              )}
+            </p>
             <p className="card-procedure">
               Comparing: <strong>{procedureName}</strong>
             </p>
@@ -323,6 +346,34 @@ export function ComparisonFacilityCard({
                   max={item.cash_price_max}
                 />
               </strong>
+              {item.is_lowest_comparable_cash ? (
+                <span className="savings-badge lowest">
+                  {messages?.lowestCashShown ??
+                    "Lowest published cash price shown"}
+                </span>
+              ) : difference && difference > 0 ? (
+                <span
+                  className="savings-badge"
+                  title={messages?.comparedWithLowest ?? undefined}
+                >
+                  {messages?.priceDifference ?? "Published-price difference"}: +
+                  {moneyWhole(difference)}
+                </span>
+              ) : null}
+              {item.lower_priced_nearby_option && (
+                <small className="nearby-lower">
+                  {messages?.nearbyLower ?? "Nearby lower published cash price"}
+                  : {item.lower_priced_nearby_option.facility_name} · −
+                  {moneyWhole(
+                    item.lower_priced_nearby_option
+                      .published_price_difference ?? 0,
+                  )}
+                  {typeof item.lower_priced_nearby_option.distance_miles ===
+                  "number"
+                    ? ` · ${item.lower_priced_nearby_option.distance_miles} ${messages?.milesUnit ?? "miles"}`
+                    : ""}
+                </small>
+              )}
               {item.cash_price_explanation && (
                 <small className="price-context">
                   {item.cash_price_explanation}
