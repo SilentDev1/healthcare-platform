@@ -39,6 +39,35 @@ export interface Facility {
   image_attribution?: string | null;
   image_source?: string | null;
 }
+export interface DirectoryFacility {
+  id: string;
+  cms_certification_number: string | null;
+  display_name: string;
+  city: string | null;
+  state: string | null;
+  facility_type: string | null;
+  published_procedure_count: number;
+  pricing_status: string;
+  cms_overall_rating: string | null;
+  image_url?: string | null;
+  image_alt?: string | null;
+  image_attribution?: string | null;
+  image_source?: string | null;
+}
+export interface DirectoryStateOption {
+  code: string;
+  name: string;
+  facility_count: number;
+}
+export interface FacilityDirectory {
+  items: DirectoryFacility[];
+  page: number;
+  page_size: number;
+  total: number;
+  total_states: number;
+  states: DirectoryStateOption[];
+  facility_types: string[];
+}
 export interface FacilityPage {
   items: Facility[];
   total: number;

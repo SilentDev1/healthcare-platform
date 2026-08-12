@@ -49,6 +49,40 @@ class FacilityPage(BaseModel):
     total: int = Field(ge=0)
 
 
+class DirectoryFacilityItem(BaseModel):
+    """Compact facility card for the multi-state hospital directory."""
+
+    id: uuid.UUID
+    cms_certification_number: str | None
+    display_name: str
+    city: str | None
+    state: str | None
+    facility_type: str | None
+    published_procedure_count: int
+    pricing_status: str
+    cms_overall_rating: str | None
+    image_url: str | None = None
+    image_alt: str | None = None
+    image_attribution: str | None = None
+    image_source: str | None = None
+
+
+class DirectoryStateOption(BaseModel):
+    code: str
+    name: str
+    facility_count: int
+
+
+class FacilityDirectoryResponse(BaseModel):
+    items: list[DirectoryFacilityItem]
+    page: int = Field(ge=1)
+    page_size: int = Field(ge=1, le=100)
+    total: int = Field(ge=0)
+    total_states: int = Field(ge=0)
+    states: list[DirectoryStateOption]
+    facility_types: list[str]
+
+
 class StatusResponse(BaseModel):
     status: str
 

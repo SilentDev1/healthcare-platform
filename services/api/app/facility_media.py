@@ -53,9 +53,19 @@ def _image_url(media: FacilityMedia, settings: RuntimeSettings) -> str | None:
     return None
 
 
-def _rank(media: FacilityMedia) -> tuple[int, int, str]:
-    """Primary first, then explicit display order, then a stable id tiebreak."""
-    return (0 if media.is_primary else 1, media.display_order, str(media.id))
+# A real photo always outranks a logo; a logo is only used when no photo exists
+# (verified photo -> verified logo -> neutral placeholder).
+_MEDIA_TYPE_RANK = {"photo": 0, "exterior": 0, "logo": 1}
+
+
+def _rank(media: FacilityMedia) -> tuple[int, int, int, str]:
+    """Photos before logos, then primary, then display order, then a stable id."""
+    return (
+        _MEDIA_TYPE_RANK.get(media.media_type, 2),
+        0 if media.is_primary else 1,
+        media.display_order,
+        str(media.id),
+    )
 
 
 def _to_resolved(media: FacilityMedia, settings: RuntimeSettings) -> ResolvedMedia | None:

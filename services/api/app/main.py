@@ -8,7 +8,7 @@ import structlog
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import case, desc, exists, func, select, text
+from sqlalchemy import and_, case, desc, exists, func, or_, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.sql.elements import ColumnElement
@@ -50,6 +50,7 @@ from packages.database import (
     get_session,
 )
 from packages.geo import resolve_origin
+from packages.markets import consumer_visible_markets
 from packages.search import search
 from services.api.app.comparison_insights import annotate as annotate_comparison
 from services.api.app.comparison_insights import summarize_cash_components
@@ -68,6 +69,9 @@ from services.api.app.schemas import (
     AdminFacilityPage,
     ConsumerPriceDetailResponse,
     DataHealthPage,
+    DirectoryFacilityItem,
+    DirectoryStateOption,
+    FacilityDirectoryResponse,
     FacilityHealthPage,
     FacilityPage,
     FacilityProcedureOverviewResponse,
@@ -279,6 +283,227 @@ def list_facilities(
         for facility in items
     ]
     return FacilityPage(items=responses, page=page, page_size=page_size, total=total)
+
+
+def _primary_location(
+    facility: Facility, state: str | None
+) -> FacilityLocation | None:
+    """Representative location for a directory card: prefer one in the filtered
+    state, then a hospital campus, else the first active location."""
+    locations = list(facility.locations)
+    if not locations:
+        return None
+    if state:
+        in_state = [loc for loc in locations if loc.state == state]
+        if in_state:
+            locations = in_state
+    campus = [loc for loc in locations if loc.location_type == "hospital_campus"]
+    return (campus or locations)[0]
+
+
+@app.get(
+    "/api/v1/facilities/directory",
+    response_model=FacilityDirectoryResponse,
+    tags=["facilities"],
+)
+def facilities_directory(
+    session: Annotated[Session, Depends(get_session)],
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=60)] = 24,
+    state_code: Annotated[
+        str | None, Query(alias="state", min_length=2, max_length=2)
+    ] = None,
+    city: Annotated[str | None, Query(max_length=120)] = None,
+    search: Annotated[str | None, Query(max_length=120)] = None,
+    pricing_status: Annotated[str | None, Query(max_length=40)] = None,
+    facility_type: Annotated[str | None, Query(max_length=120)] = None,
+    sort: Annotated[str, Query(pattern="^(name|city|pricing)$")] = "name",
+) -> FacilityDirectoryResponse:
+    """Reusable, multi-state hospital directory. State is data (the dropdown
+    derives from the consumer-visible market registry), not hardcoded UI. All
+    filtering/sorting/pagination happens in the query; per-card pricing counts,
+    CMS ratings, and imagery are enriched in batched lookups (no N+1)."""
+    pcount_subq = (
+        select(
+            FacilityProcedurePriceSummary.facility_id.label("fid"),
+            func.count(
+                func.distinct(FacilityProcedurePriceSummary.procedure_id)
+            ).label("pcount"),
+        )
+        .where(
+            FacilityProcedurePriceSummary.publication_status == "publishable",
+            FacilityProcedurePriceSummary.source_file_id.in_(
+                select(SourceFile.id).where(SourceFile.source_url.not_like("file://%"))
+            ),
+        )
+        .group_by(FacilityProcedurePriceSummary.facility_id)
+        .subquery()
+    )
+    pcount = func.coalesce(pcount_subq.c.pcount, 0)
+
+    normalized_state = state_code.upper() if state_code else None
+    filters: list[ColumnElement[bool]] = [
+        Facility.active.is_(True),
+        FacilityLocation.active.is_(True),
+    ]
+    if normalized_state:
+        filters.append(FacilityLocation.state == normalized_state)
+    if city:
+        filters.append(FacilityLocation.city.ilike(f"%{city.strip()}%"))
+    if facility_type:
+        filters.append(Facility.facility_type == facility_type)
+    if search:
+        term = f"%{search.strip()}%"
+        filters.append(
+            or_(
+                Facility.display_name.ilike(term),
+                Facility.legal_name.ilike(term),
+                FacilityLocation.city.ilike(term),
+                FacilityLocation.postal_code.ilike(f"{search.strip()}%"),
+            )
+        )
+    if pricing_status == "pricing_available":
+        filters.append(pcount >= 10)
+    elif pricing_status == "limited_pricing":
+        filters.append(and_(pcount >= 1, pcount < 10))
+    elif pricing_status == "pricing_not_available_yet":
+        filters.append(pcount <= 0)
+
+    base_from = (
+        select(Facility.id)
+        .select_from(Facility)
+        .join(FacilityLocation, FacilityLocation.facility_id == Facility.id)
+        .outerjoin(pcount_subq, pcount_subq.c.fid == Facility.id)
+        .where(*filters)
+    )
+    total = (
+        session.scalar(
+            base_from.with_only_columns(func.count(func.distinct(Facility.id)))
+        )
+        or 0
+    )
+    total_states = (
+        session.scalar(
+            base_from.with_only_columns(func.count(func.distinct(FacilityLocation.state)))
+        )
+        or 0
+    )
+
+    order: list[Any]
+    if sort == "city":
+        order = [func.min(FacilityLocation.city), Facility.display_name]
+    elif sort == "pricing":
+        order = [pcount.desc(), Facility.display_name]
+    else:
+        order = [Facility.display_name, Facility.id]
+    page_rows = session.execute(
+        select(Facility.id.label("fid"), pcount.label("pcount"))
+        .select_from(Facility)
+        .join(FacilityLocation, FacilityLocation.facility_id == Facility.id)
+        .outerjoin(pcount_subq, pcount_subq.c.fid == Facility.id)
+        .where(*filters)
+        .group_by(Facility.id, Facility.display_name, pcount_subq.c.pcount)
+        .order_by(*order)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    page_ids = [row.fid for row in page_rows]
+    pcount_by_id = {row.fid: int(row.pcount) for row in page_rows}
+
+    facilities = (
+        session.scalars(
+            select(Facility)
+            .options(
+                selectinload(Facility.locations.and_(FacilityLocation.active.is_(True)))
+            )
+            .where(Facility.id.in_(page_ids))
+        ).all()
+        if page_ids
+        else []
+    )
+    by_id = {facility.id: facility for facility in facilities}
+
+    ratings: dict[uuid.UUID, str | None] = {}
+    if page_ids:
+        for observation in session.execute(
+            select(FacilityQualityMeasureObservation)
+            .join(QualityMeasureDefinition)
+            .where(
+                FacilityQualityMeasureObservation.facility_id.in_(page_ids),
+                QualityMeasureDefinition.cms_measure_id == "OVERALL_RATING",
+            )
+            .order_by(desc(FacilityQualityMeasureObservation.reporting_period_end))
+        ).scalars():
+            ratings.setdefault(observation.facility_id, observation.score)
+    media = resolve_facility_media(session, page_ids, api_settings)
+
+    items: list[DirectoryFacilityItem] = []
+    for fid in page_ids:
+        facility = by_id.get(fid)
+        if facility is None:
+            continue
+        location = _primary_location(facility, normalized_state)
+        count = pcount_by_id.get(fid, 0)
+        items.append(
+            DirectoryFacilityItem(
+                id=facility.id,
+                cms_certification_number=facility.cms_certification_number,
+                display_name=facility.display_name,
+                city=location.city if location else None,
+                state=location.state if location else None,
+                facility_type=facility.facility_type,
+                published_procedure_count=count,
+                pricing_status=consumer_pricing_status(count),
+                cms_overall_rating=ratings.get(facility.id),
+                **media_fields(pick_media(media, facility.id, None)),
+            )
+        )
+
+    state_counts: dict[str, int] = {
+        state: int(count)
+        for state, count in session.execute(
+            select(FacilityLocation.state, func.count(func.distinct(Facility.id)))
+            .select_from(Facility)
+            .join(FacilityLocation, FacilityLocation.facility_id == Facility.id)
+            .where(Facility.active.is_(True), FacilityLocation.active.is_(True))
+            .group_by(FacilityLocation.state)
+        ).all()
+    }
+    states = [
+        DirectoryStateOption(
+            code=market.code,
+            name=market.name,
+            facility_count=int(state_counts.get(market.code, 0)),
+        )
+        for market in consumer_visible_markets()
+    ]
+    type_filters: list[ColumnElement[bool]] = [
+        Facility.active.is_(True),
+        FacilityLocation.active.is_(True),
+        Facility.facility_type.is_not(None),
+    ]
+    if normalized_state:
+        type_filters.append(FacilityLocation.state == normalized_state)
+    facility_types = [
+        value
+        for (value,) in session.execute(
+            select(func.distinct(Facility.facility_type))
+            .select_from(Facility)
+            .join(FacilityLocation, FacilityLocation.facility_id == Facility.id)
+            .where(*type_filters)
+            .order_by(Facility.facility_type)
+        ).all()
+    ]
+
+    return FacilityDirectoryResponse(
+        items=items,
+        page=page,
+        page_size=page_size,
+        total=total,
+        total_states=total_states,
+        states=states,
+        facility_types=facility_types,
+    )
 
 
 @app.get("/api/v1/facilities/map-data", response_model=MapDataResponse, tags=["facilities"])
