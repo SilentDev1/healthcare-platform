@@ -636,7 +636,7 @@ a {
 }
 .marketplace-results-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.18fr) minmax(340px, 0.82fr);
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
   gap: 1.35rem;
   align-items: start;
 }
@@ -773,7 +773,7 @@ a {
 }
 .inline-compare-table {
   width: 100%;
-  min-width: 570px;
+  min-width: 520px;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 0.72rem;
@@ -950,7 +950,7 @@ a {
     grid-row: 1 / span 3;
   }
   .inline-compare-table {
-    min-width: 650px;
+    min-width: 560px;
   }
   .product-intro {
     padding-top: 1rem;
@@ -2509,7 +2509,7 @@ th {
 }
 .marketplace-results-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.18fr) minmax(340px, 0.82fr);
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
   gap: 1.35rem;
   align-items: start;
 }
@@ -3746,4 +3746,14 @@ body .comparison-toolbar .sort-form .button {
   .results-sort-form .control-field {
     flex: 1;
   }
+}
+
+/* Safeguard: neither results nor compare column may force page overflow;
+   the compare table scrolls inside its own wrap (overflow-x: auto). */
+.marketplace-results-layout > * {
+  min-width: 0;
+}
+.marketplace-results-layout .result-list,
+.marketplace-results-layout .rcard {
+  min-width: 0;
 }
