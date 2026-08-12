@@ -3875,3 +3875,24 @@ body .comparison-toolbar .sort-form .button {
     grid-template-columns: 1fr;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Compact search form alignment: on wide screens the three columns    */
+/* (What do you need? / Where? / Search) must share one input line.     */
+/* Varying helper-text length otherwise pushed the "Where?" input up,   */
+/* so helper/error text is taken out of the column height here.         */
+/* ------------------------------------------------------------------ */
+@media (min-width: 801px) {
+  .care-search.compact {
+    padding-bottom: 2.4rem;
+  }
+  .care-search.compact .field-help,
+  .care-search.compact .field-error {
+    position: absolute;
+    top: 100%;
+    left: 0.1rem;
+    right: 0;
+    margin-top: 0.3rem;
+    line-height: 1.3;
+  }
+}
