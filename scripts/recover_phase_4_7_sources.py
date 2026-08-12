@@ -29,14 +29,25 @@ def main() -> None:
     parser.add_argument("--state", default="NH")
     parser.add_argument("--wave", choices=tuple(WAVES), required=True)
     args = parser.parse_args()
-    target_ccns = WAVES[args.wave]
-    verified = [entry for entry in load_registry(REGISTRY) if entry["ccn"] in target_ccns]
+    requested_ccns = WAVES[args.wave]
+    verified = [entry for entry in load_registry(REGISTRY) if entry["ccn"] in requested_ccns]
     verified_urls = {entry["ccn"]: entry["machine_readable_file_url"] for entry in verified}
-    if set(verified_urls) != target_ccns:
-        missing = sorted(target_ccns - set(verified_urls))
-        raise RuntimeError(f"verified source registry is missing CCNs: {missing}")
+    missing_ccns = sorted(requested_ccns - set(verified_urls))
+    if missing_ccns:
+        # Recover every hospital that already has a verified source and report the
+        # rest as an honest coverage gap instead of blocking the entire wave.
+        print(f"PHASE_4_7_RECOVERY_MISSING={json.dumps(missing_ccns)}")
+    if not verified_urls:
+        raise RuntimeError(
+            f"no verified sources registered for wave {args.wave}: missing {missing_ccns}"
+        )
+    target_ccns = set(verified_urls)
 
-    result: dict[str, object] = {"wave": args.wave, "targets": sorted(target_ccns)}
+    result: dict[str, object] = {
+        "wave": args.wave,
+        "targets": sorted(target_ccns),
+        "missing_source_ccns": missing_ccns,
+    }
     with session_factory() as session:
         result["registration"] = register_sources(session, verified, state=args.state.upper())
         facilities = list(
