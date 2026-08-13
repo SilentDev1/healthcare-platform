@@ -11,9 +11,10 @@ import json
 import re
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree
+
+from collectors.hospital_prices.streaming import SourceInput
 
 
 @dataclass(frozen=True)
@@ -104,7 +105,7 @@ class _ParserDefinition:
     version: str
 
 
-def inspect_format(path: Path) -> tuple[ParserMatch | None, list[str], list[object]]:
+def inspect_format(path: SourceInput) -> tuple[ParserMatch | None, list[str], list[object]]:
     """Detect file format and return (ParserMatch, headers, sample_rows)."""
     with path.open("rb") as stream:
         sample_bytes = stream.read(128 * 1024)
@@ -125,7 +126,7 @@ def inspect_format(path: Path) -> tuple[ParserMatch | None, list[str], list[obje
 
 
 def _inspect_json(
-    path: Path, text: str, sample_bytes: bytes
+    path: SourceInput, text: str, sample_bytes: bytes
 ) -> tuple[ParserMatch | None, list[str], list[object]]:
     """Inspect JSON files."""
     try:
@@ -186,7 +187,9 @@ def _inspect_json(
     return None, headers, sample
 
 
-def _inspect_csv(path: Path, text: str) -> tuple[ParserMatch | None, list[str], list[object]]:
+def _inspect_csv(
+    path: SourceInput, text: str
+) -> tuple[ParserMatch | None, list[str], list[object]]:
     """Inspect CSV/TSV/pipe-delimited files."""
     lines = text.splitlines()
 
@@ -262,7 +265,9 @@ def _inspect_csv(path: Path, text: str) -> tuple[ParserMatch | None, list[str], 
     return None, headers, sample_rows
 
 
-def _inspect_xml(path: Path, text: str) -> tuple[ParserMatch | None, list[str], list[object]]:
+def _inspect_xml(
+    path: SourceInput, text: str
+) -> tuple[ParserMatch | None, list[str], list[object]]:
     """Inspect XML standard charges files."""
     try:
         tree = ElementTree.fromstring(text[:500_000])  # noqa: S314
@@ -301,7 +306,7 @@ def _json_version(payload: object) -> str | None:
     return None
 
 
-def _stream_json_array(path: Path, key: str | None = None) -> Iterator[dict[str, Any]]:
+def _stream_json_array(path: SourceInput, key: str | None = None) -> Iterator[dict[str, Any]]:
     decoder = json.JSONDecoder()
     buffer = ""
     started = False
@@ -339,7 +344,7 @@ def _stream_json_array(path: Path, key: str | None = None) -> Iterator[dict[str,
         raise ValueError("JSON record array not found")
 
 
-def iter_rows(path: Path, match: ParserMatch) -> Iterator[dict[str, Any]]:
+def iter_rows(path: SourceInput, match: ParserMatch) -> Iterator[dict[str, Any]]:
     """Stream normalized rows from a parsed file."""
     if match.detected_format == "xml":
         yield from _iter_xml_rows(path)
@@ -389,10 +394,11 @@ def iter_rows(path: Path, match: ParserMatch) -> Iterator[dict[str, Any]]:
         yield {_normalized_key(str(key_name)): value for key_name, value in row.items()}
 
 
-def _iter_xml_rows(path: Path) -> Iterator[dict[str, Any]]:
+def _iter_xml_rows(path: SourceInput) -> Iterator[dict[str, Any]]:
     """Basic XPath extraction for XML standard charges."""
     try:
-        tree = ElementTree.parse(path)  # noqa: S314
+        with path.open("rb") as stream:
+            tree = ElementTree.parse(stream)  # noqa: S314
         root = tree.getroot()
         for item in root:
             row: dict[str, Any] = {}

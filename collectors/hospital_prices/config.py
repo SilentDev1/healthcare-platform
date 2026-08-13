@@ -8,6 +8,10 @@ class HospitalPriceSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     hospital_price_max_bytes: int = Field(750_000_000, gt=0)
     hospital_price_max_expanded_bytes: int = Field(1_500_000_000, gt=0)
+    # Ceiling for archives parsed by streaming member bytes on demand (never
+    # materialized on disk). Larger than the on-disk cap because streaming keeps
+    # memory bounded; still a hard backstop against zip bombs / runaway files.
+    hospital_price_max_streaming_expanded_bytes: int = Field(8_000_000_000, gt=0)
     hospital_price_max_archive_files: int = Field(5, ge=1, le=100)
     hospital_price_connection_timeout_seconds: float = Field(15, gt=0, le=120)
     hospital_price_read_timeout_seconds: float = Field(300, gt=0, le=600)

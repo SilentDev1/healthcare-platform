@@ -32,3 +32,46 @@ def test_verified_source_registry_has_deterministic_identity_and_evidence(tmp_pa
     assert sources[0]["source_page_url"].startswith("https://")
     assert sources[0]["machine_readable_file_url"].startswith("https://")
     assert sources[0]["evidence"]
+
+
+REAL_REGISTRY = Path("data/fixtures/verified_hospital_price_sources.json")
+REQUIRED_FIELDS = (
+    "ccn",
+    "facility_name",
+    "source_page_url",
+    "machine_readable_file_url",
+    "declared_format",
+    "evidence",
+)
+
+
+def test_committed_registry_entries_are_well_formed() -> None:
+    sources = load_registry(REAL_REGISTRY)
+
+    assert sources, "registry must not be empty"
+    seen_ccns: set[str] = set()
+    for entry in sources:
+        for field in REQUIRED_FIELDS:
+            assert entry.get(field), f"{entry.get('ccn')}: missing {field}"
+        assert entry["source_page_url"].startswith("https://")
+        assert entry["machine_readable_file_url"].startswith("https://")
+        assert "vendor_name" in entry and "health_system_name" in entry
+        ccn = entry["ccn"]
+        assert ccn not in seen_ccns, f"duplicate CCN in registry: {ccn}"
+        seen_ccns.add(ccn)
+
+
+def test_androscoggin_valley_source_registered() -> None:
+    sources = load_registry(REAL_REGISTRY)
+    by_ccn = {entry["ccn"]: entry for entry in sources}
+
+    entry = by_ccn.get("301310")
+    assert entry is not None, "CCN 301310 (Androscoggin Valley) must be registered"
+    # Facility name must match the DB legal_name exactly (register_sources rejects mismatches).
+    assert entry["facility_name"] == "ANDROSCOGGIN VALLEY HOSPITAL"
+    assert (
+        entry["machine_readable_file_url"]
+        == "https://hospitalpricetransparencyfiles.com/androscoggin-valley-hospital/"
+        "020280367_Androscoggin-Valley-Hospital_standardcharges.csv"
+    )
+    assert entry["declared_format"] == "csv"

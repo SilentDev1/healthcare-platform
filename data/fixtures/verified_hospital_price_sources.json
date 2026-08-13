@@ -150,6 +150,16 @@
       "vendor_name": "HCA Healthcare",
       "health_system_name": "HCA Healthcare",
       "evidence": "Direct CMS Standard Charges link on Catholic Medical Center's current official HCA-operated pricing page"
+    },
+    {
+      "ccn": "301310",
+      "facility_name": "ANDROSCOGGIN VALLEY HOSPITAL",
+      "source_page_url": "https://avhnh.org/patients-visitors/financial-information/",
+      "machine_readable_file_url": "https://hospitalpricetransparencyfiles.com/androscoggin-valley-hospital/020280367_Androscoggin-Valley-Hospital_standardcharges.csv",
+      "declared_format": "csv",
+      "vendor_name": "Hospital Price Transparency Files",
+      "health_system_name": "North Country Healthcare",
+      "evidence": "Hospital's official cms-hpt.txt declares this MRF URL, and the official financial-information page links the identical file ('Standard Charges,' effective October 1, 2023)"
     }
   ]
 }

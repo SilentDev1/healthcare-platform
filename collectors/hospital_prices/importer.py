@@ -17,10 +17,14 @@ from collectors.hospital_prices.caches import ImportCaches
 from collectors.hospital_prices.cdm_crosswalk import apply_cdm_crosswalk
 from collectors.hospital_prices.checkpoint import CheckpointManager
 from collectors.hospital_prices.config import HospitalPriceSettings, hospital_price_settings
-from collectors.hospital_prices.downloader import safe_extract
 from collectors.hospital_prices.normalization import seed_payers
 from collectors.hospital_prices.parsers import inspect_format, iter_rows, normalized_record
 from collectors.hospital_prices.profiler import ImportProfiler
+from collectors.hospital_prices.streaming import (
+    SourceInput,
+    ZipMemberSource,
+    prepare_source_inputs,
+)
 from packages.database import (
     FacilityPriceSource,
     FacilitySourceObservation,
@@ -257,11 +261,17 @@ def import_price_source(
     # source mount. Reading/writing multi-GB machine-readable files directly over
     # gcsfuse stalls the import before the first row; local disk keeps it fast. The
     # staging directory is always removed in the finally clause below.
+    #
+    # Archives that expand past the on-disk cap are parsed straight from the ZIP
+    # member (ZipMemberSource) — constant memory, nothing materialized on disk.
     local_extract_root = Path(tempfile.mkdtemp(prefix="carevero-extract-"))
     logger.info("import_extract_start", extra={"source_file_id": str(source.id)})
-    staged_inputs: list[Path] = []
-    for candidate in safe_extract(Path(source.storage_path), local_extract_root, settings):
-        if local_extract_root in candidate.parents:
+    staged_inputs: list[SourceInput] = []
+    for candidate in prepare_source_inputs(Path(source.storage_path), local_extract_root, settings):
+        if isinstance(candidate, ZipMemberSource):
+            # Streamed from the archive on demand; nothing to stage on disk.
+            staged_inputs.append(candidate)
+        elif local_extract_root in candidate.parents:
             staged_inputs.append(candidate)
         else:
             local_copy = local_extract_root / candidate.name
