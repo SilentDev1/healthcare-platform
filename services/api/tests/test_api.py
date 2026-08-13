@@ -218,6 +218,52 @@ def test_phase_3_public_and_admin_endpoints() -> None:
         assert client.get(path).status_code == 200
 
 
+def test_ai_is_disabled_by_default_and_grounded_query_uses_existing_comparison() -> None:
+    request = {
+        "message": "MRI brain without contrast near Concord NH within 25 miles",
+        "locale": "en",
+    }
+    assert client.post("/api/v1/ai/query", json=request).status_code == 404
+    previous = (
+        api_settings.ai_assistant_enabled,
+        api_settings.ai_intent_search_enabled,
+        api_settings.ai_explanations_enabled,
+    )
+    api_settings.ai_assistant_enabled = True
+    api_settings.ai_intent_search_enabled = True
+    api_settings.ai_explanations_enabled = True
+    try:
+        response = client.post("/api/v1/ai/query", json=request)
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["intent"]["procedure_slug"] == "mri-brain-without-contrast"
+        assert payload["intent"]["radius_miles"] == 25
+        assert payload["context"]["procedure_slug"] == "mri-brain-without-contrast"
+        assert payload["fallback_used"] is True
+        assert "Test Hospital" in payload["answer"]
+    finally:
+        (
+            api_settings.ai_assistant_enabled,
+            api_settings.ai_intent_search_enabled,
+            api_settings.ai_explanations_enabled,
+        ) = previous
+
+
+def test_ai_asks_material_mammogram_clarification() -> None:
+    previous = (api_settings.ai_assistant_enabled, api_settings.ai_intent_search_enabled)
+    api_settings.ai_assistant_enabled = True
+    api_settings.ai_intent_search_enabled = True
+    try:
+        response = client.post(
+            "/api/v1/ai/intent", json={"message": "I need a mammogram", "locale": "en"}
+        )
+        assert response.status_code == 200
+        assert response.json()["clarification_needed"] is True
+        assert "screening" in response.json()["clarification_question"]
+    finally:
+        api_settings.ai_assistant_enabled, api_settings.ai_intent_search_enabled = previous
+
+
 def test_phase_4_pricing_endpoints_are_filtered_and_paginated() -> None:
     coverage = client.get("/api/v1/pricing/coverage")
     assert coverage.status_code == 200
