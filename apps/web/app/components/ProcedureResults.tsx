@@ -118,10 +118,14 @@ export async function ProcedureResults({
     return <ErrorState retryHref={clearHref} messages={messages} />;
   }
 
+  // Default to showing priced facilities first — Carevero is a price-comparison
+  // product, so consumers should first see facilities with actual prices.
+  const effectiveAvailability = filters.availability ?? "available";
+
   let items = data.items.filter((item) => {
-    if (filters.availability === "available" && !item.price_available)
+    if (effectiveAvailability === "available" && !item.price_available)
       return false;
-    if (filters.availability === "unavailable" && item.price_available)
+    if (effectiveAvailability === "unavailable" && item.price_available)
       return false;
     if (
       filters.facility_type &&
@@ -166,10 +170,10 @@ export async function ProcedureResults({
         <select
           id="availability"
           name="availability"
-          defaultValue={filters.availability ?? ""}
+          defaultValue={filters.availability ?? "available"}
         >
-          <option value="">{messages.availabilityAll}</option>
           <option value="available">{messages.availabilityAvailable}</option>
+          <option value="">{messages.availabilityAll}</option>
           <option value="unavailable">{messages.availabilityUnavailable}</option>
         </select>
       </div>
@@ -247,29 +251,29 @@ export async function ProcedureResults({
     </form>
   );
 
+  const hospitalsWithPricesLabel =
+    data.facilities_with_prices === 1
+      ? messages.hospitalsWithPricesOne
+      : messages.hospitalsWithPricesOther.replace(
+          "{count}",
+          String(data.facilities_with_prices),
+        );
+  const matchingLocationsLabel =
+    data.service_locations === 1
+      ? messages.matchingLocationsTotalOne
+      : messages.matchingLocationsTotal.replace(
+          "{count}",
+          String(data.service_locations),
+        );
+
   return (
     <>
       <div className="section-heading" style={{ marginBottom: "0.6rem" }}>
         <p className="eyebrow">{messages.pricesNearYou}</p>
-        <h2>{messages.matchingHospitals}</h2>
+        <h2>{hospitalsWithPricesLabel}</h2>
       </div>
-      <CoverageNotice messages={messages}>
-        {filters.payer && data.facilities_with_prices === 0
-          ? messages.coverageNoRateForPayer.replace(
-              "{payer}",
-              payerName ?? messages.thisPayer,
-            )
-          : messages.coveragePublishedSummary
-              .replace("{withPrices}", String(data.facilities_with_prices))
-              .replace("{active}", String(data.active_facilities))}
-      </CoverageNotice>
       <p className="results-count">
-        <strong>
-          {(items.length === 1
-            ? messages.serviceLocationCountOne
-            : messages.serviceLocationCountOther
-          ).replace("{count}", String(items.length))}
-        </strong>
+        <span className="results-secondary">{matchingLocationsLabel}</span>
         {activeFilterCount
           ? ` · ${(activeFilterCount === 1
               ? messages.activeFilterCountOne
@@ -277,6 +281,17 @@ export async function ProcedureResults({
             ).replace("{count}", String(activeFilterCount))}`
           : ""}
       </p>
+      <CoverageNotice messages={messages}>
+        {filters.payer && data.facilities_with_prices === 0
+          ? messages.coverageNoRateForPayer.replace(
+              "{payer}",
+              payerName ?? messages.thisPayer,
+            )
+          : messages.priceCoverageBody.replace(
+              "{withPrices}",
+              String(data.facilities_with_prices),
+            )}
+      </CoverageNotice>
       <div className="results-controls">
         <FilterPanel messages={messages}>{filterForm}</FilterPanel>
         <form className="results-sort-form">

@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { messages } from "../../lib/i18n";
+import { locales, messages, type Locale } from "../../lib/i18n";
 import type { Procedure, ProcedureCategory } from "../../lib/api";
 
 afterEach(cleanup);
@@ -280,5 +280,192 @@ describe("ProceduresDirectory", () => {
     expect(
       screen.getByText(/Screening mammography uses low-dose X-rays/),
     ).toBeInTheDocument();
+  });
+
+  /* ---- COUNT SEMANTICS ---- */
+
+  it('displays "1 procedure" (singular) when one result matches', () => {
+    renderDirectory(new URLSearchParams("q=colonoscopy"));
+    expect(screen.getByText(/1 procedure\b/)).toBeInTheDocument();
+  });
+
+  it('displays plural "{count} procedures" when multiple results match', () => {
+    renderDirectory();
+    // 4 non-ED procedures displayed as cards
+    expect(screen.getByText(/4 procedures/)).toBeInTheDocument();
+  });
+
+  it("category sidebar count is a procedure count, not a facility count", () => {
+    renderDirectory();
+    // "Imaging" category has exactly 2 procedures (MRI + mammogram)
+    // This is a procedure count — not a facility or location count.
+    const sidebarButtons = screen.getAllByRole("button").filter((btn) =>
+      btn.textContent?.includes("Imaging"),
+    );
+    expect(sidebarButtons.length).toBeGreaterThan(0);
+    const countText = sidebarButtons[0].textContent;
+    // Should show "2" (the number of procedures in imaging)
+    expect(countText).toContain("2");
+    // Should NOT show any large number that would suggest facility counts
+    expect(countText).not.toMatch(/\d{2,}/);
+  });
+
+  /* ---- SLUG LEAKING ---- */
+
+  it("never exposes internal taxonomy slugs in rendered output", () => {
+    // Add a procedure with a slug-like category that could leak
+    const procsWithUnknownCat: Procedure[] = [
+      makeProcedure({
+        id: "pX",
+        slug: "some-procedure",
+        consumer_name: "Some procedure",
+        category: {
+          slug: "outpatient_surgery",
+          name: "Outpatient Surgery",
+          description: "",
+        },
+      }),
+    ];
+    state.searchParams = new URLSearchParams();
+    render(
+      <ProceduresDirectory
+        procedures={procsWithUnknownCat}
+        categories={CATEGORIES}
+        locale="en"
+        messages={t}
+      />,
+    );
+    // Should show the consumer-friendly name "Outpatient surgery", not raw slug
+    expect(screen.getAllByText("Outpatient surgery").length).toBeGreaterThan(0);
+    // Raw slug "outpatient_surgery" should never appear in rendered text
+    const body = document.body.textContent ?? "";
+    expect(body).not.toContain("outpatient_surgery");
+  });
+
+  it("humanizes unknown category slugs instead of leaking raw text", () => {
+    const procsWithNewCat: Procedure[] = [
+      makeProcedure({
+        id: "pY",
+        slug: "some-new-procedure",
+        consumer_name: "New procedure",
+        category: {
+          slug: "sports_medicine",
+          name: "Sports Medicine",
+          description: "",
+        },
+      }),
+    ];
+    state.searchParams = new URLSearchParams();
+    render(
+      <ProceduresDirectory
+        procedures={procsWithNewCat}
+        categories={CATEGORIES}
+        locale="en"
+        messages={t}
+      />,
+    );
+    // Should humanize to "Sports Medicine" not expose "sports_medicine"
+    const body = document.body.textContent ?? "";
+    expect(body).not.toContain("sports_medicine");
+    expect(body).toContain("Sports Medicine");
+  });
+
+  /* ---- URL STATE ---- */
+
+  it("URL state survives by reading from searchParams", () => {
+    // Simulate a page load with query params already set
+    renderDirectory(new URLSearchParams("category=laboratory&q=CBC&sort=za"));
+    // CBC should be visible (search + category match)
+    expect(
+      screen.getByText("Complete blood count (CBC)"),
+    ).toBeInTheDocument();
+    // MRI should not be visible
+    expect(
+      screen.queryByText("MRI knee without contrast"),
+    ).not.toBeInTheDocument();
+  });
+
+  /* ---- CONSUMER CATEGORY NAMES ---- */
+
+  it("shows translated consumer category names, not raw API names", () => {
+    renderDirectory();
+    // "laboratory" category should render as "Lab tests" (from procCat_laboratory)
+    expect(screen.getAllByText("Lab tests").length).toBeGreaterThan(0);
+    // "emergency" category should render as "Emergency care" (from procCat_emergency)
+    expect(screen.getAllByText("Emergency care").length).toBeGreaterThan(0);
+    // Raw API names should not appear
+    const body = document.body.textContent ?? "";
+    // "Laboratory" (raw API name) would only appear if slug leaks — but "Lab tests" is used
+    // Note: "Imaging" and "Gastroenterology" happen to match their API names, so we check laboratory/emergency
+    expect(body).not.toContain("laboratory");
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* i18n placeholder parity across all 5 locales                        */
+/* ------------------------------------------------------------------ */
+
+describe("i18n placeholder parity", () => {
+  const PLACEHOLDER_RE = /\{(\w+)\}/g;
+
+  function extractPlaceholders(str: string): string[] {
+    return [...str.matchAll(PLACEHOLDER_RE)].map((m) => m[1]).sort();
+  }
+
+  const keysWithPlaceholders = Object.entries(messages.en).filter(
+    ([, value]) => typeof value === "string" && PLACEHOLDER_RE.test(value),
+  );
+
+  for (const [key] of keysWithPlaceholders) {
+    const enValue = messages.en[key as keyof typeof messages.en] as string;
+    const enPlaceholders = extractPlaceholders(enValue);
+
+    for (const locale of locales) {
+      if (locale === "en") continue;
+      it(`${key}: ${locale} has same placeholders as en`, () => {
+        const localeMessages = messages[locale];
+        const localeValue = localeMessages[key as keyof typeof localeMessages];
+        expect(typeof localeValue).toBe("string");
+        const localePlaceholders = extractPlaceholders(localeValue as string);
+        expect(localePlaceholders).toEqual(enPlaceholders);
+      });
+    }
+  }
+});
+
+/* ------------------------------------------------------------------ */
+/* No new hardcoded consumer English in ProceduresDirectory            */
+/* ------------------------------------------------------------------ */
+
+describe("No hardcoded English in ProceduresDirectory", () => {
+  beforeEach(() => {
+    state.searchParams = new URLSearchParams();
+    replace.mockClear();
+  });
+
+  it("all user-facing text comes from i18n, not hardcoded strings", () => {
+    // Render with a non-English locale's messages to verify
+    // If any English text leaks, it means something is hardcoded
+    const esMessages = messages.es;
+    render(
+      <ProceduresDirectory
+        procedures={PROCEDURES}
+        categories={CATEGORIES}
+        locale="es"
+        messages={esMessages}
+      />,
+    );
+    const body = document.body.textContent ?? "";
+    // The Spanish version should NOT contain these English-only strings
+    // (procedure names and aliases are data, not UI text, so they'll still be English)
+    expect(body).not.toContain("All procedures");
+    expect(body).not.toContain("Common searches");
+    expect(body).not.toContain("View prices");
+    expect(body).not.toContain("Don't see a procedure?");
+    expect(body).not.toContain("Prices not available everywhere");
+    // Spanish equivalents should be present
+    expect(body).toContain(esMessages.procDirAllProcedures);
+    expect(body).toContain(esMessages.procDirViewPrices);
+    expect(body).toContain(esMessages.procDirDontSeeTitle);
   });
 });

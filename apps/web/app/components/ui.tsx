@@ -103,7 +103,7 @@ export function CoverageNotice({
       <span aria-hidden="true">ⓘ</span>
       <div>
         <strong>
-          {messages?.coverageTransparency ?? "Coverage transparency"}
+          {messages?.priceCoverage ?? "Price coverage"}
         </strong>
         <p>{children}</p>
       </div>
@@ -433,11 +433,12 @@ export function ComparisonFacilityCard({
         ) : (
           <div className="rcard-nopricebox">
             <strong>
-              {messages?.priceNotAvailable ?? "Price not currently available"}
+              {messages?.unpricedCardTitle ??
+                "No published price available for this procedure"}
             </strong>
             <p>
-              {messages?.noPriceExplanation ??
-                "This hospital remains visible because missing data is different from the service being unavailable."}
+              {messages?.unpricedCardBody ??
+                "Carevero has not found a currently publishable price for this procedure at this location."}
             </p>
           </div>
         )}

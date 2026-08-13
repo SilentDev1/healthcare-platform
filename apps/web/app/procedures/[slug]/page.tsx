@@ -8,8 +8,30 @@ import {
   type ProcedureResultsFilters,
 } from "../../components/ProcedureResults";
 import { launchRegion } from "../../../lib/brand";
-import { localePath } from "../../../lib/i18n";
+import { localePath, type Messages } from "../../../lib/i18n";
 import { requestLocale, requestMessages } from "../../../lib/i18n-server";
+
+const CATEGORY_I18N_KEYS: Record<string, keyof Messages> = {
+  imaging: "procCat_imaging",
+  laboratory: "procCat_laboratory",
+  preventive: "procCat_preventive",
+  emergency: "procCat_emergency",
+  maternity: "procCat_maternity",
+  outpatient_surgery: "procCat_outpatient_surgery",
+  inpatient_surgery: "procCat_inpatient_surgery",
+  cardiology: "procCat_cardiology",
+  orthopedics: "procCat_orthopedics",
+  gastroenterology: "procCat_gastroenterology",
+  ophthalmology: "procCat_ophthalmology",
+  rehabilitation: "procCat_rehabilitation",
+  other: "procCat_other",
+};
+
+function consumerCategoryName(t: Messages, slug: string): string {
+  const key = CATEGORY_I18N_KEYS[slug];
+  if (key) return t[key] as string;
+  return slug.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 export async function generateMetadata({
   params,
@@ -70,14 +92,18 @@ export default async function ProcedureDetail({
         <span>{item.consumer_name}</span>
       </nav>
       <div className="page-heading">
-        <p className="eyebrow">{item.category.name}</p>
+        <p className="eyebrow">{consumerCategoryName(t, item.category.slug)}</p>
         <h1>{item.consumer_name}</h1>
         <p className="lede">{item.long_description}</p>
       </div>
       <div className="feature-grid procedure-facts">
         <section className="card">
           <h2>{t.procTypicalSetting}</h2>
-          <p>{item.service_setting.replaceAll("_", " ")}</p>
+          <p>
+            {item.service_setting
+              .replace(/[-_]/g, " ")
+              .replace(/\b\w/g, (c) => c.toUpperCase())}
+          </p>
         </section>
         <section className="card">
           <h2>{t.procWhatIncluded}</h2>

@@ -139,13 +139,17 @@ function consumerCategoryName(
   categorySlug: string,
 ): string {
   const key = CATEGORY_I18N_KEYS[categorySlug];
-  return key ? (t[key] as string) : categorySlug;
+  if (key) return t[key] as string;
+  // Never leak raw slugs — humanize as a safety net
+  return categorySlug
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function servicesCountLabel(t: Messages, count: number): string {
+function procedureCountLabel(t: Messages, count: number): string {
   return count === 1
-    ? t.procDirServicesCountOne
-    : t.procDirServicesCount.replace("{count}", String(count));
+    ? t.procDirProcedureCountOne
+    : t.procDirProcedureCount.replace("{count}", String(count));
 }
 
 /* ------------------------------------------------------------------ */
@@ -387,7 +391,7 @@ export function ProceduresDirectory({
           className={`procdir-cat-tile ${!activeCategory ? "active" : ""}`}
           onClick={() => handleCategoryClick("")}
         >
-          {t.procDirAllServices}
+          {t.procDirAllProcedures}
         </button>
         {sortedCategories.map(([slug, { name, count }]) => (
           <button
@@ -415,7 +419,7 @@ export function ProceduresDirectory({
             aria-current={!activeCategory ? "true" : undefined}
             onClick={() => handleCategoryClick("")}
           >
-            {t.procDirAllServices}
+            {t.procDirAllProcedures}
             <span className="procdir-sidebar-count">{procedures.length}</span>
           </button>
           {sortedCategories.map(([slug, { name, count }]) => (
@@ -446,7 +450,7 @@ export function ProceduresDirectory({
                   {" — "}
                 </>
               )}
-              {servicesCountLabel(t, filtered.length)}
+              {procedureCountLabel(t, filtered.length)}
             </span>
             <label className="procdir-sort">
               <span className="sr-only">{t.procDirSortLabel}</span>

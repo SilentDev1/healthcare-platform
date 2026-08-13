@@ -89,9 +89,13 @@ describe("consumer pricing components", () => {
       />,
     );
     expect(
-      screen.getByText("Price not currently available"),
+      screen.getByText(
+        "No published price available for this procedure",
+      ),
     ).toBeInTheDocument();
-    expect(screen.getByText(/service being unavailable/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/currently publishable price/),
+    ).toBeInTheDocument();
   });
 
   it("prioritizes only explicitly selected insurance rates", () => {
@@ -183,7 +187,7 @@ describe("consumer pricing components", () => {
         <PriceRange min={null} max={null} />
       </>,
     );
-    expect(screen.getByText("Coverage transparency")).toBeInTheDocument();
+    expect(screen.getByText("Price coverage")).toBeInTheDocument();
     expect(screen.getByText("Important price information")).toBeInTheDocument();
     expect(screen.getByText(/Your final bill may differ/)).toBeInTheDocument();
     expect(
