@@ -220,6 +220,73 @@ def _raw_payload_samples(
     ]
 
 
+# Shoppable-procedure keywords → how we'd expect the description to read. Used only
+# to SAMPLE a facility's actual wording for these procedures so a human can author
+# precise, reviewed crosswalk patterns. NOT itself a mapping — never auto-applied.
+_SHOPPABLE_KEYWORDS = (
+    "mri",
+    "ct ",
+    "cat scan",
+    "mammogram",
+    "mammo",
+    "ultrasound",
+    "echocardiogram",
+    "echo ",
+    "electrocardiogram",
+    "ekg",
+    "ecg",
+    "colonoscopy",
+    "endoscopy",
+    "dexa",
+    "bone density",
+    "blood count",
+    "cbc",
+    "metabolic panel",
+    "lipid",
+    "a1c",
+    "hemoglobin a1c",
+    "thyroid",
+    "tsh",
+    "urinalysis",
+    "x-ray",
+    "xray",
+)
+
+
+def _shoppable_description_probe(
+    session: Session, facility_id: object, per_keyword_limit: int = 6
+) -> dict[str, list[str]]:
+    """Sample a facility's own descriptions for shoppable procedures.
+
+    For each shoppable keyword, return up to N distinct raw descriptions from
+    records lacking a reviewed mapping. This reveals exactly how the facility words
+    each procedure so precise, reviewed crosswalk patterns can be authored to match
+    THEIR wording (the standard-phrase patterns already in cdm_crosswalk.json did
+    not match). Read-only; proposes nothing.
+    """
+    reviewed_for_record = exists().where(
+        and_(
+            PriceRecordProcedureMapping.hospital_price_record_id == HospitalPriceRecord.id,
+            PriceRecordProcedureMapping.reviewed.is_(True),
+        )
+    )
+    probe: dict[str, list[str]] = {}
+    for keyword in _SHOPPABLE_KEYWORDS:
+        descriptions = session.scalars(
+            select(HospitalPriceRecord.raw_description)
+            .where(
+                HospitalPriceRecord.facility_id == facility_id,
+                func.lower(HospitalPriceRecord.raw_description).like(f"%{keyword}%"),
+                ~reviewed_for_record,
+            )
+            .distinct()
+            .limit(per_keyword_limit)
+        ).all()
+        if descriptions:
+            probe[keyword.strip()] = [str(description) for description in descriptions]
+    return probe
+
+
 def diagnose(session: Session, state: str = "NH", top_codes: int = 25) -> dict[str, object]:
     facility_ids = _state_facility_ids(session, state)
     records = _record_counts(session, facility_ids)
@@ -258,6 +325,7 @@ def diagnose(session: Session, state: str = "NH", top_codes: int = 25) -> dict[s
                 ),
                 "top_unmapped_codes": _top_unmapped_codes(session, facility_id, top_codes),
                 "raw_payload_samples": _raw_payload_samples(session, facility_id, 8),
+                "shoppable_description_probe": _shoppable_description_probe(session, facility_id),
             }
         )
 

@@ -202,6 +202,17 @@ def test_diagnose_identifies_parsed_but_unmapped_and_ranks_codes() -> None:
             raw_code_type="LOCAL",
             raw_payload={"code": "XYZ999", "cpt_hcpcs": "70450", "description": "LOCAL IMAGING"},
         )
+        # A shoppable procedure worded in the facility's own way (should be probed).
+        _record(
+            session,
+            unmapped,
+            source,
+            run,
+            "CDM",
+            "MRI001",
+            "MRI BRAIN W/O CONTRAST",
+            raw_code_type="CDM",
+        )
 
         # C: records + reviewed mapping but no publishable summary → investigate.
         stuck = _facility(session, "990203", "STUCK HOSPITAL")
@@ -228,7 +239,7 @@ def test_diagnose_identifies_parsed_but_unmapped_and_ranks_codes() -> None:
 
     unmapped_entry = by_ccn["990202"]
     assert unmapped_entry["likely_cause"] == "no_approved_code_mappings"
-    assert unmapped_entry["records"] == 3
+    assert unmapped_entry["records"] == 4
     assert unmapped_entry["reviewed_mappings"] == 0
     # Codes ranked by frequency; the doubled CDM code leads.
     top = unmapped_entry["top_unmapped_codes"]
@@ -236,15 +247,18 @@ def test_diagnose_identifies_parsed_but_unmapped_and_ranks_codes() -> None:
     assert top[0]["count"] == 2
     assert top[0]["sample_description"] == "LOCAL LAB PANEL"
     assert top[0]["raw_code_type"] == "LOCAL"
-    assert {c["code"] for c in top} == {"ABC123", "XYZ999"}
-    assert unmapped_entry["code_system_distribution"] == {"CDM": 3}
+    assert {c["code"] for c in top} == {"ABC123", "XYZ999", "MRI001"}
+    assert unmapped_entry["code_system_distribution"] == {"CDM": 4}
     # Raw source type label surfaced — the signal for parser-fix vs. crosswalk.
-    assert unmapped_entry["raw_code_type_distribution"] == {"LOCAL": 3}
+    assert unmapped_entry["raw_code_type_distribution"] == {"LOCAL": 3, "CDM": 1}
     # Sample raw rows expose the standard code column the parser didn't prefer.
     samples = unmapped_entry["raw_payload_samples"]
-    assert samples and len(samples) == 3
-    assert all(s["raw_code_type"] == "LOCAL" for s in samples)
+    assert samples and len(samples) == 4
+    assert any(s["raw_code_type"] == "LOCAL" for s in samples)
     assert any(s["raw_payload"].get("cpt_hcpcs") == "80053" for s in samples)
+    # Shoppable probe surfaces the facility's OWN wording for a shoppable procedure.
+    probe = unmapped_entry["shoppable_description_probe"]
+    assert probe.get("mri") == ["MRI BRAIN W/O CONTRAST"]
 
     stuck_entry = by_ccn["990203"]
     assert stuck_entry["likely_cause"] == "mapped_but_not_publishable_investigate"
