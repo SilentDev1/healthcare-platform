@@ -271,6 +271,13 @@ class SearchResultResponse(BaseModel):
 class SearchPage(PageMetadata):
     items: list[SearchResultResponse]
     elapsed_ms: float
+    intent_type: str = "unknown"
+    deterministic_match: bool = False
+    clarification_needed: bool = False
+    clarification_question: str | None = None
+    ai_fallback_eligible: bool = False
+    canonical_category_slug: str | None = None
+    location_text: str | None = None
 
 
 class ProcedureCategoryResponse(BaseModel):

@@ -610,8 +610,16 @@ const en = {
   searchVerifiedOnly: "Only verified catalog and facility records",
   searchNoMatchTitle: "No matching care or hospital found",
   searchNoMatchBody:
-    "Try a broader term, a nearby city, or browse the procedure catalog. A missing result does not mean the service is unavailable.",
+    "Try a more specific care term, browse the procedure catalog, or search by hospital or city. A missing result does not mean the service is unavailable.",
   searchCompareCta: "Compare published prices",
+  searchCategoryCountOne: "1 procedure",
+  searchCategoryCountOther: "{count} procedures",
+  searchCategoryChooseProcedure:
+    "Choose a procedure to compare published hospital prices.",
+  searchOtherMatches: "Other matching results",
+  searchClarificationTitle: "Which care option are you looking for?",
+  searchClarificationBody:
+    "Choose only if it matches your clinician's order. Carevero does not decide which test you need.",
 
   // Loading states
   loadingFacilities: "Loading facilities…",
@@ -1271,6 +1279,14 @@ export const messages: Record<Locale, Messages> = {
     searchNoMatchBody:
       "Pruebe con un término más amplio, una ciudad cercana o explore el catálogo de procedimientos. Un resultado ausente no significa que el servicio no esté disponible.",
     searchCompareCta: "Comparar precios publicados",
+    searchCategoryCountOne: "1 procedimiento",
+    searchCategoryCountOther: "{count} procedimientos",
+    searchCategoryChooseProcedure:
+      "Elija un procedimiento para comparar precios hospitalarios publicados.",
+    searchOtherMatches: "Otros resultados coincidentes",
+    searchClarificationTitle: "¿Qué opción de atención busca?",
+    searchClarificationBody:
+      "Elija solo si coincide con la orden de su profesional clínico. Carevero no decide qué prueba necesita.",
     loadingFacilities: "Cargando centros…",
     loadingProcedures: "Cargando procedimientos…",
     loadingFacility: "Cargando centro…",
@@ -1904,6 +1920,14 @@ export const messages: Record<Locale, Messages> = {
     searchNoMatchBody:
       "Hãy thử một từ khóa rộng hơn, một thành phố lân cận, hoặc duyệt danh mục thủ thuật. Việc thiếu kết quả không có nghĩa là dịch vụ không có sẵn.",
     searchCompareCta: "So sánh giá đã công bố",
+    searchCategoryCountOne: "1 thủ thuật",
+    searchCategoryCountOther: "{count} thủ thuật",
+    searchCategoryChooseProcedure:
+      "Chọn một thủ thuật để so sánh giá bệnh viện đã công bố.",
+    searchOtherMatches: "Các kết quả phù hợp khác",
+    searchClarificationTitle: "Bạn đang tìm lựa chọn chăm sóc nào?",
+    searchClarificationBody:
+      "Chỉ chọn nếu phù hợp với phiếu chỉ định của bác sĩ. Carevero không quyết định bạn cần xét nghiệm nào.",
     loadingFacilities: "Đang tải các cơ sở…",
     loadingProcedures: "Đang tải các thủ thuật…",
     loadingFacility: "Đang tải cơ sở…",
@@ -2495,6 +2519,13 @@ export const messages: Record<Locale, Messages> = {
     searchNoMatchBody:
       "請嘗試更廣泛的詞彙、鄰近城市，或瀏覽醫療項目目錄。查無結果並不代表無法提供該服務。",
     searchCompareCta: "比較公布價格",
+    searchCategoryCountOne: "1 項醫療項目",
+    searchCategoryCountOther: "{count} 項醫療項目",
+    searchCategoryChooseProcedure: "選擇一項醫療項目以比較醫院公布價格。",
+    searchOtherMatches: "其他相符結果",
+    searchClarificationTitle: "您要找哪一種照護選項？",
+    searchClarificationBody:
+      "請僅在符合醫療人員檢查單時選擇。Carevero 不會決定您需要哪項檢查。",
     loadingFacilities: "正在載入服務地點…",
     loadingProcedures: "正在載入醫療項目…",
     loadingFacility: "正在載入服務地點…",
@@ -3079,6 +3110,13 @@ export const messages: Record<Locale, Messages> = {
     searchNoMatchBody:
       "请尝试更宽泛的词语、附近的城市，或浏览医疗项目目录。没有结果并不代表该服务不可用。",
     searchCompareCta: "比较公布价格",
+    searchCategoryCountOne: "1 个医疗项目",
+    searchCategoryCountOther: "{count} 个医疗项目",
+    searchCategoryChooseProcedure: "选择一个医疗项目以比较医院公布价格。",
+    searchOtherMatches: "其他匹配结果",
+    searchClarificationTitle: "您要查找哪一种医疗选项？",
+    searchClarificationBody:
+      "请仅在符合临床医生检查单时选择。Carevero 不会决定您需要哪项检查。",
     loadingFacilities: "正在加载机构…",
     loadingProcedures: "正在加载医疗项目…",
     loadingFacility: "正在加载机构…",

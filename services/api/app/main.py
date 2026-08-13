@@ -51,7 +51,7 @@ from packages.database import (
 )
 from packages.geo import resolve_origin
 from packages.markets import consumer_visible_markets
-from packages.search import search
+from packages.search import resolve_search, search
 from services.api.app.comparison_insights import annotate as annotate_comparison
 from services.api.app.comparison_insights import summarize_cash_components
 from services.api.app.coverage import consumer_pricing_status, pricing_status_matches
@@ -1051,11 +1051,25 @@ def unified_search(
     city: Annotated[str | None, Query(max_length=100)] = None,
     postal_code: Annotated[str | None, Query(min_length=5, max_length=10)] = None,
     category: Annotated[str | None, Query(max_length=100)] = None,
+    locale: Annotated[str, Query(pattern="^(en|es|vi|zh-TW|zh-CN)$")] = "en",
     page: Annotated[int, Query(ge=1)] = 1,
-    page_size: Annotated[int, Query(ge=1, le=50)] = 20,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> SearchPage:
     started = time.perf_counter()
-    all_items = search(session, q, entity_type, state_code, city, postal_code, category)
+    if entity_type:
+        all_items = search(session, q, entity_type, state_code, city, postal_code, category, locale)
+        resolution = None
+    else:
+        resolution = resolve_search(
+            session,
+            q,
+            state=state_code,
+            city=city,
+            postal_code=postal_code,
+            category=category,
+            locale=locale,
+        )
+        all_items = resolution.results
     items = all_items[(page - 1) * page_size : page * page_size]
     return SearchPage(
         items=[item.__dict__ for item in items],
@@ -1063,6 +1077,13 @@ def unified_search(
         page_size=page_size,
         total=len(all_items),
         elapsed_ms=round((time.perf_counter() - started) * 1000, 2),
+        intent_type=resolution.intent_type if resolution else "unknown",
+        deterministic_match=resolution.deterministic_match if resolution else False,
+        clarification_needed=resolution.clarification_needed if resolution else False,
+        clarification_question=resolution.clarification_question if resolution else None,
+        ai_fallback_eligible=resolution.ai_fallback_eligible if resolution else False,
+        canonical_category_slug=(resolution.canonical_category_slug if resolution else None),
+        location_text=resolution.location_text if resolution else None,
     )
 
 
@@ -1074,6 +1095,7 @@ def search_suggestions(
         str | None, Query(pattern="^(facility|procedure|procedure_category)$")
     ] = None,
     state_code: Annotated[str | None, Query(alias="state", min_length=2, max_length=2)] = None,
+    locale: Annotated[str, Query(pattern="^(en|es|vi|zh-TW|zh-CN)$")] = "en",
     limit: Annotated[int, Query(ge=1, le=20)] = 8,
 ) -> list[dict[str, object]]:
     return [
@@ -1083,7 +1105,7 @@ def search_suggestions(
             "title": item.title,
             "match_reason": item.match_reason,
         }
-        for item in search(session, q, entity_type, state_code)[:limit]
+        for item in search(session, q, entity_type, state_code, locale=locale)[:limit]
     ]
 
 

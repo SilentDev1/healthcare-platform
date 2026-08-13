@@ -19,6 +19,7 @@ from packages.database import (
     SearchDocument,
 )
 from packages.identity import normalize_name
+from packages.search.categories import consumer_categories
 
 logger = structlog.get_logger()
 
@@ -32,7 +33,6 @@ SYNONYMS: dict[str, list[str]] = {
     "ekg": ["electrocardiogram", "ecg"],
     "ecg": ["electrocardiogram", "ekg"],
     "mri": ["magnetic resonance imaging"],
-    "knee scan": ["knee mri", "mri knee"],
     "ct scan": ["computed tomography", "cat scan"],
     "cat scan": ["computed tomography", "ct scan"],
     "x-ray": ["radiograph", "x ray", "xray"],
@@ -230,16 +230,37 @@ def rebuild_index(session: Session) -> int:
             )
         )
         count += 1
+    category_registry = consumer_categories()
+    procedure_counts: dict[uuid.UUID, int] = {}
+    for procedure in session.scalars(select(Procedure).where(Procedure.active.is_(True))):
+        procedure_counts[procedure.category_id] = procedure_counts.get(procedure.category_id, 0) + 1
     for category in categories.values():
+        consumer_category = category_registry.get(category.slug)
+        label = consumer_category.label("en") if consumer_category else category.name
+        labels = (
+            list(dict.fromkeys([category.name, *consumer_category.labels.values()]))
+            if consumer_category
+            else [category.name]
+        )
+        aliases = list(consumer_category.aliases) if consumer_category else []
         session.add(
             SearchDocument(
                 entity_type="procedure_category",
                 entity_id=category.id,
-                primary_text=category.name,
+                primary_text=label,
                 secondary_text=category.description,
-                normalized_text=normalize_name(f"{category.name} {category.description}"),
+                normalized_text=normalize_name(
+                    " ".join([category.name, category.description, *labels, *aliases])
+                ),
                 active=category.active,
-                metadata_json={"slug": category.slug},
+                metadata_json={
+                    "slug": category.slug,
+                    "aliases": aliases,
+                    "category_labels": labels,
+                    "localized_labels": consumer_category.labels if consumer_category else {},
+                    "procedure_count": procedure_counts.get(category.id, 0),
+                    "navigation_only": True,
+                },
             )
         )
         count += 1
@@ -255,9 +276,11 @@ def search(
     city: str | None = None,
     postal_code: str | None = None,
     category: str | None = None,
+    locale: str = "en",
 ) -> list[SearchResult]:
     started = time.perf_counter()
-    normalized = normalize_name(query)
+    canonical_normalized = normalize_name(query)
+    normalized = canonical_normalized or " ".join(query.casefold().split())
     query_lower = query.lower().strip()
     synonym_targets = SYNONYMS.get(query_lower, [])
     if not synonym_targets:
@@ -274,7 +297,7 @@ def search(
         statement = statement.where(SearchDocument.city.ilike(city))
     if postal_code:
         statement = statement.where(SearchDocument.postal_code == postal_code)
-    if session.bind and session.bind.dialect.name == "postgresql":
+    if session.bind and session.bind.dialect.name == "postgresql" and canonical_normalized:
         searchable_terms = [normalized, *(normalize_name(term) for term in synonym_targets)]
         statement = statement.where(
             or_(
@@ -295,7 +318,28 @@ def search(
         reason, score = "", 0.0
         aliases_value = document.metadata_json.get("aliases", [])
         aliases = aliases_value if isinstance(aliases_value, list) else []
-        if normalized == primary:
+        category_labels_value = document.metadata_json.get("category_labels", [])
+        category_labels = category_labels_value if isinstance(category_labels_value, list) else []
+        normalized_category_labels = [
+            normalize_name(str(item)) or " ".join(str(item).casefold().split())
+            for item in category_labels
+        ]
+        if (
+            document.entity_type == "procedure_category"
+            and normalized in normalized_category_labels
+        ):
+            reason, score = "exact_category", 90.0
+        elif document.entity_type == "procedure_category" and normalized in [
+            normalize_name(str(item)) or " ".join(str(item).casefold().split()) for item in aliases
+        ]:
+            reason, score = "reviewed_category_alias", 88.0
+        elif (
+            document.entity_type == "procedure_category"
+            and len(normalized) >= 3
+            and any(label.startswith(normalized) for label in normalized_category_labels)
+        ):
+            reason, score = "category_partial", 70.0
+        elif normalized == primary:
             reason, score = "exact_primary", 100.0
         elif normalized in [normalize_name(str(item)) for item in aliases]:
             reason, score = "exact_alias", 95.0
@@ -315,11 +359,18 @@ def search(
                 " · ".join(filter(None, [document.city, document.state, document.postal_code]))
                 or None
             )
+            title = document.primary_text
+            if document.entity_type == "procedure_category":
+                localized = document.metadata_json.get("localized_labels", {})
+                if isinstance(localized, dict):
+                    candidate_title = localized.get(locale)
+                    if isinstance(candidate_title, str):
+                        title = candidate_title
             results.append(
                 SearchResult(
                     document.entity_type,
                     document.entity_id,
-                    document.primary_text,
+                    title,
                     document.secondary_text,
                     location,
                     score,
@@ -358,6 +409,49 @@ def search(
                             document.metadata_json,
                         )
                     )
+
+    # Exact/alias/partial category matches expand to their canonical catalog
+    # procedures. This is navigation only: no hospital-price rows are queried or
+    # aggregated, and membership updates automatically when the catalog changes.
+    matched_category_slugs = {
+        str(result.metadata["slug"])
+        for result in results
+        if result.entity_type == "procedure_category"
+        and result.match_reason in {"exact_category", "reviewed_category_alias", "category_partial"}
+    }
+    if matched_category_slugs and entity_type is None:
+        results = [
+            result
+            for result in results
+            if not (
+                result.entity_type == "procedure"
+                and result.metadata.get("category") in matched_category_slugs
+            )
+        ]
+        seen_ids = {(result.entity_type, result.entity_id) for result in results}
+        for document in documents:
+            if (
+                document.entity_type != "procedure"
+                or document.metadata_json.get("category") not in matched_category_slugs
+            ):
+                continue
+            key = (document.entity_type, document.entity_id)
+            if key in seen_ids:
+                continue
+            seen_ids.add(key)
+            results.append(
+                SearchResult(
+                    document.entity_type,
+                    document.entity_id,
+                    document.primary_text,
+                    document.secondary_text,
+                    None,
+                    60.0,
+                    "category_member",
+                    query,
+                    document.metadata_json,
+                )
+            )
 
     results.sort(key=lambda item: (-item.score, item.title.lower(), str(item.entity_id)))
     logger.info(
