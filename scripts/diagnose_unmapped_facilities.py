@@ -124,6 +124,10 @@ def _top_unmapped_codes(
             PriceServiceCode.code,
             func.count(PriceServiceCode.id).label("count"),
             func.min(HospitalPriceRecord.raw_description).label("sample_description"),
+            # The raw (pre-normalization) type label the source used. A code is
+            # UNKNOWN when this label isn't one _code_system() recognizes — seeing
+            # it tells us whether the fix is code-type recognition vs. a crosswalk.
+            func.min(PriceServiceCode.raw_code_type).label("raw_code_type"),
         )
         .join(
             HospitalPriceRecord, PriceServiceCode.hospital_price_record_id == HospitalPriceRecord.id
@@ -139,6 +143,78 @@ def _top_unmapped_codes(
             "code": str(row[1]),
             "count": row[2],
             "sample_description": row[3],
+            "raw_code_type": row[4],
+        }
+        for row in rows
+    ]
+
+
+def _unmapped_code_type_distribution(session: Session, facility_id: object) -> dict[str, int]:
+    """Counts by the raw source code-type label, over records lacking a reviewed mapping.
+
+    This is the single most useful signal for a MAPPING_GAP: if the dominant label
+    is a recognized standard system that merely isn't in `_code_system()`'s map, the
+    fix is code-type recognition; if it's a proprietary/blank label, it's a
+    chargemaster that needs a reviewed crosswalk (or a standard column we're not
+    reading — see the raw payload samples).
+    """
+    reviewed_for_record = exists().where(
+        and_(
+            PriceRecordProcedureMapping.hospital_price_record_id == HospitalPriceRecord.id,
+            PriceRecordProcedureMapping.reviewed.is_(True),
+        )
+    )
+    rows = session.execute(
+        select(PriceServiceCode.raw_code_type, func.count(PriceServiceCode.id))
+        .join(
+            HospitalPriceRecord, PriceServiceCode.hospital_price_record_id == HospitalPriceRecord.id
+        )
+        .where(HospitalPriceRecord.facility_id == facility_id, ~reviewed_for_record)
+        .group_by(PriceServiceCode.raw_code_type)
+        .order_by(func.count(PriceServiceCode.id).desc())
+    ).all()
+    return {str(row[0]): row[1] for row in rows}
+
+
+def _raw_payload_samples(
+    session: Session, facility_id: object, limit: int
+) -> list[dict[str, object]]:
+    """A few full raw records lacking a reviewed mapping, to eyeball the columns.
+
+    The bounded `raw_payload` shows every source column the importer retained — the
+    definitive way to tell whether a standard CPT/HCPCS code sits in a column the
+    parser didn't prefer (→ a small normalization fix) rather than being absent
+    (→ a reviewed crosswalk).
+    """
+    reviewed_for_record = exists().where(
+        and_(
+            PriceRecordProcedureMapping.hospital_price_record_id == HospitalPriceRecord.id,
+            PriceRecordProcedureMapping.reviewed.is_(True),
+        )
+    )
+    rows = session.execute(
+        select(
+            PriceServiceCode.code_system,
+            PriceServiceCode.code,
+            PriceServiceCode.raw_code_type,
+            PriceServiceCode.raw_code,
+            HospitalPriceRecord.raw_description,
+            HospitalPriceRecord.raw_payload,
+        )
+        .join(
+            HospitalPriceRecord, PriceServiceCode.hospital_price_record_id == HospitalPriceRecord.id
+        )
+        .where(HospitalPriceRecord.facility_id == facility_id, ~reviewed_for_record)
+        .limit(limit)
+    ).all()
+    return [
+        {
+            "code_system": str(row[0]),
+            "code": str(row[1]),
+            "raw_code_type": row[2],
+            "raw_code": row[3],
+            "raw_description": row[4],
+            "raw_payload": row[5],
         }
         for row in rows
     ]
@@ -177,7 +253,11 @@ def diagnose(session: Session, state: str = "NH", top_codes: int = 25) -> dict[s
                 "publishable_summaries": summary_count,
                 "likely_cause": cause,
                 "code_system_distribution": _code_system_distribution(session, facility_id),
+                "raw_code_type_distribution": _unmapped_code_type_distribution(
+                    session, facility_id
+                ),
                 "top_unmapped_codes": _top_unmapped_codes(session, facility_id, top_codes),
+                "raw_payload_samples": _raw_payload_samples(session, facility_id, 8),
             }
         )
 

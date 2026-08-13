@@ -90,6 +90,8 @@ def _record(
     code_system: str,
     code: str,
     description: str,
+    raw_code_type: str | None = None,
+    raw_payload: dict[str, object] | None = None,
 ) -> HospitalPriceRecord:
     record = HospitalPriceRecord(
         facility_id=facility.id,
@@ -101,7 +103,7 @@ def _record(
         service_description_normalized=description.lower(),
         setting="outpatient",
         billing_class="facility",
-        raw_payload={},
+        raw_payload=raw_payload if raw_payload is not None else {},
         parser_name="cms_hpt_csv",
         parser_version="1.0.0",
         observed_at=datetime.now(UTC),
@@ -113,7 +115,7 @@ def _record(
             hospital_price_record_id=record.id,
             code_system=code_system,
             code=code,
-            raw_code_type=code_system,
+            raw_code_type=raw_code_type if raw_code_type is not None else code_system,
             raw_code=code,
         )
     )
@@ -170,10 +172,36 @@ def test_diagnose_identifies_parsed_but_unmapped_and_ranks_codes() -> None:
         _publishable_summary(session, published, procedure, source)
 
         # B: records, no reviewed mapping, no summary → parsed-but-unmapped.
+        # Model a proprietary chargemaster: local code, non-standard type label,
+        # and a raw_payload carrying a standard code column the parser didn't prefer.
         unmapped = _facility(session, "990202", "UNMAPPED HOSPITAL")
-        _record(session, unmapped, source, run, "CDM", "ABC123", "LOCAL LAB PANEL")
-        _record(session, unmapped, source, run, "CDM", "ABC123", "LOCAL LAB PANEL")
-        _record(session, unmapped, source, run, "CDM", "XYZ999", "LOCAL IMAGING")
+        for _ in range(2):
+            _record(
+                session,
+                unmapped,
+                source,
+                run,
+                "CDM",
+                "ABC123",
+                "LOCAL LAB PANEL",
+                raw_code_type="LOCAL",
+                raw_payload={
+                    "code": "ABC123",
+                    "cpt_hcpcs": "80053",
+                    "description": "LOCAL LAB PANEL",
+                },
+            )
+        _record(
+            session,
+            unmapped,
+            source,
+            run,
+            "CDM",
+            "XYZ999",
+            "LOCAL IMAGING",
+            raw_code_type="LOCAL",
+            raw_payload={"code": "XYZ999", "cpt_hcpcs": "70450", "description": "LOCAL IMAGING"},
+        )
 
         # C: records + reviewed mapping but no publishable summary → investigate.
         stuck = _facility(session, "990203", "STUCK HOSPITAL")
@@ -207,8 +235,16 @@ def test_diagnose_identifies_parsed_but_unmapped_and_ranks_codes() -> None:
     assert top[0]["code"] == "ABC123"
     assert top[0]["count"] == 2
     assert top[0]["sample_description"] == "LOCAL LAB PANEL"
+    assert top[0]["raw_code_type"] == "LOCAL"
     assert {c["code"] for c in top} == {"ABC123", "XYZ999"}
     assert unmapped_entry["code_system_distribution"] == {"CDM": 3}
+    # Raw source type label surfaced — the signal for parser-fix vs. crosswalk.
+    assert unmapped_entry["raw_code_type_distribution"] == {"LOCAL": 3}
+    # Sample raw rows expose the standard code column the parser didn't prefer.
+    samples = unmapped_entry["raw_payload_samples"]
+    assert samples and len(samples) == 3
+    assert all(s["raw_code_type"] == "LOCAL" for s in samples)
+    assert any(s["raw_payload"].get("cpt_hcpcs") == "80053" for s in samples)
 
     stuck_entry = by_ccn["990203"]
     assert stuck_entry["likely_cause"] == "mapped_but_not_publishable_investigate"
