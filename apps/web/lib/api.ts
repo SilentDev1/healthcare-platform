@@ -108,6 +108,14 @@ export interface Procedure {
   category: { slug: string; name: string; description: string };
   billing_notice: string;
 }
+export interface ProcedureCategory {
+  id: string;
+  parent_id: string | null;
+  slug: string;
+  name: string;
+  description: string;
+  sort_order: number;
+}
 export interface PriceSummary {
   id: string;
   facility_id: string;
