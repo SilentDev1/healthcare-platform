@@ -28,6 +28,13 @@ class HospitalPriceSettings(BaseSettings):
     hospital_price_profiling_milestone_rows: int = Field(1000, ge=100, le=50000)
     hospital_price_checkpoint_enabled: bool = True
     hospital_price_checkpoint_interval: int = Field(1, ge=1, le=100)
+    # Optional soft wall-clock budget for a single import invocation. 0 disables it
+    # (unchanged behavior). When set, the importer stops cleanly at the next
+    # committed-batch boundary once exceeded, marks the run INTERRUPTED, and leaves
+    # the checkpoint active so a later invocation resumes — used to finish very
+    # large MRFs across several runs well before a platform task timeout hard-kills
+    # the process. Never re-imports already-committed rows.
+    hospital_price_import_soft_deadline_seconds: int = Field(0, ge=0)
 
 
 hospital_price_settings = HospitalPriceSettings()

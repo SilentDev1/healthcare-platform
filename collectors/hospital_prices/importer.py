@@ -3,6 +3,7 @@ import json
 import logging
 import shutil
 import tempfile
+import time
 import uuid
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -30,6 +31,7 @@ from packages.database import (
     FacilitySourceObservation,
     HospitalPriceRateDetail,
     HospitalPriceRecord,
+    ImportCheckpoint,
     ImportRun,
     ParserReview,
     PriceRecordProcedureCandidate,
@@ -90,6 +92,9 @@ class PriceImportSummary:
     procedure_candidates: int = 0
     anomalies: int = 0
     skipped_unchanged: bool = False
+    # True when the import stopped at the soft deadline with work still remaining;
+    # the run is INTERRUPTED and resumable from its active checkpoint.
+    interrupted: bool = False
 
 
 def decimal_value(value: object) -> Decimal | None:
@@ -213,26 +218,114 @@ def import_price_source(
     if existing_run:
         summary.skipped_unchanged = True
         return summary
-    run = ImportRun(
-        importer_name="hospital_prices", status=ImportStatus.RUNNING, source_file_id=source.id
-    )
-    session.add(run)
-    session.flush()
-    observation = FacilitySourceObservation(
-        facility_id=price_source.facility_id,
-        source_file_id=source.id,
-        import_run_id=run.id,
-        source_record_identifier=f"MRF:{source.checksum_sha256}",
-        source_payload_hash=source.checksum_sha256,
-        raw_payload={
-            "source_url": source.source_url,
-            "checksum_sha256": source.checksum_sha256,
-            "parser_version": settings.hospital_price_parser_version,
-        },
-        observed_at=datetime.now(UTC),
-    )
-    session.add(observation)
-    session.flush()
+
+    parser_version = settings.hospital_price_parser_version
+    resume_line = 0
+    batch_number = 0
+
+    # Resume a prior interrupted/killed import instead of starting a second run for
+    # the same source file. Prefer the run that owns an active checkpoint (matched on
+    # source-file identity + checksum + parser version, so a changed file or parser
+    # never silently resumes onto stale progress). Because a changed checksum/parser
+    # yields a *different* source_file_id (download dedups on both), an active
+    # checkpoint always matches when committed rows exist for this source file — so
+    # "no active checkpoint" means zero committed rows and a safe restart at line 0.
+    active_checkpoint: ImportCheckpoint | None = None
+    run: ImportRun | None = None
+    if settings.hospital_price_checkpoint_enabled:
+        active_checkpoint = session.scalar(
+            select(ImportCheckpoint)
+            .where(
+                ImportCheckpoint.source_file_id == source.id,
+                ImportCheckpoint.status == "active",
+                ImportCheckpoint.source_checksum == source.checksum_sha256,
+                ImportCheckpoint.parser_version == parser_version,
+            )
+            .order_by(ImportCheckpoint.checkpoint_at.desc())
+            .limit(1)
+        )
+        if active_checkpoint is not None:
+            run = session.get(ImportRun, active_checkpoint.import_run_id)
+            if run is None:
+                active_checkpoint = None  # orphaned checkpoint → treat as no progress
+
+    if run is None:
+        # Reuse any prior non-terminal run for this source (e.g. one killed before its
+        # first committed batch) rather than orphaning a fresh RUNNING run/observation.
+        run = session.scalar(
+            select(ImportRun)
+            .where(
+                ImportRun.source_file_id == source.id,
+                ImportRun.importer_name == "hospital_prices",
+                ImportRun.status.in_([ImportStatus.RUNNING, ImportStatus.INTERRUPTED]),
+            )
+            .order_by(ImportRun.started_at.desc())
+            .limit(1)
+        )
+
+    observation: FacilitySourceObservation | None = None
+    if run is not None:
+        run.status = ImportStatus.RUNNING
+        observation = session.scalar(
+            select(FacilitySourceObservation).where(
+                FacilitySourceObservation.import_run_id == run.id,
+                FacilitySourceObservation.source_file_id == source.id,
+            )
+        )
+        if active_checkpoint is not None:
+            resume_line = active_checkpoint.last_completed_line
+            summary.records_normalized = active_checkpoint.normalized_records_committed
+            summary.rate_details = active_checkpoint.rate_details_committed
+            batch_number = active_checkpoint.batch_number
+            logger.info(
+                "resuming_from_checkpoint",
+                extra={"resume_line": resume_line, "batch_number": batch_number},
+            )
+        else:
+            logger.info("restarting_incomplete_run", extra={"run_id": str(run.id)})
+    else:
+        run = ImportRun(
+            importer_name="hospital_prices", status=ImportStatus.RUNNING, source_file_id=source.id
+        )
+        session.add(run)
+        session.flush()
+
+    if observation is None:
+        observation = FacilitySourceObservation(
+            facility_id=price_source.facility_id,
+            source_file_id=source.id,
+            import_run_id=run.id,
+            source_record_identifier=f"MRF:{source.checksum_sha256}",
+            source_payload_hash=source.checksum_sha256,
+            raw_payload={
+                "source_url": source.source_url,
+                "checksum_sha256": source.checksum_sha256,
+                "parser_version": parser_version,
+            },
+            observed_at=datetime.now(UTC),
+        )
+        session.add(observation)
+        session.flush()
+
+    checkpoint_mgr = CheckpointManager(session, run, source, parser_version)
+    if active_checkpoint is not None:
+        checkpoint_mgr.resume_existing(active_checkpoint.id)
+    run.parser_version_used = parser_version
+    run.source_checksum_used = source.checksum_sha256
+    # Persist the RUNNING run + observation up front so a hard kill still leaves a
+    # resumable anchor. Also fixes the identifiers below against expiry across the
+    # per-batch commits that follow.
+    session.commit()
+
+    # Stable identifiers reused across per-batch commits (avoids re-querying expired
+    # ORM attributes after each commit).
+    source_id = source.id
+    run_id = run.id
+    observation_id = observation.id
+    facility_id = price_source.facility_id
+    location_id = price_source.facility_location_id
+    soft_deadline = settings.hospital_price_import_soft_deadline_seconds
+    started_monotonic = time.monotonic()
 
     # Load all caches once
     with profiler.time_section("seed_payers"):
@@ -240,22 +333,6 @@ def import_price_source(
     caches = ImportCaches()
     with profiler.time_section("load_caches"):
         caches.load(session)
-
-    # Checkpoint support
-    checkpoint_mgr = CheckpointManager(session, run, source, settings.hospital_price_parser_version)
-    run.parser_version_used = settings.hospital_price_parser_version
-    run.source_checksum_used = source.checksum_sha256
-    resume_line = 0
-    batch_number = 0
-    if settings.hospital_price_checkpoint_enabled and checkpoint_mgr.can_resume():
-        resume_line = checkpoint_mgr.get_resume_position()
-        prev_records, prev_rates, batch_number = checkpoint_mgr.get_resume_counters()
-        summary.records_normalized = prev_records
-        summary.rate_details = prev_rates
-        logger.info(
-            "resuming_from_checkpoint",
-            extra={"resume_line": resume_line, "batch_number": batch_number},
-        )
 
     # Stage extraction and parsing on local container disk instead of the gcsfuse
     # source mount. Reading/writing multi-GB machine-readable files directly over
@@ -289,7 +366,7 @@ def import_price_source(
             if match is None:
                 session.add(
                     ParserReview(
-                        source_file_id=source.id,
+                        source_file_id=source_id,
                         detected_format=input_path.suffix.lower().lstrip(".") or "unknown",
                         detected_headers=headers,
                         bounded_sample=sample,
@@ -342,11 +419,11 @@ def import_price_source(
                     normalized_desc = caches.normalize_description(description)
                     record = HospitalPriceRecord(
                         id=rec_uuid,
-                        facility_id=price_source.facility_id,
-                        facility_location_id=price_source.facility_location_id,
-                        source_file_id=source.id,
-                        import_run_id=run.id,
-                        facility_source_observation_id=observation.id,
+                        facility_id=facility_id,
+                        facility_location_id=location_id,
+                        source_file_id=source_id,
+                        import_run_id=run_id,
+                        facility_source_observation_id=observation_id,
                         source_record_identifier=record_id,
                         source_line_number=line_number,
                         source_payload_hash=hashlib.sha256(payload_json.encode()).hexdigest(),
@@ -520,7 +597,9 @@ def import_price_source(
                     summary.rate_details += row_rate_count
                     profiler.record_rate_detail(row_rate_count)
 
-                    # Flush batch if full
+                    # Flush the batch and COMMIT it together with its checkpoint, so
+                    # the committed rows + resume position are durable. A later run
+                    # resumes at exactly this line, never re-importing committed work.
                     if len(batch) >= settings.hospital_price_batch_size:
                         _flush_batch(session, batch, caches, profiler)
                         batch_number += 1
@@ -531,7 +610,13 @@ def import_price_source(
                                 summary.rate_details,
                                 batch_number,
                             )
+                        session.commit()
                         batch.clear()
+                        # Soft wall-clock budget: stop cleanly at this committed
+                        # boundary so the platform never hard-kills mid-batch.
+                        if soft_deadline and time.monotonic() - started_monotonic >= soft_deadline:
+                            summary.interrupted = True
+                            break
 
                     milestone = profiler.milestone_report(
                         settings.hospital_price_profiling_milestone_rows
@@ -542,9 +627,9 @@ def import_price_source(
                     summary.records_rejected += 1
                     batch.unmatched.append(
                         PricingUnmatchedRecord(
-                            source_file_id=source.id,
-                            import_run_id=run.id,
-                            facility_id=price_source.facility_id,
+                            source_file_id=source_id,
+                            import_run_id=run_id,
+                            facility_id=facility_id,
                             source_record_identifier=record_id,
                             reason=str(exc),
                             raw_description=str(row.get("description") or "") or None,
@@ -568,7 +653,30 @@ def import_price_source(
                             {"record_id": record_id},
                         )
 
-        # Flush remaining batch
+            if summary.interrupted:
+                break  # soft deadline reached; leave the rest for a resume
+
+        if summary.interrupted:
+            # Stopped cleanly at the soft deadline. Committed batches and the active
+            # checkpoint remain; mark the run resumable and return without completing.
+            interrupted_run = session.get(ImportRun, run_id)
+            if interrupted_run is not None:
+                interrupted_run.status = ImportStatus.INTERRUPTED
+                interrupted_run.throughput_rows_per_sec = Decimal(
+                    str(round(profiler.rows_per_sec, 2))
+                )
+                interrupted_run.finished_at = datetime.now(UTC)
+                interrupted_run.rows_read = summary.rows_examined
+                interrupted_run.rows_inserted = summary.records_normalized
+                interrupted_run.rows_rejected = summary.records_rejected
+            session.commit()
+            logger.info(
+                "import_interrupted_soft_deadline",
+                extra={"records": summary.records_normalized, "line": resume_line},
+            )
+            return summary
+
+        # Flush remaining batch and commit it with its checkpoint.
         if len(batch) > 0 or batch.unmatched or batch.anomalies:
             _flush_batch(session, batch, caches, profiler)
             batch_number += 1
@@ -579,42 +687,35 @@ def import_price_source(
                     summary.rate_details,
                     batch_number,
                 )
+            session.commit()
             batch.clear()
 
         checkpoint_mgr.complete()
-        run.status = (
+        completed_run = session.get(ImportRun, run_id)
+        assert completed_run is not None
+        completed_run.status = (
             ImportStatus.COMPLETED_WITH_ERRORS
             if summary.records_rejected or summary.quarantined_files
             else ImportStatus.COMPLETED
         )
-        run.throughput_rows_per_sec = Decimal(str(round(profiler.rows_per_sec, 2)))
-        source.status = SourceStatus.COMPLETED
+        completed_run.throughput_rows_per_sec = Decimal(str(round(profiler.rows_per_sec, 2)))
+        completed_run.finished_at = datetime.now(UTC)
+        completed_run.rows_read = summary.rows_examined
+        completed_run.rows_inserted = summary.records_normalized
+        completed_run.rows_rejected = summary.records_rejected
+        completed_source = session.get(SourceFile, source_id)
+        assert completed_source is not None
+        completed_source.status = SourceStatus.COMPLETED
     except KeyboardInterrupt:
-        _persist_failed_import(
-            session,
-            run.id,
-            source.id,
-            ImportStatus.INTERRUPTED,
-            "Import interrupted by user",
-            summary,
-        )
+        _persist_interrupted_import(session, run_id, source_id, summary)
         raise
     except Exception as exc:
-        _persist_failed_import(
-            session,
-            run.id,
-            source.id,
-            ImportStatus.FAILED,
-            f"{type(exc).__name__}: {exc}"[:2000],
-            summary,
+        _persist_interrupted_import(
+            session, run_id, source_id, summary, error=f"{type(exc).__name__}: {exc}"[:2000]
         )
         raise
     finally:
         shutil.rmtree(local_extract_root, ignore_errors=True)
-    run.finished_at = datetime.now(UTC)
-    run.rows_read = summary.rows_examined
-    run.rows_inserted = summary.records_normalized
-    run.rows_rejected = summary.records_rejected
     profiler.record_db_transaction()
     with profiler.time_section("db_commit"):
         session.commit()
@@ -622,34 +723,35 @@ def import_price_source(
     return summary
 
 
-def _persist_failed_import(
+def _persist_interrupted_import(
     session: Session,
     run_id: uuid.UUID,
     source_id: uuid.UUID,
-    status: ImportStatus,
-    error_summary: str,
     summary: PriceImportSummary,
+    error: str | None = None,
 ) -> None:
-    """Rollback the failed batch, then persist an accurate terminal run state."""
+    """Roll back only the uncommitted partial batch and leave the import resumable.
+
+    With per-batch commits, batches already written are durable and correct; only the
+    in-flight batch (never committed) is discarded by the rollback. The run is marked
+    INTERRUPTED and its active checkpoint is preserved (never abandoned), so the next
+    invocation resumes from the last committed line rather than re-importing. The
+    source is returned to DOWNLOADED so a retry is permitted. Committed rows are never
+    thrown away — that is what makes very large MRFs completable across runs.
+    """
     session.rollback()
-    failed_run = session.get(ImportRun, run_id)
-    failed_source = session.get(SourceFile, source_id)
-    if failed_run is None:
-        failed_run = ImportRun(
-            id=run_id,
-            importer_name="hospital_prices",
-            source_file_id=source_id,
-            status=status,
-        )
-        session.add(failed_run)
-    failed_run.status = status
-    failed_run.error_summary = error_summary
-    failed_run.finished_at = datetime.now(UTC)
-    failed_run.rows_read = summary.rows_examined
-    failed_run.rows_inserted = 0
-    failed_run.rows_rejected = summary.records_rejected
-    if failed_source is not None:
-        failed_source.status = SourceStatus.FAILED
+    interrupted_run = session.get(ImportRun, run_id)
+    if interrupted_run is not None:
+        interrupted_run.status = ImportStatus.INTERRUPTED
+        if error is not None:
+            interrupted_run.error_summary = error
+        interrupted_run.finished_at = datetime.now(UTC)
+        interrupted_run.rows_read = summary.rows_examined
+        interrupted_run.rows_inserted = summary.records_normalized
+        interrupted_run.rows_rejected = summary.records_rejected
+    interrupted_source = session.get(SourceFile, source_id)
+    if interrupted_source is not None:
+        interrupted_source.status = SourceStatus.DOWNLOADED
     session.commit()
 
 

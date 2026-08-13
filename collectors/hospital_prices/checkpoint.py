@@ -88,6 +88,14 @@ class CheckpointManager:
                 f"current={self._parser_version}"
             )
 
+    def resume_existing(self, checkpoint_id: uuid.UUID) -> None:
+        """Adopt an existing active checkpoint so save() updates it in place.
+
+        Without this, a resumed import's first save() would CREATE a second
+        checkpoint row for the same source file, splitting resume state.
+        """
+        self._checkpoint_id = checkpoint_id
+
     def save(
         self,
         line_number: int,

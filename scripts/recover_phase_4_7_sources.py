@@ -99,6 +99,9 @@ def main() -> None:
                     "exact_mappings": imported.exact_procedure_mappings,
                     "mapping_candidates": imported.procedure_candidates,
                     "skipped_unchanged": imported.skipped_unchanged,
+                    # True when the import stopped at the soft deadline with rows
+                    # remaining; re-run this wave to resume from the checkpoint.
+                    "interrupted": imported.interrupted,
                 }
             )
         result["imports"] = outcomes

@@ -12,7 +12,7 @@ from collectors.hospital_prices.discovery import discover_sources, extract_mrf_u
 from collectors.hospital_prices.downloader import safe_extract
 from collectors.hospital_prices.importer import (
     PriceImportSummary,
-    _persist_failed_import,
+    _persist_interrupted_import,
     decimal_value,
     rate_identity,
 )
@@ -133,7 +133,7 @@ def test_rate_identity_deduplicates_equivalent_decimal_source_rates() -> None:
     assert rate_identity(first) == rate_identity(repeated)
 
 
-def test_failed_import_run_survives_rollback() -> None:
+def test_interrupted_import_run_stays_resumable_after_rollback() -> None:
     engine = create_engine("sqlite://")
     Base.metadata.create_all(engine)
     with Session(engine) as session:
@@ -149,24 +149,34 @@ def test_failed_import_run_survives_rollback() -> None:
         )
         session.add(source)
         session.commit()
-        run_id = uuid.uuid4()
-        _persist_failed_import(
-            session,
-            run_id,
-            source.id,
-            ImportStatus.FAILED,
-            "parser failed",
-            PriceImportSummary(rows_examined=12, records_normalized=10, records_rejected=2),
+        run = ImportRun(
+            importer_name="hospital_prices",
+            status=ImportStatus.RUNNING,
+            source_file_id=source.id,
         )
-        failed = session.get(ImportRun, run_id)
-        assert failed is not None
-        assert failed.status == ImportStatus.FAILED
-        assert failed.rows_read == 12
-        assert failed.rows_inserted == 0
-        assert failed.rows_rejected == 2
-        failed_source = session.get(SourceFile, source.id)
-        assert failed_source is not None
-        assert failed_source.status == SourceStatus.FAILED
+        session.add(run)
+        session.commit()
+
+        _persist_interrupted_import(
+            session,
+            run.id,
+            source.id,
+            PriceImportSummary(rows_examined=12, records_normalized=10, records_rejected=2),
+            error="parser failed",
+        )
+
+        resumed = session.get(ImportRun, run.id)
+        assert resumed is not None
+        # Marked resumable — committed rows are preserved, not zeroed.
+        assert resumed.status == ImportStatus.INTERRUPTED
+        assert resumed.rows_read == 12
+        assert resumed.rows_inserted == 10
+        assert resumed.rows_rejected == 2
+        assert resumed.error_summary == "parser failed"
+        resumed_source = session.get(SourceFile, source.id)
+        assert resumed_source is not None
+        # Source returns to DOWNLOADED so a later run may resume the import.
+        assert resumed_source.status == SourceStatus.DOWNLOADED
     engine.dispose()
 
 
