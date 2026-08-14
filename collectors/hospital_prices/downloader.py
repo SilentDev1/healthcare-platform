@@ -256,7 +256,10 @@ def _archive_stream(
     dest = directory / f"original{suffix}"
     if dest.exists():
         dest = directory / f"original-{int(time.time() * 1000)}{suffix}"
-    shutil.copy2(str(source_path), dest)
+    # copyfile (data only), NOT copy2: copy2's copystat sets permissions/timestamps,
+    # which the gcsfuse-mounted source bucket rejects with "Operation not permitted".
+    # A staging archive needs the bytes, not the source file's metadata.
+    shutil.copyfile(str(source_path), dest)
     return dest
 
 
