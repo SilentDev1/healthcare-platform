@@ -2,6 +2,7 @@
 
 import argparse
 import uuid
+from collections.abc import Sequence
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
@@ -24,6 +25,58 @@ from packages.database import (
     SourceFile,
     get_session,
 )
+
+# Records-per-chunk for the child/record delete. A large source (e.g. 97k rows)
+# deleted in one un-batched statement holds a single very long-running transaction:
+# the delete of the huge `hospital_price_rate_details` fan-out can run for hours
+# while holding row locks and bloating the WAL, which is what previously wedged the
+# refresh job. Deleting in bounded chunks (committing per chunk) keeps each
+# statement's parameter count well under PostgreSQL's 65535 limit and keeps each
+# transaction short so locks are released promptly.
+DELETE_CHUNK_SIZE = 5000
+
+# Child tables keyed by hospital_price_record_id, in FK-safe delete order (all
+# reference HospitalPriceRecord, so they must be cleared before the records).
+_RECORD_CHILDREN = (
+    FacilityProcedurePriceObservation,
+    PricingAnomaly,
+    HospitalPriceRateDetail,
+    PriceServiceCode,
+    PriceRecordProcedureMapping,
+    PriceRecordProcedureCandidate,
+)
+
+
+def _delete_records_in_chunks(
+    session: Session,
+    source_file_id: uuid.UUID,
+    *,
+    chunk_size: int = DELETE_CHUNK_SIZE,
+) -> int:
+    """Delete a source's price records and their children in committed chunks.
+
+    Returns the number of records deleted. Each chunk deletes a bounded set of
+    record ids' children then the records themselves and commits, so the operation
+    never runs as one multi-hour, whole-source transaction.
+    """
+    deleted = 0
+    while True:
+        record_ids: Sequence[uuid.UUID] = list(
+            session.scalars(
+                select(HospitalPriceRecord.id)
+                .where(HospitalPriceRecord.source_file_id == source_file_id)
+                .limit(chunk_size)
+            )
+        )
+        if not record_ids:
+            break
+        for child in _RECORD_CHILDREN:
+            session.execute(delete(child).where(child.hospital_price_record_id.in_(record_ids)))
+        session.execute(delete(HospitalPriceRecord).where(HospitalPriceRecord.id.in_(record_ids)))
+        session.commit()
+        deleted += len(record_ids)
+        print(f"  ...deleted {deleted} records so far")
+    return deleted
 
 
 def restart(source_file_id: uuid.UUID, session: Session | None = None) -> PriceImportSummary:
@@ -51,47 +104,8 @@ def restart(source_file_id: uuid.UUID, session: Session | None = None) -> PriceI
     )
 
     if record_count:
-        print(f"Deleting {record_count} existing records and children...")
-        # Delete children by a SUBQUERY on source_file_id, never a materialized IN-list
-        # of record ids: a large source (e.g. 97k rows) would blow past PostgreSQL's
-        # 65535 bind-parameter limit. The subquery is evaluated server-side.
-        record_ids_subquery = select(HospitalPriceRecord.id).where(
-            HospitalPriceRecord.source_file_id == source_file_id
-        )
-        # Observations reference records; clear any first so the record delete's FK holds.
-        session.execute(
-            delete(FacilityProcedurePriceObservation).where(
-                FacilityProcedurePriceObservation.hospital_price_record_id.in_(record_ids_subquery)
-            )
-        )
-        session.execute(
-            delete(PricingAnomaly).where(
-                PricingAnomaly.hospital_price_record_id.in_(record_ids_subquery)
-            )
-        )
-        session.execute(
-            delete(HospitalPriceRateDetail).where(
-                HospitalPriceRateDetail.hospital_price_record_id.in_(record_ids_subquery)
-            )
-        )
-        session.execute(
-            delete(PriceServiceCode).where(
-                PriceServiceCode.hospital_price_record_id.in_(record_ids_subquery)
-            )
-        )
-        session.execute(
-            delete(PriceRecordProcedureMapping).where(
-                PriceRecordProcedureMapping.hospital_price_record_id.in_(record_ids_subquery)
-            )
-        )
-        session.execute(
-            delete(PriceRecordProcedureCandidate).where(
-                PriceRecordProcedureCandidate.hospital_price_record_id.in_(record_ids_subquery)
-            )
-        )
-        session.execute(
-            delete(HospitalPriceRecord).where(HospitalPriceRecord.source_file_id == source_file_id)
-        )
+        print(f"Deleting {record_count} existing records and children in chunks...")
+        _delete_records_in_chunks(session, source_file_id)
 
     # Delete unmatched records
     session.execute(
