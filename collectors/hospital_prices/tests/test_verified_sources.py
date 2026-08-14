@@ -75,3 +75,18 @@ def test_androscoggin_valley_source_registered() -> None:
         "020280367_Androscoggin-Valley-Hospital_standardcharges.csv"
     )
     assert entry["declared_format"] == "csv"
+
+
+def test_cottage_hospital_source_registered() -> None:
+    sources = load_registry(REAL_REGISTRY)
+    by_ccn = {entry["ccn"]: entry for entry in sources}
+
+    entry = by_ccn.get("301301")
+    assert entry is not None, "CCN 301301 (Cottage Hospital) must be registered"
+    assert entry["facility_name"] == "COTTAGE HOSPITAL"
+    # Must trace to Cottage Hospital's own domain (its EIN in the filename), not a
+    # third-party estimate/aggregator or the old chargemaster.
+    url = entry["machine_readable_file_url"]
+    assert url.startswith("https://www.cottagehospital.org/")
+    assert "020223321" in url  # Cottage Hospital EIN
+    assert entry["declared_format"] == "csv"

@@ -160,6 +160,16 @@
       "vendor_name": "Hospital Price Transparency Files",
       "health_system_name": "North Country Healthcare",
       "evidence": "Hospital's official cms-hpt.txt declares this MRF URL, and the official financial-information page links the identical file ('Standard Charges,' effective October 1, 2023)"
+    },
+    {
+      "ccn": "301301",
+      "facility_name": "COTTAGE HOSPITAL",
+      "source_page_url": "https://www.cottagehospital.org/price-transparency-",
+      "machine_readable_file_url": "https://www.cottagehospital.org/uploads/files/020223321_cottage_hospital_standardcharges%282%29.csv",
+      "declared_format": "csv",
+      "vendor_name": null,
+      "health_system_name": null,
+      "evidence": "Direct 'Standard Charges' link on Cottage Hospital's official self-hosted price-transparency page. Validated: CMS standard-charges CSV v3.0.0, last_updated_on 4/16/2026 (HTTP last-modified 2026-05-04); hospital_name 'Cottage Hospital', '90 Swiftwater Rd, Woodsville, NH 03785', EIN 020223321 in filename, type_2_npi includes 1528162799; carries negotiated payer rates (Aetna/Anthem Commercial + Medicare Advantage, Amerihealth-Caritas Medicaid) and discounted_cash. Not the 2022 chargemaster. NOTE: cottagehospital.org is Cloudflare challenge-gated, so the automated importer's download is blocked; requires manual retrieval/staging of the file for import."
     }
   ]
 }
