@@ -193,7 +193,7 @@
     },
     {
       "cdm_pattern": "DXA",
-      "description_pattern": "bone.?density|dexa|dxa",
+      "description_pattern": "bone.?density|\\bdexa\\b|\\bdxa\\b",
       "target_code": "77080",
       "target_system": "CPT",
       "confidence": 0.9
@@ -379,6 +379,34 @@
       "target_code": "73221",
       "target_system": "CPT",
       "confidence": 0.9
+    },
+    {
+      "cdm_pattern": "COLONOSCOPY",
+      "description_pattern": "^colonoscopy$",
+      "target_code": "45378",
+      "target_system": "CPT",
+      "confidence": 0.95
+    },
+    {
+      "cdm_pattern": "COLONOSCOPY_BIOPSY",
+      "description_pattern": "^colonoscopy and biopsy$",
+      "target_code": "45380",
+      "target_system": "CPT",
+      "confidence": 0.95
+    },
+    {
+      "cdm_pattern": "COLONOSCOPY_POLYPECTOMY",
+      "description_pattern": "^colonoscopy (&|and) polypectomy$",
+      "target_code": "45385",
+      "target_system": "CPT",
+      "confidence": 0.95
+    },
+    {
+      "cdm_pattern": "LIPID_PNL",
+      "description_pattern": "lipid pnl",
+      "target_code": "80061",
+      "target_system": "CPT",
+      "confidence": 0.95
     }
   ]
 }
