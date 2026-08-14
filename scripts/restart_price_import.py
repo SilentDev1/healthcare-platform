@@ -3,13 +3,14 @@
 import argparse
 import uuid
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from collectors.hospital_prices.config import hospital_price_settings
-from collectors.hospital_prices.importer import import_price_source
+from collectors.hospital_prices.importer import PriceImportSummary, import_price_source
 from packages.database import (
     FacilityPriceSource,
+    FacilityProcedurePriceObservation,
     FacilitySourceObservation,
     HospitalPriceRateDetail,
     HospitalPriceRecord,
@@ -25,8 +26,9 @@ from packages.database import (
 )
 
 
-def restart(source_file_id: uuid.UUID) -> None:
-    session: Session = next(get_session())
+def restart(source_file_id: uuid.UUID, session: Session | None = None) -> PriceImportSummary:
+    if session is None:
+        session = next(get_session())
     source = session.get(SourceFile, source_file_id)
     if source is None:
         raise ValueError(f"Source file {source_file_id} not found")
@@ -39,39 +41,52 @@ def restart(source_file_id: uuid.UUID) -> None:
     if price_source is None:
         raise ValueError("No price source found for this source file")
 
-    # Get all record IDs for this source file
-    record_ids = list(
-        session.scalars(
-            select(HospitalPriceRecord.id).where(
+    record_count = (
+        session.scalar(
+            select(func.count(HospitalPriceRecord.id)).where(
                 HospitalPriceRecord.source_file_id == source_file_id
             )
         )
+        or 0
     )
 
-    if record_ids:
-        print(f"Deleting {len(record_ids)} existing records and children...")
-        # Delete children first (FK constraints)
+    if record_count:
+        print(f"Deleting {record_count} existing records and children...")
+        # Delete children by a SUBQUERY on source_file_id, never a materialized IN-list
+        # of record ids: a large source (e.g. 97k rows) would blow past PostgreSQL's
+        # 65535 bind-parameter limit. The subquery is evaluated server-side.
+        record_ids_subquery = select(HospitalPriceRecord.id).where(
+            HospitalPriceRecord.source_file_id == source_file_id
+        )
+        # Observations reference records; clear any first so the record delete's FK holds.
         session.execute(
-            delete(PricingAnomaly).where(PricingAnomaly.hospital_price_record_id.in_(record_ids))
+            delete(FacilityProcedurePriceObservation).where(
+                FacilityProcedurePriceObservation.hospital_price_record_id.in_(record_ids_subquery)
+            )
+        )
+        session.execute(
+            delete(PricingAnomaly).where(
+                PricingAnomaly.hospital_price_record_id.in_(record_ids_subquery)
+            )
         )
         session.execute(
             delete(HospitalPriceRateDetail).where(
-                HospitalPriceRateDetail.hospital_price_record_id.in_(record_ids)
+                HospitalPriceRateDetail.hospital_price_record_id.in_(record_ids_subquery)
             )
         )
         session.execute(
             delete(PriceServiceCode).where(
-                PriceServiceCode.hospital_price_record_id.in_(record_ids)
+                PriceServiceCode.hospital_price_record_id.in_(record_ids_subquery)
             )
         )
         session.execute(
             delete(PriceRecordProcedureMapping).where(
-                PriceRecordProcedureMapping.hospital_price_record_id.in_(record_ids)
+                PriceRecordProcedureMapping.hospital_price_record_id.in_(record_ids_subquery)
             )
         )
         session.execute(
             delete(PriceRecordProcedureCandidate).where(
-                PriceRecordProcedureCandidate.hospital_price_record_id.in_(record_ids)
+                PriceRecordProcedureCandidate.hospital_price_record_id.in_(record_ids_subquery)
             )
         )
         session.execute(
@@ -108,6 +123,7 @@ def restart(source_file_id: uuid.UUID) -> None:
         f"Import complete: {summary.records_normalized} records, "
         f"{summary.rate_details} rate details"
     )
+    return summary
 
 
 if __name__ == "__main__":
