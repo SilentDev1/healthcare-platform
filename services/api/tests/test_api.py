@@ -218,6 +218,29 @@ def test_phase_3_public_and_admin_endpoints() -> None:
         assert client.get(path).status_code == 200
 
 
+def test_search_category_semantics_and_safe_clarification() -> None:
+    category = client.get("/api/v1/search?q=lab%20tests&page_size=50")
+    assert category.status_code == 200
+    payload = category.json()
+    assert payload["intent_type"] == "category"
+    assert payload["deterministic_match"] is True
+    assert payload["canonical_category_slug"] == "laboratory"
+    category_item = next(
+        item for item in payload["items"] if item["entity_type"] == "procedure_category"
+    )
+    members = [item for item in payload["items"] if item["match_reason"] == "category_member"]
+    assert category_item["title"] == "Lab tests"
+    assert category_item["metadata"]["procedure_count"] == len(members) == 11
+    assert not any("price" in item["metadata"] for item in members)
+
+    clarification = client.get("/api/v1/search?q=knee%20scan")
+    assert clarification.status_code == 200
+    clarified = clarification.json()
+    assert clarified["intent_type"] == "ambiguous"
+    assert clarified["clarification_needed"] is True
+    assert all(item["metadata"]["slug"] != "knee-replacement" for item in clarified["items"])
+
+
 def test_phase_4_pricing_endpoints_are_filtered_and_paginated() -> None:
     coverage = client.get("/api/v1/pricing/coverage")
     assert coverage.status_code == 200

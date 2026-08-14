@@ -93,7 +93,12 @@ export interface SearchResult {
   location: string | null;
   score: number;
   match_reason: string;
-  metadata: { slug?: string; category?: string };
+  metadata: {
+    slug?: string;
+    category?: string;
+    procedure_count?: number;
+    navigation_only?: boolean;
+  };
 }
 export interface Procedure {
   id: string;

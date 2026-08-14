@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Procedure, ProcedureCategory } from "../../lib/api";
 import { localePath, type Locale, type Messages } from "../../lib/i18n";
+import { consumerCategoryName } from "../../lib/procedureCategories";
+import { ProcedureCard } from "../components/ProcedureCard";
 
 /* ------------------------------------------------------------------ */
 /* Category icon map — inline SVGs, matching PopularSearches stroke     */
@@ -53,10 +55,10 @@ const CATEGORY_ICONS: Record<string, ReactNode> = {
       <path d="M12 10v7M9 14h6M10 21l2-2 2 2" />
     </>,
   ),
-  outpatient_surgery: strokeIcon(
+  "outpatient-surgery": strokeIcon(
     <path d="M8 4l4 4 4-4M4 12h16M8 20l4-4 4 4" />,
   ),
-  inpatient_surgery: strokeIcon(
+  "inpatient-surgery": strokeIcon(
     <path d="M3 12h18M12 3v18M7 7l10 10M17 7L7 17" />,
   ),
   cardiology: strokeIcon(
@@ -80,26 +82,6 @@ const CATEGORY_ICONS: Record<string, ReactNode> = {
       <path d="M12 7v6M8 17l4-4 4 4" />
     </>,
   ),
-};
-
-/* ------------------------------------------------------------------ */
-/* Consumer category name mapping                                      */
-/* ------------------------------------------------------------------ */
-
-const CATEGORY_I18N_KEYS: Record<string, keyof Messages> = {
-  imaging: "procCat_imaging",
-  laboratory: "procCat_laboratory",
-  preventive: "procCat_preventive",
-  emergency: "procCat_emergency",
-  maternity: "procCat_maternity",
-  outpatient_surgery: "procCat_outpatient_surgery",
-  inpatient_surgery: "procCat_inpatient_surgery",
-  cardiology: "procCat_cardiology",
-  orthopedics: "procCat_orthopedics",
-  gastroenterology: "procCat_gastroenterology",
-  ophthalmology: "procCat_ophthalmology",
-  rehabilitation: "procCat_rehabilitation",
-  other: "procCat_other",
 };
 
 /* ------------------------------------------------------------------ */
@@ -132,18 +114,6 @@ function cleanDescription(proc: Procedure): string {
     return "";
   }
   return proc.short_description;
-}
-
-function consumerCategoryName(
-  t: Messages,
-  categorySlug: string,
-): string {
-  const key = CATEGORY_I18N_KEYS[categorySlug];
-  if (key) return t[key] as string;
-  // Never leak raw slugs — humanize as a safety net
-  return categorySlug
-    .replace(/[-_]/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function procedureCountLabel(t: Messages, count: number): string {
@@ -501,38 +471,16 @@ export function ProceduresDirectory({
           {filtered.length > 0 ? (
             <div className="procdir-cards">
               {filtered.map((proc) => (
-                <article className="procdir-card" key={proc.id}>
-                  <span className="procdir-card-icon" aria-hidden="true">
-                    {CATEGORY_ICONS[proc.category.slug] ?? null}
-                  </span>
-                  <div className="procdir-card-body">
-                    <h2 className="procdir-card-title">
-                      <Link
-                        href={localePath(
-                          locale,
-                          `/procedures/${proc.slug}`,
-                        )}
-                      >
-                        {proc.consumer_name}
-                      </Link>
-                    </h2>
-                    {cleanDescription(proc) && (
-                      <p className="procdir-card-desc">
-                        {cleanDescription(proc)}
-                      </p>
-                    )}
-                    <Link
-                      className="procdir-card-cta"
-                      href={localePath(
-                        locale,
-                        `/procedures/${proc.slug}/prices`,
-                      )}
-                    >
-                      {t.procDirViewPrices}
-                      <span aria-hidden="true"> →</span>
-                    </Link>
-                  </div>
-                </article>
+                <ProcedureCard
+                  key={proc.id}
+                  id={proc.id}
+                  slug={proc.slug}
+                  name={proc.consumer_name}
+                  description={cleanDescription(proc)}
+                  icon={CATEGORY_ICONS[proc.category.slug] ?? null}
+                  locale={locale}
+                  viewPricesLabel={t.procDirViewPrices}
+                />
               ))}
             </div>
           ) : (
