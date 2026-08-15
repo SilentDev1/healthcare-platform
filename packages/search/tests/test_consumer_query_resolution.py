@@ -173,3 +173,35 @@ def test_cbc_navigates_to_complete_blood_count(session: Session) -> None:
     r = resolve_search(session, "cbc")
     slugs = {str(x.metadata.get("slug")) for x in r.results if x.entity_type == "procedure"}
     assert "complete-blood-count" in slugs
+
+
+# Consumer terms that phrase/prefix-match MULTIPLE procedures without matching any
+# single procedure name exactly. resolve_search used to drop these prefix_or_phrase
+# matches and return UNKNOWN with 0 results ("how can CT Scan be 0"). They must now
+# resolve to procedure results the consumer can pick from — deterministically, no LLM.
+PROCEDURE_PHRASE_CASES = [
+    ("CT scan", {"CT scan of abdomen and pelvis", "CT scan of the chest"}),
+    ("ct scan", {"CT scan of abdomen and pelvis", "CT scan of the chest"}),
+    ("mammogram", {"Screening mammogram", "Diagnostic mammogram"}),
+]
+
+
+@pytest.mark.parametrize("query,expected", PROCEDURE_PHRASE_CASES)
+def test_phrase_procedure_matches_resolve(session: Session, query: str, expected: set[str]) -> None:
+    r = resolve_search(session, query)
+    assert r.intent_type.value == "procedure", f"{query!r} -> {r.intent_type.value}"
+    titles = {x.title for x in r.results if x.entity_type == "procedure"}
+    assert expected <= titles, f"{query!r}: {titles} missing {expected - titles}"
+
+
+def test_phrase_fallback_does_not_override_clarification(session: Session) -> None:
+    """The new procedure fallback must not swallow ambiguous-scan clarification."""
+    r = resolve_search(session, "knee scan")
+    assert r.intent_type.value == "ambiguous"
+    assert r.clarification_needed is True
+
+
+def test_true_nonsense_still_returns_no_results(session: Session) -> None:
+    r = resolve_search(session, "xqzptnw")
+    assert r.intent_type.value == "unknown"
+    assert r.results == []

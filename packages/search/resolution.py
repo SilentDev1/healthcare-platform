@@ -200,6 +200,17 @@ def resolve_search(
         resolution = SearchResolution(SearchIntentType.FACILITY, results, True)
         _record(resolution)
         return resolution
+    # Deterministic phrase/prefix/typo procedure matches that reached here without
+    # hitting a more specific intent above (e.g. "CT scan" -> both CT procedures,
+    # "mammogram" -> screening + diagnostic) must still render as procedure results
+    # rather than collapsing to "0 results". Multi-candidate is expected — the
+    # consumer chooses, exactly like the plain catalog search. Ambiguous scans and
+    # multi-candidate synonyms were already resolved above, so this branch can never
+    # override a clarification. No LLM involved.
+    if any(item.entity_type == "procedure" for item in results):
+        resolution = SearchResolution(SearchIntentType.PROCEDURE, results, True)
+        _record(resolution)
+        return resolution
     # Fallback: a natural sentence ("I need a blood test") did not resolve — retry once
     # with consumer lead-in phrases removed, but only accept a confident (non-unknown)
     # deterministic result. This never overrides an already-resolving query.
