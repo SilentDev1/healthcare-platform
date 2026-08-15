@@ -10,6 +10,27 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+# A procedure crosswalk must never resolve a drug/supply line to a procedure code.
+# Dosage-form / supply words are strong, procedure-free signals — a bone-density
+# scan is never a "tablet" and an EGD is never a "suspension". This guard prevents
+# drug-name collisions the description patterns cannot otherwise distinguish (e.g.
+# "DEXA 4MG TAB" dexamethasone vs a DEXA scan, "TOBRA/DEXAMETH OPTH SUSP").
+_DRUG_SUPPLY_PATTERN = re.compile(
+    # Unambiguous dosage-form / supply words (procedures are never these). 'inj',
+    # 'enema', 'patch' are deliberately excluded — they collide with real procedures
+    # (EGD injection of varices, barium enema); injectable drugs are still caught by
+    # the numeric strength below.
+    r"\b(tabs?|tablet|caps?|capsule|susp|suspension|soln|solution|ointment|oint|"
+    r"cream|drops|lozenge|supp|suppository|vial|elixir|syrup|inhaler|nebul|"
+    r"otic|ophth|opth|troche)\b"
+    r"|\b\d+\s?(mg|mcg|meq|units?)\b"  # numeric drug strength (not ml/contrast volume)
+)
+
+
+def _looks_like_drug_or_supply(description_lower: str) -> bool:
+    """True if the description is a drug/supply line (dosage form or strength)."""
+    return bool(_DRUG_SUPPLY_PATTERN.search(description_lower))
+
 
 @dataclass(frozen=True)
 class CrosswalkMapping:
@@ -73,8 +94,13 @@ def apply_cdm_crosswalk(
     if code_type.upper() not in ("CDM", "UNKNOWN", "LOCAL", "FACILITY", "CHARGEMASTER"):
         return None
 
-    mappings = _load_mappings(path)
     desc_lower = description.lower().strip()
+
+    # A drug/supply line is never a procedure — refuse it before any pattern match.
+    if _looks_like_drug_or_supply(desc_lower):
+        return None
+
+    mappings = _load_mappings(path)
 
     for mapping in mappings:
         try:

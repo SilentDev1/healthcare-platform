@@ -121,3 +121,17 @@ def test_sti_thinprep_and_cpap_do_not_map_to_pap_smear() -> None:
     assert _resolve("Split Night PSG/CPAP Test 95811") is None
     assert _code("Screening Pap Smear Q0091") == ("88175", "CPT")
     assert _code("_SPI 88142 AP Bill Cyto Gyn Thin Prep Screening bilat") == ("88175", "CPT")
+
+
+def test_drug_and_supply_lines_never_map_to_a_procedure() -> None:
+    # Dosage-form / strength signals mean a drug or supply, never a procedure. This
+    # catches drug-name collisions the description patterns cannot distinguish, e.g.
+    # 'DEXA' as an abbreviation for dexamethasone vs a DEXA bone-density scan.
+    assert _resolve("DEXA 4MG TAB") is None
+    assert _resolve("DEXAMETHASONE 4 MG TABLET") is None
+    assert _resolve("TOBRA/DEXAMETH OPTH SUSP 2.5ML") is None
+    assert _resolve("LISDEXAMFETAMIN 40MG CAP") is None
+    assert _resolve("CIPROFLOXACIN-DEXAMETHASONE OTIC SUSPENSION") is None
+    # Genuine DEXA scans (no dosage form / strength) still resolve.
+    assert _code("DEXA Axial Bone Density") == ("77080", "CPT")
+    assert _code("BD Bone Density DEXA Axial Skeleton") == ("77080", "CPT")
