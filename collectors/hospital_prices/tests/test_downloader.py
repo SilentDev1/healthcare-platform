@@ -3,6 +3,9 @@
 import hashlib
 from pathlib import Path
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+
 from collectors.hospital_prices.config import HospitalPriceSettings
 from collectors.hospital_prices.downloader import (
     _cleanup_part_files,
@@ -10,9 +13,12 @@ from collectors.hospital_prices.downloader import (
     _save_part_meta,
     _stream_checksum_and_size,
     detect_container,
+    register_local_file,
     validate_downloaded_file,
 )
 from collectors.hospital_prices.parsers import inspect_format, iter_rows, normalized_record
+from packages.database import Base, Facility, FacilityPriceSource, SourceFile
+from packages.database.models import SourceStatus
 
 
 def test_stream_checksum_matches_direct(tmp_path: Path) -> None:
@@ -154,3 +160,62 @@ def test_cms_3_csv_accepts_spaces_around_pipe_headers(tmp_path: Path) -> None:
     assert normalized["cash_price"] == "900"
     assert normalized["minimum"] == "650"
     assert normalized["maximum"] == "800"
+
+
+def test_register_local_file_rearchives_when_existing_storage_path_missing(tmp_path: Path) -> None:
+    """A checksum-matched SourceFile whose staged artifact vanished must not crash.
+
+    This reproduces the Concord-Laconia recovery case: an earlier ephemeral local
+    stage left a SourceFile whose storage_path no longer exists. register_local_file
+    used to call detect_container() on that dead path and raise FileNotFoundError.
+    It must instead re-archive the current bytes and re-point the record.
+    """
+    settings = HospitalPriceSettings(hospital_price_raw_dir=tmp_path / "raw")
+    src = tmp_path / "laconia.csv"
+    src.write_text("description,code|1,standard_charge|discounted_cash\nWidget,1,5\n")
+    checksum, _ = _stream_checksum_and_size(src, settings.hospital_price_max_bytes)
+
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        facility = Facility(
+            cms_certification_number="990009", legal_name="T HOSPITAL", display_name="T"
+        )
+        session.add(facility)
+        session.flush()
+        price_source = FacilityPriceSource(
+            facility_id=facility.id,
+            source_type="hospital_mrf",
+            source_page_url="https://example.test/prices",
+            machine_readable_file_url="https://example.test/f.csv",
+            declared_format="csv",
+            active=True,
+            discovery_method="test",
+        )
+        session.add(price_source)
+        session.flush()
+        # Existing SourceFile matched by checksum, but its staged file is gone.
+        dead = SourceFile(
+            source_name="old",
+            source_url="https://example.test/f.csv",
+            source_type="hospital_price_mrf",
+            storage_path="data/raw/hospital_prices/nh/gone/2026-08-07/original.csv",
+            checksum_sha256=checksum,
+            file_size=123,
+            parser_version=settings.hospital_price_parser_version,
+            status=SourceStatus.DOWNLOADED,
+        )
+        session.add(dead)
+        session.flush()
+        price_source.source_file_id = dead.id
+        session.commit()
+
+        result = register_local_file(session, price_source, src, settings)
+
+        assert result.skipped_unchanged is False
+        refreshed = session.get(SourceFile, dead.id)
+        assert refreshed is not None
+        assert Path(refreshed.storage_path).exists()  # re-pointed to a durable path
+        assert refreshed.checksum_sha256 == checksum  # identity preserved
+        assert price_source.source_file_id == dead.id
+    engine.dispose()

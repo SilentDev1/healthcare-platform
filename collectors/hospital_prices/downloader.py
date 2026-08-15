@@ -278,14 +278,31 @@ def register_local_file(
         )
     )
     if existing:
-        return DownloadedPriceFile(
-            existing.id,
-            Path(existing.storage_path),
-            checksum,
-            existing.file_size,
-            detect_container(Path(existing.storage_path)),
-            True,
-        )
+        existing_path = Path(existing.storage_path)
+        if existing_path.exists():
+            return DownloadedPriceFile(
+                existing.id,
+                existing_path,
+                checksum,
+                existing.file_size,
+                detect_container(existing_path),
+                True,
+            )
+        # A SourceFile with this checksum exists but its staged artifact is gone
+        # (e.g. an earlier ephemeral local stage whose file was never persisted to
+        # durable storage). Re-archive the current bytes to a durable path and
+        # re-point the record — preserving its identity (same checksum) — rather
+        # than failing to open a dead storage_path.
+        archived = _archive_stream(path, str(price_source.id), path.suffix or ".dat", settings)
+        detected = detect_container(archived)
+        existing.storage_path = str(archived)
+        existing.file_size = file_size
+        existing.status = SourceStatus.DOWNLOADED
+        price_source.source_file_id = existing.id
+        price_source.detected_format = detected
+        price_source.last_successful_download_at = datetime.now(UTC)
+        session.commit()
+        return DownloadedPriceFile(existing.id, archived, checksum, file_size, detected, False)
     archived = _archive_stream(path, str(price_source.id), path.suffix or ".dat", settings)
 
     detected = detect_container(archived)
