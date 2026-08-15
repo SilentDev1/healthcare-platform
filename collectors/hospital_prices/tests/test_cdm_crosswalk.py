@@ -71,3 +71,53 @@ def test_unlisted_colonoscopy_variants_do_not_map_to_diagnostic() -> None:
     assert _resolve("COLONOSCOPY W/BALLOON DILAT") is None
     assert _resolve("COLONOSCOPY W/BAND LIGATION") is None
     assert _resolve("COLONOSCOPY SUBMUCOUS NJX") is None
+
+
+def test_penile_prosthesis_does_not_map_to_chest_xray() -> None:
+    # 'CXR' must be word-bounded so it never matches inside '700CXR' (a penile
+    # prosthesis model). Real chest x-rays still resolve via chest-2-view wording.
+    assert _resolve("PROS PENL AMS 700CXR MS PMP 12CM INFL PRECNCT CYL") is None
+    assert _resolve("PROS PENL AMS 700CXR TENACIO 10CM 3 PC PRECNCT INF") is None
+    assert _code("XR Chest 2 Views") == ("71046", "CPT")
+    assert _code("PF-X-RAY EXAM CHEST 2 VIEWS") == ("71046", "CPT")
+
+
+def test_esophageal_surgery_does_not_map_to_egd() -> None:
+    # 'esophago' is too broad (esophagostomy/esophagomyotomy/esophagoscopy are not
+    # an upper endoscopy). Genuine EGDs resolve via the word-bounded 'egd'.
+    assert _resolve("PF-Closure of esophagostomy or fistula; cervical approach") is None
+    assert _resolve("PF-Esophagomyotomy abdominal") is None
+    assert _resolve("Esophagoscopy flexible transnasal diag w/brush/wash") is None
+    assert _code("PF-Egd biopsy single/multiple") == ("43235", "CPT")
+    assert _code("PF-Egd dilate stricture") == ("43235", "CPT")
+
+
+def test_fetal_and_pulmonary_stress_do_not_map_to_cardiac_stress() -> None:
+    # Fetal non-stress (59025), fetal contraction stress (59020) and pulmonary
+    # stress testing are not the cardiac stress test (93015).
+    assert _resolve("Fetal non-stress test single gestation(NST) 59025") is None
+    assert _resolve("Fetal contraction stress test 59020") is None
+    assert _resolve("Non Stress Test (NST), Twin #2") is None
+    assert _resolve("PF-PULMONARY STRESS TESTING") is None
+    assert _code("ECHO STRESS TEST W/O CONTRAST (STRESS ECHO)") == ("93015", "CPT")
+    assert _code("PF-Cardiac drug stress test") == ("93015", "CPT")
+
+
+def test_revision_arthroplasty_does_not_map_to_primary_replacement() -> None:
+    # A revision (or dislocation treatment) is a different procedure/price than the
+    # primary total joint replacement.
+    assert _resolve("PF-Revision of total knee arthroplasty, w/ or w/o allograft") is None
+    assert _resolve("PF-Revision of total hip arthroplasty; both components") is None
+    assert _resolve("PF-Closed treatment of post hip arthroplasty dislocation") is None
+    assert _code("PF-Total knee arthroplasty") == ("27447", "CPT")
+    assert _code("PF-Total hip arthroplasty") == ("27130", "CPT")
+
+
+def test_sti_thinprep_and_cpap_do_not_map_to_pap_smear() -> None:
+    # 'thin prep' alone catches STI tests run on ThinPrep media; 'pap test' inside
+    # 'CPAP Test' catches sleep studies. Both must be excluded; real paps resolve.
+    assert _resolve("N. gonorrhoeae, Thin Prep") is None
+    assert _resolve("Trichomonas vaginalis, Thin Prep") is None
+    assert _resolve("Split Night PSG/CPAP Test 95811") is None
+    assert _code("Screening Pap Smear Q0091") == ("88175", "CPT")
+    assert _code("_SPI 88142 AP Bill Cyto Gyn Thin Prep Screening bilat") == ("88175", "CPT")

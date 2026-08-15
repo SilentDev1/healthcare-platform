@@ -88,7 +88,7 @@
     },
     {
       "cdm_pattern": "STRESS",
-      "description_pattern": "cardiac stress test|stress test",
+      "description_pattern": "^(?!.*(?:fetal|non.?stress|pulmonary|contraction)).*stress.?test",
       "target_code": "93015",
       "target_system": "CPT",
       "confidence": 0.85
@@ -130,7 +130,7 @@
     },
     {
       "cdm_pattern": "CXR",
-      "description_pattern": "chest.?x.?ray|cxr|chest.?2.?view",
+      "description_pattern": "chest.?x.?ray|\\bcxr\\b|chest.?2.?view",
       "target_code": "71046",
       "target_system": "CPT",
       "confidence": 0.9
@@ -158,7 +158,7 @@
     },
     {
       "cdm_pattern": "EGD",
-      "description_pattern": "upper.?endoscop|egd|esophago",
+      "description_pattern": "upper.?endoscop|\\begd\\b|esophagogastroduodenoscop",
       "target_code": "43235",
       "target_system": "CPT",
       "confidence": 0.85
@@ -186,7 +186,7 @@
     },
     {
       "cdm_pattern": "PAP",
-      "description_pattern": "pap.?smear|pap.?test|thin.?prep",
+      "description_pattern": "\\bpap.?smear|\\bpap.?test|gyn.?thin.?prep",
       "target_code": "88175",
       "target_system": "CPT",
       "confidence": 0.85
@@ -228,14 +228,14 @@
     },
     {
       "cdm_pattern": "TKR",
-      "description_pattern": "total.?knee.?replac|knee.?arthroplast",
+      "description_pattern": "^(?!.*(?:revision|dislocation|closed.?treat)).*(?:total.?knee.?replac|knee.?arthroplast)",
       "target_code": "27447",
       "target_system": "CPT",
       "confidence": 0.8
     },
     {
       "cdm_pattern": "THR",
-      "description_pattern": "total.?hip.?replac|hip.?arthroplast",
+      "description_pattern": "^(?!.*(?:revision|dislocation|closed.?treat)).*(?:total.?hip.?replac|hip.?arthroplast)",
       "target_code": "27130",
       "target_system": "CPT",
       "confidence": 0.8
