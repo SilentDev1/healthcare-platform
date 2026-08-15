@@ -26,7 +26,8 @@ Tools (all committed, read-only unless noted):
 | Metric | Value |
 |---|---|
 | NH hospitals publishing prices | **26 / 26** |
-| Canonical procedures with ≥1 hospital verified-mapped price | **48 / 50** |
+| Canonical procedures with ≥1 hospital verified-mapped price | **50 / 50** |
+| — vaginal-delivery / cesarean-delivery | **23 / 26** each (recovered from 0 — §2) |
 | Procedure × hospital combinations audited | **1,300** |
 | False-positive mappings detected | **1,406** |
 | False-positive mappings removed | **1,406** |
@@ -45,23 +46,47 @@ forced; the truthful figure simply did not fall.
 
 ---
 
-## 2. The two uncovered procedures (investigated, not just "0")
+## 2. Maternity procedures — root cause + reviewed recovery (0 → 23/26 each)
 
-Both maternity procedures show **0 publishing hospitals**. Root cause is identical
-and is **a code difference / missing reviewed mapping**, NOT missing data:
+Both maternity procedures were **0/26** because the approved registry held **retired
+MS-DRG numbers** — a code difference, NOT missing data. The reviewed recovery (below)
+brought each to **23/26**.
 
-| Procedure | Registered approved codes | Reality in hospital data |
-|---|---|---|
-| `vaginal-delivery` | MS-DRG **774, 775** (retired) | 16/26 hospitals have delivery records under **current** MS-DRGs (805/806/807) and/or CPT 59400 → `KNOWN_CODE_NOT_MAPPED`; 8 `NO_MATCHING_RAW_RECORD`; 2 `SUMMARY_BUILD_GAP` |
-| `cesarean-delivery` | MS-DRG **765, 766, 767** (retired) | 14/26 hospitals have records under current MS-DRGs (783–788) and/or CPT 59510 → `KNOWN_CODE_NOT_MAPPED`; 10 `NO_MATCHING_RAW_RECORD`; 2 `SUMMARY_BUILD_GAP` |
+**Why the registered DRGs were insufficient (verified against source-data
+descriptions via `scripts.diagnose_delivery_codes`):**
+- `vaginal-delivery` had only MS-DRG **774/775** (retired; present at just 2 hospitals
+  on older MRFs). The MS-DRG maternity chapter was restructured (~v34/v37) into a
+  CC/MCC severity split; hospitals now publish **805/806/807** ("Vaginal delivery
+  *without* sterilization/D&C") + CPT **59400/59409/59410**.
+- `cesarean-delivery` had only MS-DRG **765/766/767** (retired). **767 was a
+  mis-registration** — its actual source description is *"Vaginal Delivery W
+  Sterilization &/Or D&C"*, not a cesarean at all — so it was **superseded**.
+  Hospitals now publish **786/787/788** ("Cesarean *without* sterilization") + CPT
+  **59510/59514/59515**.
 
-**Classification: code difference + missing reviewed crosswalk.** The approved
-registry holds **superseded** MS-DRG numbers. The hospitals publish the services
-under the current-year DRGs and CPT delivery codes; Carevero simply has not
-registered those codes. This is legitimately recoverable (see §6) by adding the
-current, standard delivery codes to the reviewed `ProcedureCodeMapping` registry —
-an evidence-backed, deterministic mapping, **not** a fuzzy one. It is deliberately
-deferred to a reviewed follow-up rather than rushed to force 50/50.
+**Reviewed additions (smallest evidence-backed set; billing-component verified):**
+
+| Procedure | Added (approved) | Kept | Excluded (documented) |
+|---|---|---|---|
+| vaginal-delivery | MS-DRG 805/806/807, CPT 59400/59409/59410 | 774/775 | 796/797/798 (w/ sterilization/D&C), 768 (w/ O.R. proc), VBAC 59610/59612 |
+| cesarean-delivery | MS-DRG 786/787/788, CPT 59510/59514/59515 | 765/766 | 783/784/785 (w/ sterilization), 767 (superseded — actually vaginal), VBAC 59618/59620 |
+
+Sterilization/D&C bundles and VBAC are **distinct services / billing components** and
+were intentionally not mapped (they would conflate a delivery with a bundled
+sterilization). Mappings are exact code → procedure (never description regex), so a
+lookalike can only enter via a wrong *code*; regression tests assert every excluded
+code (sterilization bundles, neonatal DRGs, antepartum/postpartum-only, D&C, VBAC,
+hysterectomy) can never map into vaginal/cesarean delivery, with no cross-contamination.
+
+**Recovery result (0 → 23/26 each):** the codes were already present in imported raw
+records, so `scripts.reproject_approved_code_mappings` created the mappings
+deterministically from existing data (**+2,772 mappings; −37 orphaned 767→cesarean**)
+— **no MRF re-imported, raw prices/provenance untouched**. Of the 3 non-publishing
+hospitals per delivery: **2 have no maternity records** (`NO_MATCHING_RAW_RECORD` —
+genuinely don't offer deliveries) and **1** has records but hits a publishability
+filter (`SUMMARY_BUILD_GAP`). Prices are clinically sane (cesarean > vaginal; e.g.
+Androscoggin cash: vaginal $3.9k–$6.3k, cesarean $8.4k–$17k), split across
+inpatient/outpatient settings and facility/professional components.
 
 ---
 
@@ -205,22 +230,28 @@ None of the high-use services is *unexpectedly* zero: only the two deliveries ar
 
 ---
 
-## 6. Follow-up — legitimate coverage recovery (reviewed, not fuzzy)
+## 6. Follow-up
 
-Determined from *legitimate missing mappings*, not a blanket re-import:
-
-1. **Maternity (vaginal/cesarean delivery):** add the current standard delivery
-   codes to the reviewed `ProcedureCodeMapping` registry — CPT 59400 (vaginal) /
-   59510 (cesarean) and current MS-DRGs (805/806/807; 783–788), each verified
-   against its official CMS definition — then re-import (or targeted remap) the
-   16/14 hospitals that already carry those records. Would move 48→50.
+1. **Maternity (vaginal/cesarean delivery): ✅ DONE** — reviewed codes added and
+   reprojected from existing records (0 → 23/26 each; §2). This is what moved
+   coverage 48 → **50/50**.
 2. **No re-import needed for the false-positive fix** — the surgical cleanup already
    corrected all 17 hospitals in place. A future *routine* re-import (any hospital)
    will additionally revert the reverted code slots' cosmetics; not required for
    price correctness.
-3. **Weakest-coverage procedures (§7)** are the next data-quality priority —
-   investigate each for terminology/code differences before assuming hospitals
-   don't publish them.
+3. **Weakest-coverage procedures (§7)** are the next data-quality priority (led by
+   allergy-testing 9/26, cataract-surgery 12/26) — investigate each for
+   terminology/code differences before assuming hospitals don't publish them.
+
+---
+
+## NH HOSPITAL PRICING BASELINE (2026-08-15) — established here
+
+**26/26 hospitals · 50/50 procedures · false-positive suspects 0 · safety PASS ·
+raw prices unchanged (5,798,978).** This is the verified NH hospital-pricing baseline
+prior to provider-neutral expansion. Further work should move to the provider-neutral
+foundation (offers-service vs has-published-price), independent labs first, then MA on
+the same architecture — not more hospital-only polishing.
 
 ---
 
@@ -233,18 +264,20 @@ Determined from *legitimate missing mappings*, not a blanket re-import:
 gaps) — the actionable backlog. **Investigate before assuming hospitals don't
 publish these.**
 
-| # | Procedure | Publishing | Recoverable | Likely cause |
-|---|---|---|---|---|
-| 1 | cesarean-delivery | 0/26 | 16 | superseded MS-DRG (§2) |
-| 2 | vaginal-delivery | 0/26 | 18 | superseded MS-DRG (§2) |
-| 3 | allergy-testing | 9/26 | 12 | local/variant CPT codes not registered |
-| 4 | cataract-surgery | 12/26 | 2 | code/description variants |
-| 5 | annual-wellness-visit | 13/26 | 7 | HCPCS G-code variants (G0402/G0438/G0439) |
-| 6 | rotator-cuff-repair | 13/26 | 9 | arthroscopy code variants |
-| 7 | cardiac-catheterization | 14/26 | 3 | cath code family variants |
-| 8 | carpal-tunnel-release | 14/26 | 8 | open vs endoscopic code variants |
-| 9 | hernia-repair | 14/26 | 0 | genuinely narrower availability |
-| 10 | strep-test | 14/26 | 3 | rapid-strep description/code variants |
+Post-delivery-recovery (both maternity procedures are now 23/26, out of the bottom):
+
+| # | Procedure | Publishing | Likely cause |
+|---|---|---|---|
+| 1 | allergy-testing | 9/26 | local/variant CPT codes not registered |
+| 2 | cataract-surgery | 12/26 | code/description variants |
+| 3 | annual-wellness-visit | 13/26 | HCPCS G-code variants (G0402/G0438/G0439) |
+| 4 | rotator-cuff-repair | 13/26 | arthroscopy code variants |
+| 5 | cardiac-catheterization | 14/26 | cath code family variants |
+| 6 | carpal-tunnel-release | 14/26 | open vs endoscopic code variants |
+| 7 | hernia-repair | 14/26 | genuinely narrower availability |
+| 8 | strep-test | 14/26 | rapid-strep description/code variants |
+| 9 | covid-test | 15/26 | test-code variants |
+| 10 | diagnostic-mammogram | 16/26 | screening-vs-diagnostic code split |
 
 ### Full 50-procedure matrix (publishing hospitals / 26, recoverable, registered codes)
 
@@ -294,8 +327,8 @@ publish these.**
 | rotator-cuff-repair | 13/26 | 9 | CPT:29827 |
 | cataract-surgery | 12/26 | 2 | CPT:66984 |
 | allergy-testing | 9/26 | 12 | CPT:95004 |
-| cesarean-delivery | 0/26 | 16 | MS_DRG:765/766/767 (superseded) |
-| vaginal-delivery | 0/26 | 18 | MS_DRG:774/775 (superseded) |
+| cesarean-delivery | 23/26 | 1 | MS_DRG:786/787/788 + CPT:59510/59514/59515 (+ retired 765/766) |
+| vaginal-delivery | 23/26 | 1 | MS_DRG:805/806/807 + CPT:59400/59409/59410 (+ retired 774/775) |
 
 _Per-cell (procedure × hospital) detail with root-cause classification is available
 from `scripts.audit_procedure_mapping_coverage` (full-matrix mode)._
