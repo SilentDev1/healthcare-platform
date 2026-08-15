@@ -88,13 +88,22 @@ def restart(source_file_id: uuid.UUID, session: Session | None = None) -> PriceI
     if source is None:
         raise ValueError(f"Source file {source_file_id} not found")
 
+    # A source file can be referenced by more than one FacilityPriceSource — e.g. an
+    # earlier mis-attributed (now-deactivated) source plus the current correct one.
+    # Prefer the ACTIVE source, deterministically, so the re-import lands under the
+    # right facility (importer stamps records with price_source.facility_id). Without
+    # the active filter this picked an inactive wrong-facility source and imported a
+    # hospital's prices onto a different hospital.
     price_source = session.scalar(
-        select(FacilityPriceSource).where(
+        select(FacilityPriceSource)
+        .where(
             FacilityPriceSource.source_file_id == source.id,
+            FacilityPriceSource.active.is_(True),
         )
+        .order_by(FacilityPriceSource.id)
     )
     if price_source is None:
-        raise ValueError("No price source found for this source file")
+        raise ValueError("No active price source found for this source file")
 
     record_count = (
         session.scalar(

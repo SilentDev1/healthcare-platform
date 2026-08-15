@@ -149,3 +149,67 @@ def test_observation_rate_detail_fk_is_indexed() -> None:
     table = cast(Table, FacilityProcedurePriceObservation.__table__)
     indexed_cols = {tuple(col.name for col in index.columns) for index in table.indexes}
     assert ("hospital_price_rate_detail_id",) in indexed_cols
+
+
+def test_restart_imports_under_active_source_not_inactive(tmp_path: Path) -> None:
+    """Records must land under the ACTIVE price source's facility.
+
+    Reproduces the Concord-Laconia mishap: a source file was referenced by both an
+    inactive, wrong-facility price source (a historical mis-attribution) and the
+    correct active one. restart must pick the active source so the re-import lands
+    under the right hospital, not the inactive one's facility.
+    """
+    fixture = generate_cms_wide_fixture(tmp_path / "mrf.csv", rows=80, payers=2, plans_per_payer=1)
+    engine = _engine()
+    with Session(engine) as session:
+        # Correct facility ("Laconia") with an ACTIVE price source + a clean import.
+        source_file_id, rows = _seed_imported_source(session, fixture, ccn="990005")
+        assert rows == 80
+        laconia = session.scalar(
+            select(Facility).where(Facility.cms_certification_number == "990005")
+        )
+        assert laconia is not None
+
+        # Wrong facility ("Franklin") with an INACTIVE price source on the SAME source.
+        franklin = Facility(
+            cms_certification_number="990006", legal_name="WRONG HOSPITAL", display_name="Wrong"
+        )
+        session.add(franklin)
+        session.flush()
+        session.add(
+            FacilityPriceSource(
+                facility_id=franklin.id,
+                source_type="hospital_mrf",
+                source_page_url="https://example.test/prices",
+                machine_readable_file_url="https://example.test/f.csv",
+                declared_format="csv",
+                active=False,
+                discovery_method="test",
+                source_file_id=source_file_id,
+            )
+        )
+        session.commit()
+
+        summary = restart(source_file_id, session=session)
+        assert summary.records_normalized == 80
+
+    with Session(engine) as verify:
+        laconia_id = verify.scalar(
+            select(Facility.id).where(Facility.cms_certification_number == "990005")
+        )
+        franklin_id = verify.scalar(
+            select(Facility.id).where(Facility.cms_certification_number == "990006")
+        )
+        under_laconia = verify.scalar(
+            select(func.count(HospitalPriceRecord.id)).where(
+                HospitalPriceRecord.facility_id == laconia_id
+            )
+        )
+        under_franklin = verify.scalar(
+            select(func.count(HospitalPriceRecord.id)).where(
+                HospitalPriceRecord.facility_id == franklin_id
+            )
+        )
+        assert under_laconia == 80  # active source's facility
+        assert under_franklin == 0  # inactive source's facility got nothing
+    engine.dispose()
