@@ -110,7 +110,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[origin for origin in api_settings.origins],
     allow_credentials=False,
-    allow_methods=["GET", "OPTIONS"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -120,6 +120,7 @@ _RATE_LIMITED_PREFIXES = (
     "/api/v1/procedures/",
     "/api/v1/facilities/map-data",
     "/api/v1/pricing/",
+    "/api/v1/ai/",
 )
 
 
@@ -174,14 +175,23 @@ async def request_logging(
             content={"detail": "pricing is temporarily unavailable", "request_id": request_id},
             headers={"x-request-id": request_id, "retry-after": "300"},
         )
-    if request.method == "GET" and request.url.path.startswith(_RATE_LIMITED_PREFIXES):
+    if request.method in {"GET", "POST"} and request.url.path.startswith(_RATE_LIMITED_PREFIXES):
         now = time.monotonic()
         key = f"{_client_key(request)}:{request.url.path}"
         window = _rate_windows[key]
-        cutoff = now - api_settings.rate_limit_window_seconds
+        is_ai = request.url.path.startswith("/api/v1/ai/")
+        request_limit = (
+            api_settings.ai_rate_limit_requests if is_ai else api_settings.rate_limit_requests
+        )
+        window_seconds = (
+            api_settings.ai_rate_limit_window_seconds
+            if is_ai
+            else api_settings.rate_limit_window_seconds
+        )
+        cutoff = now - window_seconds
         while window and window[0] < cutoff:
             window.popleft()
-        if len(window) >= api_settings.rate_limit_requests:
+        if len(window) >= request_limit:
             return JSONResponse(
                 status_code=429,
                 content={"detail": "request rate limit exceeded", "request_id": request_id},
@@ -2638,3 +2648,11 @@ def pricing_coverage(session: Annotated[Session, Depends(get_session)]) -> Prici
             .where(public_summary_source)
         ),
     )
+
+
+# Imported last so the AI routes can call the already-defined deterministic
+# comparison/search functions without a circular import. Routes are 404 unless the
+# AI feature flags are explicitly enabled (all default False).
+from services.api.app.ai_routes import router as ai_router  # noqa: E402
+
+app.include_router(ai_router)
