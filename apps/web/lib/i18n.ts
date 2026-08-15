@@ -615,7 +615,7 @@ const en = {
   searchCategoryCountOne: "1 procedure",
   searchCategoryCountOther: "{count} procedures",
   searchCategoryChooseProcedure:
-    "Choose a procedure to compare published hospital prices.",
+    "Choose a procedure to compare available published prices.",
   searchOtherMatches: "Other matching results",
   searchClarificationTitle: "Which care option are you looking for?",
   searchClarificationBody:
@@ -1282,7 +1282,7 @@ export const messages: Record<Locale, Messages> = {
     searchCategoryCountOne: "1 procedimiento",
     searchCategoryCountOther: "{count} procedimientos",
     searchCategoryChooseProcedure:
-      "Elija un procedimiento para comparar precios hospitalarios publicados.",
+      "Elija un procedimiento para comparar los precios publicados disponibles.",
     searchOtherMatches: "Otros resultados coincidentes",
     searchClarificationTitle: "¿Qué opción de atención busca?",
     searchClarificationBody:
@@ -1923,7 +1923,7 @@ export const messages: Record<Locale, Messages> = {
     searchCategoryCountOne: "1 thủ thuật",
     searchCategoryCountOther: "{count} thủ thuật",
     searchCategoryChooseProcedure:
-      "Chọn một thủ thuật để so sánh giá bệnh viện đã công bố.",
+      "Chọn một thủ thuật để so sánh các mức giá đã công bố hiện có.",
     searchOtherMatches: "Các kết quả phù hợp khác",
     searchClarificationTitle: "Bạn đang tìm lựa chọn chăm sóc nào?",
     searchClarificationBody:
@@ -2521,7 +2521,7 @@ export const messages: Record<Locale, Messages> = {
     searchCompareCta: "比較公布價格",
     searchCategoryCountOne: "1 項醫療項目",
     searchCategoryCountOther: "{count} 項醫療項目",
-    searchCategoryChooseProcedure: "選擇一項醫療項目以比較醫院公布價格。",
+    searchCategoryChooseProcedure: "選擇一項醫療項目以比較可取得的公布價格。",
     searchOtherMatches: "其他相符結果",
     searchClarificationTitle: "您要找哪一種照護選項？",
     searchClarificationBody:
@@ -3112,7 +3112,7 @@ export const messages: Record<Locale, Messages> = {
     searchCompareCta: "比较公布价格",
     searchCategoryCountOne: "1 个医疗项目",
     searchCategoryCountOther: "{count} 个医疗项目",
-    searchCategoryChooseProcedure: "选择一个医疗项目以比较医院公布价格。",
+    searchCategoryChooseProcedure: "选择一个医疗项目以比较可获取的公布价格。",
     searchOtherMatches: "其他匹配结果",
     searchClarificationTitle: "您要查找哪一种医疗选项？",
     searchClarificationBody:

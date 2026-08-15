@@ -435,6 +435,16 @@ def search(
         and result.match_reason in {"exact_category", "reviewed_category_alias", "category_partial"}
     }
     if matched_category_slugs and entity_type is None:
+        # Membership is the FULL canonical catalog for the matched category, from
+        # the same source `/api/v1/procedures?category=<slug>` lists — NOT only the
+        # procedures whose search document also matched the query text. Querying the
+        # text-filtered `documents` here silently dropped members whenever a category
+        # was matched via a label/alias absent from its members' indexed text (e.g.
+        # "lab tests"/"blood work"/"labs" -> Laboratory, "scans" -> Imaging), so the
+        # UI rendered a procedure_count with zero procedure cards. This re-derives
+        # every active member document directly, independent of the query text, so
+        # rendered results always equal the category's procedure_count. Membership
+        # updates automatically with the catalog.
         results = [
             result
             for result in results
@@ -443,17 +453,15 @@ def search(
                 and result.metadata.get("category") in matched_category_slugs
             )
         ]
-        seen_ids = {(result.entity_type, result.entity_id) for result in results}
-        for document in documents:
-            if (
-                document.entity_type != "procedure"
-                or document.metadata_json.get("category") not in matched_category_slugs
-            ):
+        member_documents = session.scalars(
+            select(SearchDocument).where(
+                SearchDocument.active.is_(True),
+                SearchDocument.entity_type == "procedure",
+            )
+        ).all()
+        for document in member_documents:
+            if document.metadata_json.get("category") not in matched_category_slugs:
                 continue
-            key = (document.entity_type, document.entity_id)
-            if key in seen_ids:
-                continue
-            seen_ids.add(key)
             results.append(
                 SearchResult(
                     document.entity_type,
