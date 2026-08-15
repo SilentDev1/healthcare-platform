@@ -170,6 +170,16 @@
       "vendor_name": null,
       "health_system_name": null,
       "evidence": "Direct 'Standard Charges' link on Cottage Hospital's official self-hosted price-transparency page. Validated: CMS standard-charges CSV v3.0.0, last_updated_on 4/16/2026 (HTTP last-modified 2026-05-04); hospital_name 'Cottage Hospital', '90 Swiftwater Rd, Woodsville, NH 03785', EIN 020223321 in filename, type_2_npi includes 1528162799; carries negotiated payer rates (Aetna/Anthem Commercial + Medicare Advantage, Amerihealth-Caritas Medicaid) and discounted_cash. Not the 2022 chargemaster. NOTE: cottagehospital.org is Cloudflare challenge-gated, so the automated importer's download is blocked; requires manual retrieval/staging of the file for import."
+    },
+    {
+      "ccn": "300005",
+      "facility_name": "CONCORD HOSPITAL- LACONIA",
+      "source_page_url": "https://www.concordhospital.org/patients-visitors/cost-of-care-estimates/",
+      "machine_readable_file_url": "https://www.concordhospital.org/app/files/public/35ce9449-be92-488c-8eaf-85744e8e1b14/851443782_concord-hospital-laconia_standardcharges.csv",
+      "declared_format": "csv",
+      "vendor_name": null,
+      "health_system_name": "Concord Hospital",
+      "evidence": "Concord Hospital's official cms-hpt.txt (https://www.concordhospital.org/cms-hpt.txt) lists three facilities; the 'Concord Hospital Laconia' entry (EIN 851443782) points to this file. Validated 2026-08-15: CMS standard-charges CSV v3.0.0, last_updated_on 2026-03-12 (HTTP Last-Modified 2026-04-19); hospital_name 'Concord Hospital-Laconia', address '80 Highland St, Laconia, NH 03246', type_2_npi 1053495234|1619053618|1124104120, license_number|NH 4500; 97,843 data rows; carries per-payer negotiated rates (Aetna/Ambetter/Anthem/...) and standard_charge|discounted_cash; SHA-256 9a2ad9f678ca6c63e8496542bfc77a0a82776502bffecdf04cd2ec5fbc53f637 (82,956,518 bytes). Distinct from Concord (EIN 222594672) and Franklin (EIN 851433123). Akamai bot-protection returns 403 to automated fetch (server-timing ak_p), so the file requires manual browser retrieval and staging."
     }
   ]
 }
