@@ -232,9 +232,21 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Remove CDM crosswalk false-positive mappings")
     parser.add_argument("--state", default="NH")
     parser.add_argument("--apply", action="store_true", help="Mutate (default: dry-run).")
+    parser.add_argument(
+        "--artifact-path",
+        default=None,
+        help="Write the full manifest (dry-run) / rollback artifact (apply) here. "
+        "The manifest exceeds a log line, so point this at durable storage.",
+    )
     args = parser.parse_args()
     with session_factory() as session:
         manifest = build_manifest(session, args.state)
+        # The manifest IS the rollback artifact: it records every mapping deleted and
+        # every code slot's original resolution, enough to reverse the operation.
+        if args.artifact_path:
+            with open(args.artifact_path, "w", encoding="utf-8") as fh:
+                json.dump(manifest, fh, default=str)
+            print(f"ARTIFACT_WRITTEN={args.artifact_path}")
         summary = {
             k: v
             for k, v in manifest.items()
@@ -244,8 +256,6 @@ def main() -> None:
             summary["applied"] = apply_remediation(session, manifest)
         else:
             summary["applied"] = None
-    # The full manifest is the auditable artifact; the summary is human-readable.
-    print("REMEDIATION_MANIFEST=" + json.dumps(manifest, default=str, separators=(",", ":")))
     print("REMEDIATION_SUMMARY=" + json.dumps(summary, default=str, separators=(",", ":")))
 
 
