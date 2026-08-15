@@ -1,15 +1,176 @@
 [
-  {"slug":"imaging","i18n_key":"procCat_imaging","labels":{"en":"Imaging","es":"Imágenes","vi":"Chẩn đoán hình ảnh","zh-TW":"影像檢查","zh-CN":"影像检查"},"aliases":["scans"]},
-  {"slug":"laboratory","i18n_key":"procCat_laboratory","labels":{"en":"Lab tests","es":"Análisis de laboratorio","vi":"Xét nghiệm","zh-TW":"實驗室檢驗","zh-CN":"实验室检验"},"aliases":["labs","blood work","blood test","blood tests"]},
-  {"slug":"preventive","i18n_key":"procCat_preventive","labels":{"en":"Preventive care","es":"Atención preventiva","vi":"Chăm sóc phòng ngừa","zh-TW":"預防保健","zh-CN":"预防保健"},"aliases":[]},
-  {"slug":"emergency","i18n_key":"procCat_emergency","labels":{"en":"Emergency care","es":"Atención de emergencia","vi":"Cấp cứu","zh-TW":"急診醫療","zh-CN":"急诊医疗"},"aliases":[]},
-  {"slug":"maternity","i18n_key":"procCat_maternity","labels":{"en":"Women's health","es":"Salud de la mujer","vi":"Sức khỏe phụ nữ","zh-TW":"婦女健康","zh-CN":"女性健康"},"aliases":[]},
-  {"slug":"outpatient-surgery","i18n_key":"procCat_outpatient_surgery","labels":{"en":"Outpatient surgery","es":"Cirugía ambulatoria","vi":"Phẫu thuật ngoại trú","zh-TW":"門診手術","zh-CN":"门诊手术"},"aliases":[]},
-  {"slug":"inpatient-surgery","i18n_key":"procCat_inpatient_surgery","labels":{"en":"Inpatient surgery","es":"Cirugía hospitalaria","vi":"Phẫu thuật nội trú","zh-TW":"住院手術","zh-CN":"住院手术"},"aliases":[]},
-  {"slug":"cardiology","i18n_key":"procCat_cardiology","labels":{"en":"Cardiology","es":"Cardiología","vi":"Tim mạch","zh-TW":"心臟科","zh-CN":"心脏科"},"aliases":["heart tests"]},
-  {"slug":"orthopedics","i18n_key":"procCat_orthopedics","labels":{"en":"Orthopedics","es":"Ortopedia","vi":"Chỉnh hình","zh-TW":"骨科","zh-CN":"骨科"},"aliases":[]},
-  {"slug":"gastroenterology","i18n_key":"procCat_gastroenterology","labels":{"en":"Gastroenterology","es":"Gastroenterología","vi":"Tiêu hóa","zh-TW":"腸胃科","zh-CN":"消化科"},"aliases":[]},
-  {"slug":"ophthalmology","i18n_key":"procCat_ophthalmology","labels":{"en":"Eye care","es":"Oftalmología","vi":"Nhãn khoa","zh-TW":"眼科","zh-CN":"眼科"},"aliases":[]},
-  {"slug":"rehabilitation","i18n_key":"procCat_rehabilitation","labels":{"en":"Rehabilitation","es":"Rehabilitación","vi":"Phục hồi chức năng","zh-TW":"復健","zh-CN":"康复"},"aliases":[]},
-  {"slug":"other","i18n_key":"procCat_other","labels":{"en":"Other services","es":"Otros servicios","vi":"Dịch vụ khác","zh-TW":"其他服務","zh-CN":"其他服务"},"aliases":[]}
+  {
+    "slug": "imaging",
+    "i18n_key": "procCat_imaging",
+    "labels": {
+      "en": "Imaging",
+      "es": "Imágenes",
+      "vi": "Chẩn đoán hình ảnh",
+      "zh-TW": "影像檢查",
+      "zh-CN": "影像检查"
+    },
+    "aliases": [
+      "scans"
+    ]
+  },
+  {
+    "slug": "laboratory",
+    "i18n_key": "procCat_laboratory",
+    "labels": {
+      "en": "Lab tests",
+      "es": "Análisis de laboratorio",
+      "vi": "Xét nghiệm",
+      "zh-TW": "實驗室檢驗",
+      "zh-CN": "实验室检验"
+    },
+    "aliases": [
+      "labs",
+      "blood work",
+      "blood test",
+      "blood tests"
+    ]
+  },
+  {
+    "slug": "preventive",
+    "i18n_key": "procCat_preventive",
+    "labels": {
+      "en": "Preventive care",
+      "es": "Atención preventiva",
+      "vi": "Chăm sóc phòng ngừa",
+      "zh-TW": "預防保健",
+      "zh-CN": "预防保健"
+    },
+    "aliases": []
+  },
+  {
+    "slug": "emergency",
+    "i18n_key": "procCat_emergency",
+    "labels": {
+      "en": "Emergency care",
+      "es": "Atención de emergencia",
+      "vi": "Cấp cứu",
+      "zh-TW": "急診醫療",
+      "zh-CN": "急诊医疗"
+    },
+    "aliases": [
+      "er",
+      "emergency room",
+      "emergency department",
+      "ed"
+    ]
+  },
+  {
+    "slug": "maternity",
+    "i18n_key": "procCat_maternity",
+    "labels": {
+      "en": "Women's health",
+      "es": "Salud de la mujer",
+      "vi": "Sức khỏe phụ nữ",
+      "zh-TW": "婦女健康",
+      "zh-CN": "女性健康"
+    },
+    "aliases": [
+      "childbirth",
+      "maternity",
+      "obstetrics"
+    ]
+  },
+  {
+    "slug": "outpatient-surgery",
+    "i18n_key": "procCat_outpatient_surgery",
+    "labels": {
+      "en": "Outpatient surgery",
+      "es": "Cirugía ambulatoria",
+      "vi": "Phẫu thuật ngoại trú",
+      "zh-TW": "門診手術",
+      "zh-CN": "门诊手术"
+    },
+    "aliases": []
+  },
+  {
+    "slug": "inpatient-surgery",
+    "i18n_key": "procCat_inpatient_surgery",
+    "labels": {
+      "en": "Inpatient surgery",
+      "es": "Cirugía hospitalaria",
+      "vi": "Phẫu thuật nội trú",
+      "zh-TW": "住院手術",
+      "zh-CN": "住院手术"
+    },
+    "aliases": []
+  },
+  {
+    "slug": "cardiology",
+    "i18n_key": "procCat_cardiology",
+    "labels": {
+      "en": "Cardiology",
+      "es": "Cardiología",
+      "vi": "Tim mạch",
+      "zh-TW": "心臟科",
+      "zh-CN": "心脏科"
+    },
+    "aliases": [
+      "heart tests"
+    ]
+  },
+  {
+    "slug": "orthopedics",
+    "i18n_key": "procCat_orthopedics",
+    "labels": {
+      "en": "Orthopedics",
+      "es": "Ortopedia",
+      "vi": "Chỉnh hình",
+      "zh-TW": "骨科",
+      "zh-CN": "骨科"
+    },
+    "aliases": []
+  },
+  {
+    "slug": "gastroenterology",
+    "i18n_key": "procCat_gastroenterology",
+    "labels": {
+      "en": "Gastroenterology",
+      "es": "Gastroenterología",
+      "vi": "Tiêu hóa",
+      "zh-TW": "腸胃科",
+      "zh-CN": "消化科"
+    },
+    "aliases": []
+  },
+  {
+    "slug": "ophthalmology",
+    "i18n_key": "procCat_ophthalmology",
+    "labels": {
+      "en": "Eye care",
+      "es": "Oftalmología",
+      "vi": "Nhãn khoa",
+      "zh-TW": "眼科",
+      "zh-CN": "眼科"
+    },
+    "aliases": []
+  },
+  {
+    "slug": "rehabilitation",
+    "i18n_key": "procCat_rehabilitation",
+    "labels": {
+      "en": "Rehabilitation",
+      "es": "Rehabilitación",
+      "vi": "Phục hồi chức năng",
+      "zh-TW": "復健",
+      "zh-CN": "康复"
+    },
+    "aliases": []
+  },
+  {
+    "slug": "other",
+    "i18n_key": "procCat_other",
+    "labels": {
+      "en": "Other services",
+      "es": "Otros servicios",
+      "vi": "Dịch vụ khác",
+      "zh-TW": "其他服務",
+      "zh-CN": "其他服务"
+    },
+    "aliases": []
+  }
 ]

@@ -19,6 +19,32 @@ _KNEE_SCAN_QUESTIONS = {
     "zh-TW": "您的醫療人員檢查單上寫的是哪一種膝部掃描？",
     "zh-CN": "您的临床医生检查单上写的是哪一种膝部扫描？",
 }
+# Conservative consumer lead-in phrases stripped ONLY as a fallback when the raw
+# query does not resolve — never changes an already-resolving query. Lets natural
+# wording ("I need a blood test", "how much is an MRI knee") reach the same
+# deterministic resolver as the bare term.
+_LEAD_IN = re.compile(
+    r"^\s*(?:"
+    r"i\s+(?:need|want|require|am\s+looking\s+for)|"
+    r"looking\s+for|"
+    r"how\s+much\s+(?:is|are|does|for|to\s+get)|"
+    r"what(?:'s|\s+is)\s+the\s+(?:cost|price)\s+(?:of|for)|"
+    r"(?:the\s+)?(?:cost|price)\s+(?:of|for)|"
+    r"get|find|show\s+me|need"
+    r")\s+(?:an?\s+|some\s+|my\s+)?",
+    re.I,
+)
+
+
+_MID_PHRASE = re.compile(r"\s+(?:for|of|in|on|to)\s+my\s+", re.I)
+
+
+def _strip_lead_in(query: str) -> str:
+    stripped = _LEAD_IN.sub("", query, count=1)
+    stripped = _MID_PHRASE.sub(" ", stripped).strip()
+    return stripped if len(stripped) >= 2 else query
+
+
 _MEDICAL_BOUNDARY_PREFIX = {
     "en": "Carevero can compare prices once you know which imaging test was ordered. ",
     "es": "Carevero puede comparar precios cuando sepa qué estudio por imágenes se indicó. ",
@@ -174,6 +200,22 @@ def resolve_search(
         resolution = SearchResolution(SearchIntentType.FACILITY, results, True)
         _record(resolution)
         return resolution
+    # Fallback: a natural sentence ("I need a blood test") did not resolve — retry once
+    # with consumer lead-in phrases removed, but only accept a confident (non-unknown)
+    # deterministic result. This never overrides an already-resolving query.
+    stripped = _strip_lead_in(query)
+    if stripped != query:
+        retry = resolve_search(
+            session,
+            stripped,
+            state=state,
+            city=city,
+            postal_code=postal_code,
+            category=category,
+            locale=locale,
+        )
+        if retry.intent_type != SearchIntentType.UNKNOWN:
+            return retry
     resolution = SearchResolution(
         SearchIntentType.UNKNOWN,
         [],

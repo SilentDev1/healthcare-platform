@@ -266,6 +266,45 @@ def seed_catalog(session: Session) -> SeedSummary:
                     alias_type="consumer_synonym",
                 )
             )
+    # Extra reviewed consumer aliases (everyday wording -> a single canonical
+    # procedure). Deliberately specific: category-level terms like "blood work" or
+    # "childbirth" resolve to their category/clarification, not captured here.
+    reviewed_aliases: dict[str, tuple[str, ...]] = {
+        "cesarean-delivery": ("cesarean", "cesarean section"),
+        "urgent-care-visit": ("urgent care", "walk in clinic"),
+        "physical-therapy-evaluation": ("physical therapy", "physical therapist"),
+        # Natural word-order variants for common imaging (both "knee MRI" and "MRI knee").
+        "mri-knee-without-contrast": ("mri knee", "mri of knee", "mri of my knee"),
+        "mri-brain-without-contrast": ("mri brain", "brain mri", "mri of head", "head mri"),
+        "mri-lumbar-spine-without-contrast": ("mri back", "back mri", "lumbar mri"),
+        "mri-shoulder-without-contrast": ("mri shoulder", "shoulder mri"),
+        "ct-head-without-contrast": ("ct head", "head ct", "ct of head"),
+        "ct-chest": ("ct chest", "chest ct", "ct of chest"),
+        "ct-abdomen-pelvis": ("ct abdomen", "abdominal ct", "ct abdomen pelvis"),
+    }
+    for slug, extra_aliases in reviewed_aliases.items():
+        procedure = session.scalar(select(Procedure).where(Procedure.slug == slug))
+        if procedure is None:
+            continue
+        for alias in extra_aliases:
+            normalized = normalize_name(alias)
+            if (
+                session.scalar(
+                    select(ProcedureAlias).where(
+                        ProcedureAlias.procedure_id == procedure.id,
+                        ProcedureAlias.normalized_alias == normalized,
+                    )
+                )
+                is None
+            ):
+                session.add(
+                    ProcedureAlias(
+                        procedure_id=procedure.id,
+                        alias_name=alias,
+                        normalized_alias=normalized,
+                        alias_type="consumer_synonym",
+                    )
+                )
     bundles = (
         (
             "maternity-care-episode",
