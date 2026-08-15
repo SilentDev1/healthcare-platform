@@ -103,9 +103,33 @@ MAPPINGS = (
     ("dialysis-session", "CPT", "90935"),
 )
 
+# Reviewed mis-registrations to de-approve (kept as rows for provenance, status
+# "superseded" so they no longer produce mappings). Deleting them would break the
+# FK from any PriceRecordProcedureMapping.source_code_mapping_id that referenced them.
+SUPERSEDED: tuple[tuple[str, str, str], ...] = (
+    # MS-DRG 767 is "Vaginal delivery w/ sterilization/D&C" (confirmed by source-data
+    # descriptions), never a cesarean; it was mis-registered under cesarean-delivery.
+    ("cesarean-delivery", "MS_DRG", "767"),
+)
+
 
 def seed_price_mappings(session: Session) -> int:
     inserted = 0
+    for slug, system_name, code in SUPERSEDED:
+        procedure = session.scalar(select(Procedure).where(Procedure.slug == slug))
+        system = session.scalar(
+            select(ProcedureCodeSystem).where(ProcedureCodeSystem.code_system == system_name)
+        )
+        if procedure and system:
+            for pcm in session.scalars(
+                select(ProcedureCodeMapping).where(
+                    ProcedureCodeMapping.procedure_id == procedure.id,
+                    ProcedureCodeMapping.code_system_id == system.id,
+                    ProcedureCodeMapping.code == code,
+                    ProcedureCodeMapping.mapping_status.in_(["approved", "reviewed"]),
+                )
+            ):
+                pcm.mapping_status = "superseded"
     for slug, system_name, code in MAPPINGS:
         procedure = session.scalar(select(Procedure).where(Procedure.slug == slug))
         system = session.scalar(

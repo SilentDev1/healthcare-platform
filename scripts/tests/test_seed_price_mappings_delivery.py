@@ -97,3 +97,38 @@ def test_no_cross_contamination_between_vaginal_and_cesarean() -> None:
     assert "cesarean-delivery" not in idx[("CPT", "59409")]
     assert "vaginal-delivery" not in idx[("MS_DRG", "788")]
     assert "vaginal-delivery" not in idx[("CPT", "59514")]
+
+
+def test_misregistered_767_is_superseded_not_deleted() -> None:
+    from packages.database import ProcedureCodeSystem
+
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        seed_catalog(session)
+        cesarean = session.scalar(select(Procedure).where(Procedure.slug == "cesarean-delivery"))
+        ms_drg = session.scalar(
+            select(ProcedureCodeSystem).where(ProcedureCodeSystem.code_system == "MS_DRG")
+        )
+        assert cesarean is not None and ms_drg is not None
+        # Simulate the pre-existing mis-registration (approved 767 -> cesarean).
+        session.add(
+            ProcedureCodeMapping(
+                procedure_id=cesarean.id,
+                code_system_id=ms_drg.id,
+                code="767",
+                mapping_status="approved",
+                version="stale",
+            )
+        )
+        session.commit()
+
+        seed_price_mappings(session)
+        session.commit()
+
+        idx = _mapping_index(session)
+        assert "cesarean-delivery" not in idx.get(("MS_DRG", "767"), set())  # de-approved
+        row = session.scalar(select(ProcedureCodeMapping).where(ProcedureCodeMapping.code == "767"))
+        assert row is not None  # kept for provenance, not deleted
+        assert row.mapping_status == "superseded"
+    engine.dispose()
