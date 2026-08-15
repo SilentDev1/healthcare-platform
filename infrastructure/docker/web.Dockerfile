@@ -11,6 +11,9 @@ FROM dependencies AS build
 COPY apps/web apps/web
 COPY packages/shared_types packages/shared_types
 COPY packages/validation packages/validation
+# The web build imports the reviewed consumer category taxonomy
+# (apps/web/lib/procedureCategories.ts -> data/consumer_procedure_categories.json).
+COPY data/consumer_procedure_categories.json data/consumer_procedure_categories.json
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_SITE_URL
 ARG APP_ENV=beta
