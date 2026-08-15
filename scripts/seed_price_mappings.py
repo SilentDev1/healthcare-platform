@@ -56,12 +56,32 @@ MAPPINGS = (
     ("hip-replacement", "CPT", "27130"),
     ("carpal-tunnel-release", "CPT", "64721"),
     ("rotator-cuff-repair", "CPT", "29827"),
-    # --- Maternity (MS-DRG + alternatives) ---
-    ("vaginal-delivery", "MS_DRG", "775"),
-    ("vaginal-delivery", "MS_DRG", "774"),  # with complications
-    ("cesarean-delivery", "MS_DRG", "766"),
-    ("cesarean-delivery", "MS_DRG", "765"),  # with CC
-    ("cesarean-delivery", "MS_DRG", "767"),  # with MCC
+    # --- Maternity (reviewed 2026-08-15; evidence in docs/PROCEDURE_MAPPING_COVERAGE_AUDIT.md) ---
+    # Verified against source-data descriptions + MS-DRG definitions. Only the
+    # WITHOUT-sterilization/D&C DRG severity split and the delivery CPTs are mapped;
+    # sterilization/D&C bundles, vaginal-with-O.R. (768) and VBAC codes are excluded
+    # as distinct services/components. Retired 774/775 and 765/766 are kept (still
+    # present at ~2 hospitals on older MRFs).
+    # Vaginal delivery (facility DRG severity split + delivery CPTs):
+    ("vaginal-delivery", "MS_DRG", "807"),  # w/o sterilization/D&C, w/o CC/MCC
+    ("vaginal-delivery", "MS_DRG", "806"),  # w/o sterilization/D&C, w/ CC
+    ("vaginal-delivery", "MS_DRG", "805"),  # w/o sterilization/D&C, w/ MCC
+    ("vaginal-delivery", "MS_DRG", "775"),  # retired: w/o complicating dx
+    ("vaginal-delivery", "MS_DRG", "774"),  # retired: w/ complicating dx
+    ("vaginal-delivery", "CPT", "59400"),  # routine OB care incl vaginal delivery
+    ("vaginal-delivery", "CPT", "59409"),  # vaginal delivery only
+    ("vaginal-delivery", "CPT", "59410"),  # vaginal delivery incl postpartum
+    # Cesarean delivery (facility DRG severity split + delivery CPTs). NOTE: MS-DRG
+    # 767 is "Vaginal delivery w/ sterilization/D&C" (NOT cesarean) — it was
+    # previously mis-registered here; removed (a bundled-sterilization service).
+    ("cesarean-delivery", "MS_DRG", "788"),  # w/o sterilization, w/o CC/MCC
+    ("cesarean-delivery", "MS_DRG", "787"),  # w/o sterilization, w/ CC
+    ("cesarean-delivery", "MS_DRG", "786"),  # w/o sterilization, w/ MCC
+    ("cesarean-delivery", "MS_DRG", "766"),  # retired: w/o CC/MCC
+    ("cesarean-delivery", "MS_DRG", "765"),  # retired: w/ CC/MCC
+    ("cesarean-delivery", "CPT", "59510"),  # routine OB care incl cesarean
+    ("cesarean-delivery", "CPT", "59514"),  # cesarean delivery only
+    ("cesarean-delivery", "CPT", "59515"),  # cesarean delivery incl postpartum
     # MS-DRG 469/470 represent major hip *or* knee replacement and cannot be
     # deterministically assigned to either consumer procedure from the code alone.
     # --- Revenue codes ---
