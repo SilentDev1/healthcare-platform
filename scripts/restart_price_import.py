@@ -75,7 +75,9 @@ def _delete_records_in_chunks(
         session.execute(delete(HospitalPriceRecord).where(HospitalPriceRecord.id.in_(record_ids)))
         session.commit()
         deleted += len(record_ids)
-        print(f"  ...deleted {deleted} records so far")
+        # flush so chunk progress is visible in Cloud Run logs in real time
+        # (job stdout is block-buffered otherwise, hiding a stall).
+        print(f"  ...deleted {deleted} records so far", flush=True)
     return deleted
 
 
@@ -104,7 +106,7 @@ def restart(source_file_id: uuid.UUID, session: Session | None = None) -> PriceI
     )
 
     if record_count:
-        print(f"Deleting {record_count} existing records and children in chunks...")
+        print(f"Deleting {record_count} existing records and children in chunks...", flush=True)
         _delete_records_in_chunks(session, source_file_id)
 
     # Delete unmatched records
@@ -130,12 +132,13 @@ def restart(source_file_id: uuid.UUID, session: Session | None = None) -> PriceI
     session.execute(delete(ImportRun).where(ImportRun.source_file_id == source_file_id))
 
     session.commit()
-    print("Cleaned up. Starting fresh import...")
+    print("Cleaned up. Starting fresh import...", flush=True)
 
     summary = import_price_source(session, price_source, hospital_price_settings)
     print(
         f"Import complete: {summary.records_normalized} records, "
-        f"{summary.rate_details} rate details"
+        f"{summary.rate_details} rate details",
+        flush=True,
     )
     return summary
 

@@ -454,6 +454,15 @@ class FacilityProcedurePriceObservation(TimestampMixin, Base):
             "publication_status",
             "price_type",
         ),
+        # Indexes the inbound FK to hospital_price_rate_details so deleting a
+        # rate-detail row does an index lookup for referencing observations, not a
+        # full seq scan of this (all-hospitals) table per deleted row. Without it,
+        # deleting a source's rate details is O(rows^2) and never completes on a
+        # large source (see migration 0013).
+        Index(
+            "ix_price_observation_rate_detail_id",
+            "hospital_price_rate_detail_id",
+        ),
     )
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     facility_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("facilities.id"), index=True)

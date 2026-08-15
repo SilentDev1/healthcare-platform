@@ -8,9 +8,10 @@ functionally correct and leaves exactly one clean import (no duplicates).
 
 import uuid
 from pathlib import Path
+from typing import cast
 from unittest.mock import patch
 
-from sqlalchemy import Engine, create_engine, func, select
+from sqlalchemy import Engine, Table, create_engine, func, select
 from sqlalchemy.orm import Session
 
 from collectors.hospital_prices.config import HospitalPriceSettings
@@ -22,6 +23,7 @@ from packages.database import (
     Facility,
     FacilityLocation,
     FacilityPriceSource,
+    FacilityProcedurePriceObservation,
     HospitalPriceRateDetail,
     HospitalPriceRecord,
     ImportRun,
@@ -134,3 +136,16 @@ def test_delete_records_in_chunks_batches_and_clears_children(tmp_path: Path) ->
         assert (session.scalar(select(func.count(HospitalPriceRateDetail.id))) or 0) == 0
         assert (session.scalar(select(func.count(PriceServiceCode.id))) or 0) == 0
     engine.dispose()
+
+
+def test_observation_rate_detail_fk_is_indexed() -> None:
+    """The inbound FK observation -> rate_detail MUST stay indexed.
+
+    Without an index on facility_procedure_price_observations.hospital_price_rate_detail_id,
+    each DELETE of a hospital_price_rate_details row seq-scans this whole (all-hospitals)
+    table via the RI trigger, making a source's delete O(rows^2) — which wedged the
+    prod restart job for 6+ hours. Migration 0013 adds it; guard against regression.
+    """
+    table = cast(Table, FacilityProcedurePriceObservation.__table__)
+    indexed_cols = {tuple(col.name for col in index.columns) for index in table.indexes}
+    assert ("hospital_price_rate_detail_id",) in indexed_cols
