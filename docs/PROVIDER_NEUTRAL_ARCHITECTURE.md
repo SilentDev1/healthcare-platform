@@ -1,10 +1,19 @@
-# Provider-Neutral Architecture — Design (no migration yet)
+# Provider-Neutral Architecture
 
-Status: **DESIGN / PROPOSAL**. No schema migration or production change is made by
-this document. It exists to satisfy the master directive requirement to produce a
-design before any large migration, and to recommend the **smallest safe additive
-migration**. Nothing here weakens the current NH hospital pipeline, provenance,
-comparability, reviewed-mapping safety, or resumable imports.
+Status: **FOUNDATION IMPLEMENTED + DEPLOYED (2026-08-16).** The additive schema layer
+below is live in production as Alembic migration **`0014`** (the design originally
+called this `0013`, but `0013` was taken by an unrelated FK-index migration, so the
+provider-neutral migration shipped as `0014`). Models: `Organization`,
+`LocationCapability`, `LocationServiceAvailability`, `Facility.organization_id`,
+`FacilityLocation.region/subregion`, `FacilityPriceSource.source_class`
+(`packages/database/models.py`, `pricing_models.py`). Backfill mapped everything to
+hospital semantics (28 orgs 1:1, 32 `hospital` capabilities, 55 `HOSPITAL_MRF`
+sources); baseline held **26/26 · 50/50**, safety PASS, 0 false-positive suspects.
+Observability: `scripts/provider_neutral_coverage.py` (separate from the X/26 metric).
+Remaining work: provider-neutral **API/search/UI** generalization, then the NH
+non-hospital **waves** (labs first) — see `docs/NH_PROVIDER_EXPANSION.md`. Nothing here
+weakens the current NH hospital pipeline, provenance, comparability, reviewed-mapping
+safety, or resumable imports.
 
 Product principle (locked): Carevero answers *"where can I get this care, what
 verified price information do we have, how far away is it, and which prices are
