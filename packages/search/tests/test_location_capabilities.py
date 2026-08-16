@@ -125,6 +125,24 @@ def test_absent_capability_returns_nothing(session: Session) -> None:
     assert resolve_capability_locations(session, "urgent_care") == []
 
 
+def test_match_capability_is_resilient_to_registry_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A missing/broken capability registry must NOT crash search — degrade to no match.
+
+    Regression for the incident where the capability data file was absent from the API
+    image and every /search query 500'd because match_capability raised.
+    """
+    import packages.search.location_capabilities as lc
+
+    def boom() -> dict[str, str]:
+        raise FileNotFoundError("data/consumer_location_capabilities.json missing")
+
+    monkeypatch.setattr(lc, "_term_to_capability", boom)
+    assert lc.match_capability("urgent care") is None
+    assert lc.match_capability("hospital") is None
+
+
 def test_existing_procedure_category_search_unaffected(session: Session) -> None:
     # Adding capability machinery must not change deterministic procedure/category search.
     assert resolve_search(session, "lab tests").canonical_category_slug == "laboratory"

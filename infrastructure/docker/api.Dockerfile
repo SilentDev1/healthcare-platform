@@ -9,6 +9,7 @@ COPY collectors collectors
 COPY scripts scripts
 COPY data/fixtures/nh_hospital_inventory.json data/fixtures/nh_hospital_inventory.json
 COPY data/consumer_procedure_categories.json data/consumer_procedure_categories.json
+COPY data/consumer_location_capabilities.json data/consumer_location_capabilities.json
 COPY data/fixtures/zip_city_centroids.json data/fixtures/zip_city_centroids.json
 RUN useradd --create-home --uid 10001 carevero && chown -R carevero:carevero /app
 USER carevero

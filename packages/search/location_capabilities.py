@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
+import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -28,6 +29,8 @@ from packages.database import (
 )
 from packages.identity import normalize_name
 from packages.search.service import SearchResult
+
+logger = structlog.get_logger(service="location_capabilities")
 
 SUPPORTED_LOCALES = ("en", "es", "vi", "zh-TW", "zh-CN")
 
@@ -78,9 +81,18 @@ def _term_to_capability() -> dict[str, str]:
 
 
 def match_capability(query: str) -> str | None:
-    """Return the canonical capability id a query names, or None. Exact/alias match only."""
+    """Return the canonical capability id a query names, or None. Exact/alias match only.
+
+    Defensive: capability resolution is an optional enrichment layer. If the registry
+    cannot be loaded (e.g. the data file is absent from an image), degrade to "no
+    capability match" so core deterministic search is never taken down by it.
+    """
     normalized = normalize_name(query) or " ".join(query.casefold().split())
-    return _term_to_capability().get(normalized)
+    try:
+        return _term_to_capability().get(normalized)
+    except Exception:
+        logger.warning("capability_registry_unavailable")
+        return None
 
 
 def resolve_capability_locations(
