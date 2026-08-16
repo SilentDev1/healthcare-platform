@@ -105,6 +105,35 @@ address-verified NH walk-in clinics:
   (full NH map 54 = 25 hospital + 26 urgent_care + 3 lab). Detail page `is_hospital=false`,
   no CMS, no fabricated prices. Baseline 26/26·50/50 and safety PASS held.
 
+## WAVE 3 — NH EMERGENCY DEPARTMENTS — ✅ LIVE (2026-08-16)
+
+Capability-only wave (`scripts/ingest_nh_emergency_departments_wave3.py`, tested). NH's EDs
+are hospital-based, so NO new facilities were created — an ED capability was layered onto the
+existing hospital LOCATIONS, classified from the CMS facility-type designation already on
+each facility:
+
+| Class | Basis | Capability added | Count |
+|---|---|---|---|
+| Critical Access Hospital | 42 CFR 485.618 requires 24/7 emergency services | `emergency_department` | 13 |
+| Acute Care Hospital | NH short-term general hospitals (CMS "Emergency Services = Yes") | `emergency_department` | 13 |
+| Hospital-affiliated freestanding ER | `location_type=freestanding_emergency_room` | `freestanding_emergency_department` | 3 |
+| Psychiatric (NH Hospital, Hampstead) | no general ED | **excluded** | 2 |
+
+- **Freestanding ERs discovered:** Portsmouth Regional → **Dover** & **Seabrook**; Parkland →
+  **Plaistow** (HCA-affiliated). Given the DISTINCT `freestanding_emergency_department`
+  capability, never conflated with a hospital-campus ED or with `urgent_care`. (My initial
+  assumption that NH had no freestanding ERs was wrong — the pre-write `--verbose` audit
+  against prod caught it before any capability was written.)
+- **Additive/reversible:** new LocationCapability rows only; no facilities, no pricing touched,
+  audited hospital pipeline unmodified. Idempotent, provenance-backed (regulatory designation).
+- **Live (verified):** directory facet `emergency_department: 26`, `freestanding_emergency_department: 3`;
+  search "emergency room"→`emergency_department`, "freestanding er"→`freestanding_emergency_department`.
+  Baseline 26/26·50/50 and safety PASS held.
+- **Known follow-ups (flagged):** (a) a pre-existing DUPLICATE Parkland Derry `hospital_campus`
+  location from the 0014 backfill (spawned a separate consolidation task — invisible to
+  consumers, inflates counts); (b) the 3 freestanding-ER location rows lack coordinates, so
+  they are discoverable in directory/search but not yet on the map (geocode follow-up).
+
 ## SOURCE-RESEARCH TEMPLATE (complete BEFORE each wave's ingestion)
 
 For every provider category answer, with provenance:
@@ -124,7 +153,7 @@ is an expected, first-class state. Never $0; never fabricate availability or pri
 |---|---|---|
 | 1 | Independent laboratories (Quest, Labcorp) | ✅ **live (2 orgs, 3 verified locations)** |
 | 2 | Urgent care (ConvenientMD, ClearChoiceMD) | ✅ **live (2 orgs, 26 verified locations)** |
-| 3 | Emergency departments / freestanding ER (as capabilities, no dup hospitals) | ⏳ not started |
+| 3 | Emergency departments / freestanding ER (as capabilities, no dup hospitals) | ✅ **live (26 hospital EDs + 3 freestanding ERs)** |
 | 4 | Imaging centers (independent + hospital-affiliated) | ⏳ not started |
 | 5 | Ambulatory surgery centers | ⏳ not started |
 | 6 | Physical therapy + rehabilitation (kept distinct) | ⏳ not started |
