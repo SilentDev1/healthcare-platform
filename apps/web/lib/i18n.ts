@@ -122,6 +122,10 @@ const en = {
     "Published prices are available from {withPrices} of {active} active hospitals for this procedure. All matching hospitals remain visible, including those without a publishable price.",
   thisPayer: "this payer",
   priceAvailability: "Price availability",
+  providerType: "Location type",
+  providerTypeAll: "All locations",
+  serviceAvailableLabel: "Service available",
+  priceNotAvailableShort: "Published price not currently available in Carevero",
   availabilityAll: "All hospitals",
   availabilityAvailable: "Published price available",
   availabilityUnavailable: "Price not available",
@@ -676,6 +680,80 @@ const en = {
 
 export type Messages = typeof en;
 
+/** Localized consumer labels for canonical location-capability ids. Kept separate from
+ * the flat string `Messages` map (its values must stay strings). Every locale defines
+ * every capability; `capabilityLabel` falls back to en then to a humanized id. */
+export const CAPABILITY_LABELS: Record<Locale, Record<string, string>> = {
+  en: {
+    hospital: "Hospital",
+    emergency_department: "Emergency Department",
+    freestanding_emergency_department: "Freestanding ER",
+    urgent_care: "Urgent Care",
+    laboratory: "Laboratory",
+    imaging: "Imaging Center",
+    ambulatory_surgery: "Surgery Center",
+    physical_therapy: "Physical Therapy",
+    rehabilitation: "Rehabilitation",
+    chiropractic: "Chiropractic",
+  },
+  es: {
+    hospital: "Hospital",
+    emergency_department: "Sala de emergencias",
+    freestanding_emergency_department: "Sala de emergencias independiente",
+    urgent_care: "Atención de urgencia",
+    laboratory: "Laboratorio",
+    imaging: "Centro de imágenes",
+    ambulatory_surgery: "Centro de cirugía ambulatoria",
+    physical_therapy: "Fisioterapia",
+    rehabilitation: "Rehabilitación",
+    chiropractic: "Quiropráctica",
+  },
+  vi: {
+    hospital: "Bệnh viện",
+    emergency_department: "Khoa cấp cứu",
+    freestanding_emergency_department: "Phòng cấp cứu độc lập",
+    urgent_care: "Chăm sóc khẩn cấp",
+    laboratory: "Phòng xét nghiệm",
+    imaging: "Trung tâm chẩn đoán hình ảnh",
+    ambulatory_surgery: "Trung tâm phẫu thuật",
+    physical_therapy: "Vật lý trị liệu",
+    rehabilitation: "Phục hồi chức năng",
+    chiropractic: "Nắn chỉnh cột sống",
+  },
+  "zh-TW": {
+    hospital: "醫院",
+    emergency_department: "急診部",
+    freestanding_emergency_department: "獨立急診中心",
+    urgent_care: "緊急照護中心",
+    laboratory: "檢驗中心",
+    imaging: "影像中心",
+    ambulatory_surgery: "門診手術中心",
+    physical_therapy: "物理治療",
+    rehabilitation: "復健中心",
+    chiropractic: "脊骨神經科",
+  },
+  "zh-CN": {
+    hospital: "医院",
+    emergency_department: "急诊部",
+    freestanding_emergency_department: "独立急诊中心",
+    urgent_care: "紧急护理中心",
+    laboratory: "检验中心",
+    imaging: "影像中心",
+    ambulatory_surgery: "门诊手术中心",
+    physical_therapy: "物理治疗",
+    rehabilitation: "康复中心",
+    chiropractic: "脊骨神经科",
+  },
+};
+
+export function capabilityLabel(capability: string, locale: Locale): string {
+  return (
+    CAPABILITY_LABELS[locale]?.[capability] ??
+    CAPABILITY_LABELS.en[capability] ??
+    capability.replaceAll("_", " ")
+  );
+}
+
 export const messages: Record<Locale, Messages> = {
   en,
   es: {
@@ -797,6 +875,10 @@ export const messages: Record<Locale, Messages> = {
       "Hay precios publicados de {withPrices} de {active} hospitales activos para este servicio. Todos los hospitales coincidentes siguen visibles, incluidos los que no tienen un precio publicable.",
     thisPayer: "esta aseguradora",
     priceAvailability: "Disponibilidad de precio",
+    providerType: "Tipo de ubicación",
+    providerTypeAll: "Todas las ubicaciones",
+    serviceAvailableLabel: "Servicio disponible",
+    priceNotAvailableShort: "Precio publicado no disponible actualmente en Carevero",
     availabilityAll: "Todos los hospitales",
     availabilityAvailable: "Precio publicado disponible",
     availabilityUnavailable: "Precio no disponible",
@@ -1448,6 +1530,10 @@ export const messages: Record<Locale, Messages> = {
       "Có giá công bố từ {withPrices} trong số {active} bệnh viện đang hoạt động cho dịch vụ này. Tất cả bệnh viện phù hợp vẫn hiển thị, kể cả những nơi chưa có giá có thể công bố.",
     thisPayer: "hãng bảo hiểm này",
     priceAvailability: "Tình trạng có giá",
+    providerType: "Loại địa điểm",
+    providerTypeAll: "Tất cả địa điểm",
+    serviceAvailableLabel: "Có dịch vụ",
+    priceNotAvailableShort: "Hiện chưa có giá công bố trong Carevero",
     availabilityAll: "Tất cả bệnh viện",
     availabilityAvailable: "Có giá công bố",
     availabilityUnavailable: "Chưa có giá",
@@ -2083,6 +2169,10 @@ export const messages: Record<Locale, Messages> = {
       "本服務有 {active} 家運作中醫院中的 {withPrices} 家提供公布價格。所有符合條件的醫院都會顯示，包括沒有可公布價格的醫院。",
     thisPayer: "此保險公司",
     priceAvailability: "價格是否公布",
+    providerType: "地點類型",
+    providerTypeAll: "所有地點",
+    serviceAvailableLabel: "提供服務",
+    priceNotAvailableShort: "Carevero 目前尚無公布價格",
     availabilityAll: "所有醫院",
     availabilityAvailable: "有公布價格",
     availabilityUnavailable: "沒有價格",
@@ -2677,6 +2767,10 @@ export const messages: Record<Locale, Messages> = {
       "本服务有 {active} 家运作中医院中的 {withPrices} 家提供公布价格。所有符合条件的医院都会显示，包括没有可公布价格的医院。",
     thisPayer: "此保险公司",
     priceAvailability: "价格是否公布",
+    providerType: "地点类型",
+    providerTypeAll: "所有地点",
+    serviceAvailableLabel: "提供服务",
+    priceNotAvailableShort: "Carevero 目前尚无公布价格",
     availabilityAll: "所有医院",
     availabilityAvailable: "有公布价格",
     availabilityUnavailable: "没有价格",

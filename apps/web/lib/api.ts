@@ -48,7 +48,13 @@ export interface DirectoryFacility {
   facility_type: string | null;
   published_procedure_count: number;
   pricing_status: string;
+  price_available: boolean;
   cms_overall_rating: string | null;
+  organization_name?: string | null;
+  organization_type?: string | null;
+  location_type?: string | null;
+  region?: string | null;
+  capabilities: string[];
   image_url?: string | null;
   image_alt?: string | null;
   image_attribution?: string | null;
@@ -59,6 +65,10 @@ export interface DirectoryStateOption {
   name: string;
   facility_count: number;
 }
+export interface DirectoryCapabilityOption {
+  capability: string;
+  location_count: number;
+}
 export interface FacilityDirectory {
   items: DirectoryFacility[];
   page: number;
@@ -67,6 +77,7 @@ export interface FacilityDirectory {
   total_states: number;
   states: DirectoryStateOption[];
   facility_types: string[];
+  capabilities: DirectoryCapabilityOption[];
 }
 export interface FacilityPage {
   items: Facility[];

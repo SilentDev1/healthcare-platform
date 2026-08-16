@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { apiGet, type FacilityDirectory } from "../../lib/api";
 import { FacilityImage } from "../components/FacilityImage";
 import { FilterPanel } from "../components/ui";
-import { localePath, type Messages } from "../../lib/i18n";
+import { capabilityLabel, localePath, type Locale, type Messages } from "../../lib/i18n";
 import { requestLocale, requestMessages } from "../../lib/i18n-server";
 
 export const metadata: Metadata = {
@@ -19,11 +19,25 @@ interface Filters {
   search?: string;
   pricing?: string;
   type?: string;
+  capability?: string;
   sort?: string;
   page?: string;
 }
 
 const PAGE_SIZE = 24;
+
+/** Hospital-only fields (CMS quality) must never render for non-hospital locations. */
+function isHospital(facility: {
+  capabilities: string[];
+  organization_type?: string | null;
+  cms_certification_number: string | null;
+}): boolean {
+  return (
+    facility.capabilities.includes("hospital") ||
+    facility.organization_type === "hospital_system" ||
+    facility.cms_certification_number !== null
+  );
+}
 
 /** Localize a US state name from its code, falling back to the API-supplied name. */
 function stateName(code: string | null, name: string, t: Messages): string {
@@ -58,6 +72,7 @@ export default async function Hospitals({
   if (filters.search) query.set("search", filters.search);
   if (filters.pricing) query.set("pricing_status", filters.pricing);
   if (filters.type) query.set("facility_type", filters.type);
+  if (filters.capability) query.set("capability", filters.capability);
   if (filters.sort) query.set("sort", filters.sort);
 
   let data: FacilityDirectory;
@@ -98,6 +113,7 @@ export default async function Hospitals({
     if (filters.search) params.set("search", filters.search);
     if (filters.pricing) params.set("pricing", filters.pricing);
     if (filters.type) params.set("type", filters.type);
+    if (filters.capability) params.set("capability", filters.capability);
     if (filters.sort) params.set("sort", filters.sort);
     if (nextPage > 1) params.set("page", String(nextPage));
     const qs = params.toString();
@@ -126,6 +142,23 @@ export default async function Hospitals({
           <option value="pricing_not_available_yet">{t.mapNotAvailableYet}</option>
         </select>
       </div>
+      {data.capabilities.length > 0 ? (
+        <div className="filter-group">
+          <label htmlFor="capability">{t.providerType}</label>
+          <select
+            id="capability"
+            name="capability"
+            defaultValue={filters.capability ?? ""}
+          >
+            <option value="">{t.providerTypeAll}</option>
+            {data.capabilities.map((option) => (
+              <option key={option.capability} value={option.capability}>
+                {capabilityLabel(option.capability, locale)} ({option.location_count})
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
       <div className="filter-group">
         <label htmlFor="type">{t.facilityType}</label>
         <select id="type" name="type" defaultValue={filters.type ?? ""}>
@@ -178,6 +211,9 @@ export default async function Hospitals({
         ) : null}
         {filters.type ? (
           <input type="hidden" name="type" value={filters.type} />
+        ) : null}
+        {filters.capability ? (
+          <input type="hidden" name="capability" value={filters.capability} />
         ) : null}
         {filters.sort ? (
           <input type="hidden" name="sort" value={filters.sort} />
@@ -245,17 +281,33 @@ export default async function Hospitals({
                     {facility.display_name}
                   </Link>
                 </h2>
+                {facility.organization_name &&
+                facility.organization_name !== facility.display_name ? (
+                  <p className="hospdir-card-org">{facility.organization_name}</p>
+                ) : null}
                 <p className="hospdir-card-loc">
                   {facility.city ? `${facility.city}, ` : ""}
                   {stateName(facility.state, facility.state ?? "", t)}
                 </p>
-                {facility.facility_type ? (
+                {facility.capabilities.length > 0 ? (
+                  <p className="hospdir-card-caps">
+                    {facility.capabilities.map((capability) => (
+                      <span className="badge neutral" key={capability}>
+                        {capabilityLabel(capability, locale)}
+                      </span>
+                    ))}
+                  </p>
+                ) : facility.facility_type ? (
                   <span className="badge neutral">{facility.facility_type}</span>
                 ) : null}
                 <p className="hospdir-card-pricing">
-                  {pricingSummary(facility.published_procedure_count, t)}
+                  {facility.price_available
+                    ? pricingSummary(facility.published_procedure_count, t)
+                    : t.priceNotAvailableShort}
                 </p>
-                {facility.cms_overall_rating &&
+                {/* CMS hospital quality is HOSPITAL-ONLY; never shown for labs/urgent care/etc. */}
+                {isHospital(facility) &&
+                facility.cms_overall_rating &&
                 /^[1-5]$/.test(facility.cms_overall_rating) ? (
                   <p className="hospdir-card-cms">
                     <span aria-hidden="true">★</span> {t.hospDirCmsOverall}:{" "}
