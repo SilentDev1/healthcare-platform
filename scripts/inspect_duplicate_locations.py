@@ -11,8 +11,8 @@ Run: python -m scripts.inspect_duplicate_locations [--facility "PARKLAND MEDICAL
 """
 
 from __future__ import annotations
-# ruff: noqa: E501  -- diagnostic print lines are kept readable
 
+# ruff: noqa: E501  -- diagnostic print lines are kept readable
 import argparse
 import re
 from collections import defaultdict
@@ -102,9 +102,39 @@ def _ref_counts(session: Session, loc_id: object) -> dict[str, int]:
     return counts
 
 
+def dump_facility(session: Session, name_substr: str) -> None:
+    """Dump EVERY facility matching the name and ALL its locations (active or not)."""
+    facilities = list(
+        session.scalars(
+            select(Facility).where(Facility.display_name.ilike(f"%{name_substr}%"))
+        )
+    )
+    print(f"FACILITIES_MATCHING={len(facilities)} for {name_substr!r}")
+    for f in facilities:
+        print(f"\n### FACILITY id={f.id} name={f.display_name!r} type={f.facility_type} "
+              f"cms={f.cms_certification_number} org={f.organization_id} active={f.active}")
+        locs = list(
+            session.scalars(
+                select(FacilityLocation).where(FacilityLocation.facility_id == f.id)
+            )
+        )
+        print(f"    locations={len(locs)}")
+        for loc in locs:
+            print(f"    LOC id={loc.id} name={loc.location_name!r} type={loc.location_type} "
+                  f"addr={loc.address_line_1!r} city={loc.city} zip={loc.postal_code} "
+                  f"lat={loc.latitude} lng={loc.longitude} active={loc.active}")
+            counts = _ref_counts(session, loc.id)
+            nonzero = {k: v for k, v in counts.items() if v}
+            print(f"        refs={nonzero if nonzero else 'NONE'}")
+
+
 def inspect(session: Session | None = None, *, facility_filter: str | None = None) -> None:
     if session is None:
         session = next(get_session())
+
+    if facility_filter:
+        dump_facility(session, facility_filter)
+        print()
 
     # Group active locations by (facility_id, city, state, location_type) to find same-place candidates.
     groups: dict[tuple, list[FacilityLocation]] = defaultdict(list)
