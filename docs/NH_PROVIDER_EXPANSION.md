@@ -53,6 +53,34 @@ are reported as distinct counts, never collapsed.
 
 ---
 
+## WAVE 1 — NH INDEPENDENT LABS — ✅ LIVE (2026-08-16)
+
+Authoritative research from each provider's OFFICIAL location directory
+(`locations.questdiagnostics.com/nh` — Quest lists 13 NH cities; `locations.labcorp.com/nh`
+— Labcorp Bedford + others). Ingested (idempotent `scripts/ingest_nh_labs_wave1.py`,
+tested) the fully address-verified sites:
+
+| Organization | Location | Address | Capability | Price |
+|---|---|---|---|---|
+| Quest Diagnostics (independent_lab) | Nashua | 300 Main St #301B, 03060 | laboratory | not available |
+| Quest Diagnostics | Manchester | 195 McGregor St, 03102 | laboratory | not available |
+| Laboratory Corporation of America | Bedford | 101 Riverway Pl, 03110 | laboratory | not available |
+
+- **Verified:** organization identity + NH presence + street address + phone + official URL
+  (provenance `SourceFile` → directory). Coordinates: ZIP-centroid (honestly approximate).
+- **Price:** none published in machine-readable form → `price_available=false` ("Published
+  price not currently available in Carevero" — a valid, expected state; never $0).
+- **Service availability:** intentionally NOT asserted per-procedure. The directory verifies
+  the LOCATION and that it is a laboratory, not a per-location canonical test menu — asserting
+  CBC/etc. without a test-menu source would be assumption, not evidence. Follow-up: source an
+  authoritative per-location test menu, then add `LocationServiceAvailability(offered)`.
+- **Live:** discoverable in the directory (`capability=laboratory` filter → 3), "lab"/
+  "laboratory" capability search group, and the capability-aware map (3 lab pins). Rendered as
+  "Independent Lab", no CMS (is_hospital false). Baseline 26/26·50/50 and safety PASS held.
+- **Known gap / next:** remaining Quest NH cities (Amherst, Bedford, Claremont, Concord,
+  Derry, Dover, Gilford, Goffstown, Londonderry, Pelham, Salem) and more Labcorp sites need
+  address verification before ingest; per-location test menus for service availability.
+
 ## SOURCE-RESEARCH TEMPLATE (complete BEFORE each wave's ingestion)
 
 For every provider category answer, with provenance:
@@ -70,7 +98,7 @@ is an expected, first-class state. Never $0; never fabricate availability or pri
 
 | Wave | Category | Status |
 |---|---|---|
-| 1 | Independent laboratories (Quest, Labcorp, local — verify NH presence) | ⏳ not started |
+| 1 | Independent laboratories (Quest, Labcorp) | ✅ **live (2 orgs, 3 verified locations)** |
 | 2 | Urgent care (ConvenientMD, ClearChoiceMD, health-system — verify) | ⏳ not started |
 | 3 | Emergency departments / freestanding ER (as capabilities, no dup hospitals) | ⏳ not started |
 | 4 | Imaging centers (independent + hospital-affiliated) | ⏳ not started |
