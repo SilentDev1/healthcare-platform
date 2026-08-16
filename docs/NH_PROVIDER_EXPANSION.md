@@ -81,6 +81,30 @@ tested) the fully address-verified sites:
   Derry, Dover, Gilford, Goffstown, Londonderry, Pelham, Salem) and more Labcorp sites need
   address verification before ingest; per-location test menus for service availability.
 
+## WAVE 2 — NH URGENT CARE — ✅ LIVE (2026-08-16)
+
+Authoritative research from each chain's OFFICIAL directory (ConvenientMD:
+`convenientmd.com/locations`; ClearChoiceMD: `ccmdcenters.com/locations/new-hampshire-urgent-care`).
+Ingested (idempotent `scripts/ingest_nh_urgent_care_wave2.py`, tested) 26 fully
+address-verified NH walk-in clinics:
+
+| Organization | Locations | Capability | Price |
+|---|---|---|---|
+| ConvenientMD (urgent_care) | 15 — Bedford, Concord, Dover, Stratham, Keene, Merrimack, Nashua, Portsmouth, Windham, Belmont, Littleton, Londonderry, Manchester, Plaistow, West Lebanon | urgent_care | not available |
+| ClearChoiceMD (urgent_care) | 11 — Alton, Epping, Gilford, Goffstown, Hooksett, Lebanon, Nashua, Plaistow, Rochester, Seabrook, Tilton | urgent_care | not available |
+
+- **Capability discipline:** modeled as `urgent_care`, a DISTINCT capability from
+  `emergency_department` — these clinics are never conflated with hospital ERs (test-enforced).
+- **Verified:** organization identity + NH presence + street address + city/ZIP + phone +
+  official URL (provenance `SourceFile` → directory). Coordinates: ZIP-centroid (approximate).
+- **Price:** none published machine-readable → `price_available=false` (valid state; never $0).
+- **Service availability:** intentionally NOT asserted per-procedure (no per-location priced
+  menu source). Follow-up if an authoritative urgent-care price/service source appears.
+- **Live (verified):** directory facet `urgent_care: 26` (paginated, `total=26`), search
+  "urgent care"/"walk in clinic" → canonical_capability `urgent_care`, map 26 urgent_care pins
+  (full NH map 54 = 25 hospital + 26 urgent_care + 3 lab). Detail page `is_hospital=false`,
+  no CMS, no fabricated prices. Baseline 26/26·50/50 and safety PASS held.
+
 ## SOURCE-RESEARCH TEMPLATE (complete BEFORE each wave's ingestion)
 
 For every provider category answer, with provenance:
@@ -99,7 +123,7 @@ is an expected, first-class state. Never $0; never fabricate availability or pri
 | Wave | Category | Status |
 |---|---|---|
 | 1 | Independent laboratories (Quest, Labcorp) | ✅ **live (2 orgs, 3 verified locations)** |
-| 2 | Urgent care (ConvenientMD, ClearChoiceMD, health-system — verify) | ⏳ not started |
+| 2 | Urgent care (ConvenientMD, ClearChoiceMD) | ✅ **live (2 orgs, 26 verified locations)** |
 | 3 | Emergency departments / freestanding ER (as capabilities, no dup hospitals) | ⏳ not started |
 | 4 | Imaging centers (independent + hospital-affiliated) | ⏳ not started |
 | 5 | Ambulatory surgery centers | ⏳ not started |
