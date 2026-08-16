@@ -106,8 +106,8 @@ def test_identity_nppes_catalog_and_search_are_idempotent(tmp_path: Path) -> Non
         one = seed_catalog(session)
         two = seed_catalog(session)
         assert one.procedures == two.procedures == len(SERVICES) == 50
-        assert rebuild_index(session) == 64
-        assert rebuild_index(session) == 64
+        assert rebuild_index(session) == 63
+        assert rebuild_index(session) == 63
         assert search(session, "MRI brain")[0].entity_type == "procedure"
         assert search(session, "Concord Hospital")[0].entity_type == "facility"
         assert search(session, "Concor", state="NH")[0].match_reason == "prefix_or_phrase"

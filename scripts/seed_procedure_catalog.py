@@ -20,8 +20,13 @@ CATEGORIES = (
     ("preventive", "Preventive care"),
     ("emergency", "Emergency care"),
     ("maternity", "Maternity"),
+    # NOTE: consumer categories are clinical service groupings, NOT care settings.
+    # "inpatient-surgery" was removed (2026-08-16 taxonomy audit): it is a care SETTING,
+    # not a consumer category, and had zero canonical procedures — major surgeries live
+    # under their clinical category (e.g. Orthopedics) with setting tracked on the price
+    # record. Do not re-add setting-based categories. ("outpatient-surgery" retains
+    # members pending its own reviewed reclassification.)
     ("outpatient-surgery", "Outpatient surgery"),
-    ("inpatient-surgery", "Inpatient surgery"),
     ("cardiology", "Cardiology"),
     ("orthopedics", "Orthopedics"),
     ("gastroenterology", "Gastroenterology"),

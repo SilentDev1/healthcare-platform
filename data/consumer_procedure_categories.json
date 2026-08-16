@@ -88,18 +88,6 @@
     "aliases": []
   },
   {
-    "slug": "inpatient-surgery",
-    "i18n_key": "procCat_inpatient_surgery",
-    "labels": {
-      "en": "Inpatient surgery",
-      "es": "Cirugía hospitalaria",
-      "vi": "Phẫu thuật nội trú",
-      "zh-TW": "住院手術",
-      "zh-CN": "住院手术"
-    },
-    "aliases": []
-  },
-  {
     "slug": "cardiology",
     "i18n_key": "procCat_cardiology",
     "labels": {
