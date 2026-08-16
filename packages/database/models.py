@@ -59,6 +59,40 @@ class TimestampMixin:
     )
 
 
+class Organization(TimestampMixin, Base):
+    """The business / health-system / provider organization that owns service locations.
+
+    Provider-neutral: one organization (e.g. Quest Diagnostics, an independent imaging
+    group, or a hospital system) may own MANY service locations. This is additive
+    metadata above the existing Facility/location layer — hospitals backfill 1:1 so
+    nothing changes for them, while multi-location organizations attach many facilities
+    to one organization. Organization type is a stable canonical identifier; display
+    labels live in i18n. Organization identity NEVER implies a location's capabilities
+    or that a service is offered — those are modeled separately with their own evidence.
+    """
+
+    __tablename__ = "organizations"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    canonical_name: Mapped[str] = mapped_column(String(255))
+    display_name: Mapped[str] = mapped_column(String(255))
+    # Canonical organization type id, e.g. hospital_system, independent_lab,
+    # imaging_group, urgent_care_group, physician_group, rehab_group, other. Extensible.
+    organization_type: Mapped[str] = mapped_column(
+        String(60), default="other", server_default="other", index=True
+    )
+    npi_organization: Mapped[str | None] = mapped_column(String(20), index=True)
+    ein: Mapped[str | None] = mapped_column(String(20))
+    website_url: Mapped[str | None] = mapped_column(String(2048))
+    active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    # Provenance for the organization identity itself (verified source, not inferred).
+    source_file_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("source_files.id"), index=True
+    )
+
+    facilities: Mapped[list["Facility"]] = relationship(back_populates="organization")
+
+
 class Facility(TimestampMixin, Base):
     __tablename__ = "facilities"
 
@@ -76,7 +110,13 @@ class Facility(TimestampMixin, Base):
     source_file_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("source_files.id"), index=True
     )
+    # Owning organization (additive, nullable). Backfilled 1:1 for existing hospitals;
+    # multi-location organizations (e.g. Quest) point many facilities at one org.
+    organization_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("organizations.id"), index=True
+    )
 
+    organization: Mapped["Organization | None"] = relationship(back_populates="facilities")
     locations: Mapped[list["FacilityLocation"]] = relationship(
         back_populates="facility", cascade="all, delete-orphan"
     )
@@ -110,8 +150,86 @@ class FacilityLocation(TimestampMixin, Base):
     county: Mapped[str | None] = mapped_column(String(100))
     latitude: Mapped[Decimal | None] = mapped_column(Numeric(9, 6))
     longitude: Mapped[Decimal | None] = mapped_column(Numeric(9, 6))
+    # Sub-state geography for filtering as the provider population grows (MA especially).
+    # NH ignores these; both nullable and additive.
+    region: Mapped[str | None] = mapped_column(String(80), index=True)
+    subregion: Mapped[str | None] = mapped_column(String(80))
 
     facility: Mapped[Facility] = relationship(back_populates="locations")
+    capabilities: Mapped[list["LocationCapability"]] = relationship(
+        back_populates="location", cascade="all, delete-orphan"
+    )
+
+
+class LocationCapability(TimestampMixin, Base):
+    """A capability a physical service location has (one location -> MANY capabilities).
+
+    A hospital campus may legitimately be hospital + emergency_department + laboratory
+    + imaging + physical_therapy at the same address; an independent lab is just
+    laboratory. Capability is a stable canonical identifier (display labels in i18n),
+    NOT a mutually-exclusive location type. Emergency_department and urgent_care are
+    DISTINCT capabilities and must never be conflated. Each capability may carry the
+    evidence/source that established it — presence here means the location HAS the
+    capability, which is separate from whether any specific service is offered or priced.
+    """
+
+    __tablename__ = "location_capabilities"
+    __table_args__ = (
+        UniqueConstraint("facility_location_id", "capability", name="uq_location_capability"),
+        Index("ix_location_capability_capability", "capability"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    facility_location_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("facility_locations.id"), index=True
+    )
+    # Canonical capability id, e.g. hospital, hospital_outpatient, emergency_department,
+    # freestanding_emergency_department, urgent_care, laboratory, independent_laboratory,
+    # imaging, ambulatory_surgery, physical_therapy, rehabilitation, chiropractic, ...
+    capability: Mapped[str] = mapped_column(String(60))
+    active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    # Evidence that this capability is real (verified source), never inferred silently.
+    evidence_source_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("source_files.id"), nullable=True
+    )
+
+    location: Mapped[FacilityLocation] = relationship(back_populates="capabilities")
+
+
+class LocationServiceAvailability(TimestampMixin, Base):
+    """ "This service is offered at this location" — SEPARATE from whether we have a price.
+
+    The crux of the provider-neutral promise: a verified location that offers a service
+    for which Carevero has no price must render "Price not currently available in
+    Carevero" rather than being hidden or shown as $0. Availability requires evidence
+    (never inferred from organization type alone: "Quest is a lab" does NOT prove every
+    Quest location performs every lab procedure). Status is offered / not_offered /
+    unknown. Price availability is a third, independent state expressed by the existing
+    pricing chain; the two are never collapsed.
+    """
+
+    __tablename__ = "location_service_availability"
+    __table_args__ = (
+        UniqueConstraint(
+            "facility_location_id", "procedure_id", name="uq_location_service_availability"
+        ),
+        Index("ix_location_service_availability_proc", "procedure_id", "availability_status"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    facility_location_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("facility_locations.id"), index=True
+    )
+    procedure_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("procedures.id"), index=True)
+    # offered | not_offered | unknown — never assume "offered" without evidence.
+    availability_status: Mapped[str] = mapped_column(
+        String(20), default="unknown", server_default="unknown"
+    )
+    evidence_source_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("source_files.id"), nullable=True
+    )
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
 
 
 class MediaVerificationStatus(str, enum.Enum):

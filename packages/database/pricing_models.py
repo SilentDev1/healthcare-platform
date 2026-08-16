@@ -81,6 +81,12 @@ class FacilityPriceSource(TimestampMixin, Base):
     file_role: Mapped[str | None] = mapped_column(String(50), nullable=True)
     health_system_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     vendor_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    # Canonical class of the pricing source, so non-hospital price feeds are not forced
+    # through hospital-MRF semantics. Existing rows backfill to HOSPITAL_MRF. Values:
+    # HOSPITAL_MRF | HEALTH_PLAN_TRANSPARENCY | PROVIDER_PUBLISHED_PRICE |
+    # AUTHORIZED_PROVIDER_FEED | GOVERNMENT_DATA | OTHER_VERIFIED_SOURCE. Every source
+    # still requires verification; this is taxonomy, not an ingestion shortcut.
+    source_class: Mapped[str | None] = mapped_column(String(40), index=True)
 
 
 class FacilityPriceSourceHistory(Base):
