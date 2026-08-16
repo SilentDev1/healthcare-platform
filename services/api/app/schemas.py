@@ -50,7 +50,12 @@ class FacilityPage(BaseModel):
 
 
 class DirectoryFacilityItem(BaseModel):
-    """Compact facility card for the multi-state hospital directory."""
+    """Compact provider-neutral card for the multi-state service-location directory.
+
+    Hospital-specific fields (cms_certification_number, facility_type,
+    cms_overall_rating) stay for backward compatibility and are populated only for
+    hospital locations; organization/capabilities/price_available are provider-neutral.
+    """
 
     id: uuid.UUID
     cms_certification_number: str | None
@@ -60,7 +65,14 @@ class DirectoryFacilityItem(BaseModel):
     facility_type: str | None
     published_procedure_count: int
     pricing_status: str
+    price_available: bool = False
     cms_overall_rating: str | None
+    # Provider-neutral additions (additive; empty/None for legacy clients that ignore them).
+    organization_name: str | None = None
+    organization_type: str | None = None
+    location_type: str | None = None
+    region: str | None = None
+    capabilities: list[str] = Field(default_factory=list)
     image_url: str | None = None
     image_alt: str | None = None
     image_attribution: str | None = None
@@ -73,6 +85,13 @@ class DirectoryStateOption(BaseModel):
     facility_count: int
 
 
+class DirectoryCapabilityOption(BaseModel):
+    """A location-capability the consumer can filter by, with how many locations have it."""
+
+    capability: str
+    location_count: int
+
+
 class FacilityDirectoryResponse(BaseModel):
     items: list[DirectoryFacilityItem]
     page: int = Field(ge=1)
@@ -81,6 +100,9 @@ class FacilityDirectoryResponse(BaseModel):
     total_states: int = Field(ge=0)
     states: list[DirectoryStateOption]
     facility_types: list[str]
+    # Capability options across the consumer-visible data, for a provider-type filter
+    # derived from real data (never a hardcoded list of unavailable types).
+    capabilities: list[DirectoryCapabilityOption] = Field(default_factory=list)
 
 
 class StatusResponse(BaseModel):

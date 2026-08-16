@@ -21,6 +21,8 @@ from packages.database import (
     FacilityProcedurePriceSummary,
     FacilityQualityMeasureObservation,
     ImportRun,
+    LocationCapability,
+    Organization,
     QualityMeasureDefinition,
     SourceFile,
 )
@@ -170,6 +172,143 @@ def test_directory_150_facilities_two_states() -> None:
 
     # a CMS rating is enriched for facilities that have one
     assert any(item.cms_overall_rating == "4" for item in all_resp.items)
+
+
+def _seed_provider_neutral(session: Session) -> None:
+    """A hospital (priced) and an independent lab (no price) in NH."""
+    source = SourceFile(
+        source_name="fixture",
+        source_url="https://example.test/prices.json",
+        source_type="json",
+        storage_path="p",
+        checksum_sha256="b" * 64,
+        file_size=1,
+        parser_version="t",
+        status=SourceStatus.COMPLETED,
+    )
+    session.add(source)
+    session.flush()
+
+    hosp_org = Organization(
+        canonical_name="Concord Hospital",
+        display_name="Concord Hospital",
+        organization_type="hospital_system",
+    )
+    lab_org = Organization(
+        canonical_name="Quest Diagnostics",
+        display_name="Quest Diagnostics",
+        organization_type="independent_lab",
+    )
+    session.add_all([hosp_org, lab_org])
+    session.flush()
+
+    hosp = Facility(
+        cms_certification_number="300001",
+        legal_name="Concord Hospital",
+        display_name="Concord Hospital",
+        facility_type="Acute Care Hospitals",
+        organization_id=hosp_org.id,
+    )
+    lab = Facility(
+        legal_name="Quest — Nashua",
+        display_name="Quest Diagnostics — Nashua",
+        organization_id=lab_org.id,
+    )
+    session.add_all([hosp, lab])
+    session.flush()
+
+    hosp_loc = FacilityLocation(
+        facility_id=hosp.id,
+        location_type="hospital_campus",
+        address_line_1="250 Pleasant St",
+        city="Concord",
+        state="NH",
+        postal_code="03301",
+    )
+    lab_loc = FacilityLocation(
+        facility_id=lab.id,
+        location_type="service_location",
+        address_line_1="10 Main St",
+        city="Nashua",
+        state="NH",
+        postal_code="03060",
+    )
+    session.add_all([hosp_loc, lab_loc])
+    session.flush()
+
+    session.add_all(
+        [
+            LocationCapability(facility_location_id=hosp_loc.id, capability="hospital"),
+            LocationCapability(facility_location_id=hosp_loc.id, capability="laboratory"),
+            LocationCapability(facility_location_id=lab_loc.id, capability="laboratory"),
+        ]
+    )
+    # Only the hospital has published prices; the lab has NONE.
+    for _ in range(12):
+        session.add(
+            FacilityProcedurePriceSummary(
+                facility_id=hosp.id,
+                facility_location_id=hosp_loc.id,
+                procedure_id=uuid.uuid4(),
+                service_setting="outpatient",
+                record_count=1,
+                source_file_id=source.id,
+                publication_status="publishable",
+                completeness_score=1,
+            )
+        )
+    session.commit()
+
+
+def test_directory_returns_organization_and_capabilities() -> None:
+    session = _engine()
+    _seed_provider_neutral(session)
+
+    resp = _dir(session, state_code="NH")
+    by_name = {item.display_name: item for item in resp.items}
+    assert "Concord Hospital" in by_name
+    assert "Quest Diagnostics — Nashua" in by_name
+
+    hosp = by_name["Concord Hospital"]
+    assert hosp.organization_type == "hospital_system"
+    assert "hospital" in hosp.capabilities
+    assert hosp.price_available is True
+
+    lab = by_name["Quest Diagnostics — Nashua"]
+    assert lab.organization_name == "Quest Diagnostics"
+    assert lab.organization_type == "independent_lab"
+    assert lab.capabilities == ["laboratory"]
+    # The crux: a verified service location with NO Carevero price still appears.
+    assert lab.price_available is False
+    assert lab.pricing_status == "pricing_not_available_yet"
+
+    # Response advertises capability options derived from real data.
+    caps = {c.capability: c.location_count for c in resp.capabilities}
+    assert caps["hospital"] == 1
+    assert caps["laboratory"] == 2
+
+
+def test_capability_filter_is_not_hospital_only() -> None:
+    session = _engine()
+    _seed_provider_neutral(session)
+
+    labs = _dir(session, state_code="NH", capability="laboratory")
+    names = {i.display_name for i in labs.items}
+    assert names == {"Concord Hospital", "Quest Diagnostics — Nashua"}  # both have laboratory
+
+    hospitals = _dir(session, state_code="NH", capability="hospital")
+    assert {i.display_name for i in hospitals.items} == {"Concord Hospital"}
+
+
+def test_price_available_filter_does_not_hide_unpriced_by_default() -> None:
+    session = _engine()
+    _seed_provider_neutral(session)
+
+    default = _dir(session, state_code="NH")
+    assert len(default.items) == 2  # unpriced lab included by default
+
+    priced_only = _dir(session, state_code="NH", price_available=True)
+    assert {i.display_name for i in priced_only.items} == {"Concord Hospital"}
 
 
 def test_directory_500_facilities_six_states_scale() -> None:

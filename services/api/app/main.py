@@ -32,6 +32,8 @@ from packages.database import (
     HospitalPriceRecord,
     ImportRun,
     InsurancePlanEntity,
+    LocationCapability,
+    Organization,
     PayerEntity,
     PipelineStatusSnapshot,
     PriceRecordProcedureCandidate,
@@ -69,6 +71,7 @@ from services.api.app.schemas import (
     AdminFacilityPage,
     ConsumerPriceDetailResponse,
     DataHealthPage,
+    DirectoryCapabilityOption,
     DirectoryFacilityItem,
     DirectoryStateOption,
     FacilityDirectoryResponse,
@@ -295,9 +298,7 @@ def list_facilities(
     return FacilityPage(items=responses, page=page, page_size=page_size, total=total)
 
 
-def _primary_location(
-    facility: Facility, state: str | None
-) -> FacilityLocation | None:
+def _primary_location(facility: Facility, state: str | None) -> FacilityLocation | None:
     """Representative location for a directory card: prefer one in the filtered
     state, then a hospital campus, else the first active location."""
     locations = list(facility.locations)
@@ -320,25 +321,26 @@ def facilities_directory(
     session: Annotated[Session, Depends(get_session)],
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=60)] = 24,
-    state_code: Annotated[
-        str | None, Query(alias="state", min_length=2, max_length=2)
-    ] = None,
+    state_code: Annotated[str | None, Query(alias="state", min_length=2, max_length=2)] = None,
     city: Annotated[str | None, Query(max_length=120)] = None,
     search: Annotated[str | None, Query(max_length=120)] = None,
     pricing_status: Annotated[str | None, Query(max_length=40)] = None,
     facility_type: Annotated[str | None, Query(max_length=120)] = None,
+    capability: Annotated[str | None, Query(max_length=60)] = None,
+    price_available: Annotated[bool | None, Query()] = None,
     sort: Annotated[str, Query(pattern="^(name|city|pricing)$")] = "name",
 ) -> FacilityDirectoryResponse:
-    """Reusable, multi-state hospital directory. State is data (the dropdown
-    derives from the consumer-visible market registry), not hardcoded UI. All
-    filtering/sorting/pagination happens in the query; per-card pricing counts,
-    CMS ratings, and imagery are enriched in batched lookups (no N+1)."""
+    """Reusable, multi-state provider-neutral service-location directory. State is
+    data (the dropdown derives from the consumer-visible market registry), not
+    hardcoded UI. Discovery is capability-aware — a `capability` filter (hospital,
+    laboratory, urgent_care, imaging, ...) restricts to locations that actually have
+    that capability, rather than assuming hospital campuses. All filtering/sorting/
+    pagination happens in the query; per-card pricing counts, CMS ratings, imagery,
+    organization, and capabilities are enriched in batched lookups (no N+1)."""
     pcount_subq = (
         select(
             FacilityProcedurePriceSummary.facility_id.label("fid"),
-            func.count(
-                func.distinct(FacilityProcedurePriceSummary.procedure_id)
-            ).label("pcount"),
+            func.count(func.distinct(FacilityProcedurePriceSummary.procedure_id)).label("pcount"),
         )
         .where(
             FacilityProcedurePriceSummary.publication_status == "publishable",
@@ -378,6 +380,31 @@ def facilities_directory(
         filters.append(and_(pcount >= 1, pcount < 10))
     elif pricing_status == "pricing_not_available_yet":
         filters.append(pcount <= 0)
+    # Capability-aware discovery: a facility matches when it has an active location
+    # (respecting the state filter) that actually holds this capability — never
+    # inferred from organization name or facility type.
+    if capability:
+        cap_location_state = (
+            [FacilityLocation.state == normalized_state] if normalized_state else []
+        )
+        capability_facility_ids = (
+            select(FacilityLocation.facility_id)
+            .join(
+                LocationCapability,
+                LocationCapability.facility_location_id == FacilityLocation.id,
+            )
+            .where(
+                LocationCapability.capability == capability,
+                LocationCapability.active.is_(True),
+                FacilityLocation.active.is_(True),
+                *cap_location_state,
+            )
+        )
+        filters.append(Facility.id.in_(capability_facility_ids))
+    # Price-availability filter: intentionally NEVER hides unpriced locations by
+    # default; only when the consumer explicitly asks for published-price locations.
+    if price_available is True:
+        filters.append(pcount >= 1)
 
     base_from = (
         select(Facility.id)
@@ -386,12 +413,7 @@ def facilities_directory(
         .outerjoin(pcount_subq, pcount_subq.c.fid == Facility.id)
         .where(*filters)
     )
-    total = (
-        session.scalar(
-            base_from.with_only_columns(func.count(func.distinct(Facility.id)))
-        )
-        or 0
-    )
+    total = session.scalar(base_from.with_only_columns(func.count(func.distinct(Facility.id)))) or 0
     total_states = (
         session.scalar(
             base_from.with_only_columns(func.count(func.distinct(FacilityLocation.state)))
@@ -423,9 +445,7 @@ def facilities_directory(
     facilities = (
         session.scalars(
             select(Facility)
-            .options(
-                selectinload(Facility.locations.and_(FacilityLocation.active.is_(True)))
-            )
+            .options(selectinload(Facility.locations.and_(FacilityLocation.active.is_(True))))
             .where(Facility.id.in_(page_ids))
         ).all()
         if page_ids
@@ -447,12 +467,46 @@ def facilities_directory(
             ratings.setdefault(observation.facility_id, observation.score)
     media = resolve_facility_media(session, page_ids, api_settings)
 
+    # Batched provider-neutral enrichment for the page: primary location per facility,
+    # that location's capabilities, and the owning organization (no N+1).
+    primary_by_fid: dict[uuid.UUID, FacilityLocation | None] = {}
+    for fid in page_ids:
+        facility = by_id.get(fid)
+        if facility is not None:
+            primary_by_fid[fid] = _primary_location(facility, normalized_state)
+    primary_loc_ids = [loc.id for loc in primary_by_fid.values() if loc is not None]
+    caps_by_location: dict[uuid.UUID, list[str]] = {}
+    if primary_loc_ids:
+        for loc_id, cap in session.execute(
+            select(LocationCapability.facility_location_id, LocationCapability.capability)
+            .where(
+                LocationCapability.facility_location_id.in_(primary_loc_ids),
+                LocationCapability.active.is_(True),
+            )
+            .order_by(LocationCapability.capability)
+        ):
+            caps_by_location.setdefault(loc_id, []).append(cap)
+    org_ids = {
+        by_id[fid].organization_id
+        for fid in page_ids
+        if by_id.get(fid) is not None and by_id[fid].organization_id is not None
+    }
+    org_by_id = (
+        {
+            org.id: org
+            for org in session.scalars(select(Organization).where(Organization.id.in_(org_ids)))
+        }
+        if org_ids
+        else {}
+    )
+
     items: list[DirectoryFacilityItem] = []
     for fid in page_ids:
         facility = by_id.get(fid)
         if facility is None:
             continue
-        location = _primary_location(facility, normalized_state)
+        location = primary_by_fid.get(fid)
+        organization = org_by_id.get(facility.organization_id) if facility.organization_id else None
         count = pcount_by_id.get(fid, 0)
         items.append(
             DirectoryFacilityItem(
@@ -464,7 +518,13 @@ def facilities_directory(
                 facility_type=facility.facility_type,
                 published_procedure_count=count,
                 pricing_status=consumer_pricing_status(count),
+                price_available=count > 0,
                 cms_overall_rating=ratings.get(facility.id),
+                organization_name=organization.display_name if organization else None,
+                organization_type=organization.organization_type if organization else None,
+                location_type=location.location_type if location else None,
+                region=location.region if location else None,
+                capabilities=caps_by_location.get(location.id, []) if location else [],
                 **media_fields(pick_media(media, facility.id, None)),
             )
         )
@@ -505,6 +565,29 @@ def facilities_directory(
         ).all()
     ]
 
+    # Capability options derived from real data (state-scoped) so the consumer
+    # provider-type filter only ever offers types Carevero actually has locations for.
+    capability_state = [FacilityLocation.state == normalized_state] if normalized_state else []
+    capabilities = [
+        DirectoryCapabilityOption(capability=str(cap), location_count=int(cnt))
+        for cap, cnt in session.execute(
+            select(
+                LocationCapability.capability,
+                func.count(func.distinct(LocationCapability.facility_location_id)),
+            )
+            .join(FacilityLocation, FacilityLocation.id == LocationCapability.facility_location_id)
+            .join(Facility, Facility.id == FacilityLocation.facility_id)
+            .where(
+                Facility.active.is_(True),
+                FacilityLocation.active.is_(True),
+                LocationCapability.active.is_(True),
+                *capability_state,
+            )
+            .group_by(LocationCapability.capability)
+            .order_by(LocationCapability.capability)
+        )
+    ]
+
     return FacilityDirectoryResponse(
         items=items,
         page=page,
@@ -513,6 +596,7 @@ def facilities_directory(
         total_states=total_states,
         states=states,
         facility_types=facility_types,
+        capabilities=capabilities,
     )
 
 
@@ -831,17 +915,13 @@ def admin_facility_media(
     session: Annotated[Session, Depends(get_session)],
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 50,
-    verification_status: Annotated[
-        str | None, Query(alias="status", max_length=20)
-    ] = None,
+    verification_status: Annotated[str | None, Query(alias="status", max_length=20)] = None,
 ) -> AdminFacilityMediaPage:
     """Review queue for facility imagery. Read-only: verify/reject/set-primary
     are auditable actions run via `scripts.facility_media` (verified_by /
     review_notes are recorded), matching the existing admin mutation pattern."""
     filters = (
-        [FacilityMedia.verification_status == verification_status]
-        if verification_status
-        else []
+        [FacilityMedia.verification_status == verification_status] if verification_status else []
     )
     rows = session.execute(
         select(FacilityMedia, Facility.display_name)
