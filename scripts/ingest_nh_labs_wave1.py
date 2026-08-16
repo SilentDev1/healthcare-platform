@@ -160,7 +160,12 @@ def ingest(session: Session | None = None, *, dry_run: bool = False) -> dict[str
             session.flush()
             created["facilities"] += 1
 
-        coords = resolve_origin(postal_code=lab.postal_code, state=lab.state)
+        # Coordinates are an optional enrichment (map pins); a geocode failure must not
+        # abort ingestion of the verified location itself.
+        try:
+            coords = resolve_origin(postal_code=lab.postal_code, state=lab.state)
+        except Exception:
+            coords = None
         location = session.scalar(
             select(FacilityLocation).where(
                 FacilityLocation.facility_id == facility.id,

@@ -8,6 +8,7 @@ COPY collectors collectors
 COPY scripts scripts
 COPY services services
 COPY data/fixtures/nh_hospital_inventory.json data/fixtures/nh_hospital_inventory.json
+COPY data/fixtures/zip_city_centroids.json data/fixtures/zip_city_centroids.json
 COPY data/consumer_procedure_categories.json data/consumer_procedure_categories.json
 COPY data/consumer_location_capabilities.json data/consumer_location_capabilities.json
 COPY data/fixtures/cdm_crosswalk.json data/fixtures/cdm_crosswalk.json
