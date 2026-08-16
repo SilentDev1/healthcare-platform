@@ -156,6 +156,27 @@ locations, capability `imaging`, `organization_type=imaging_center`:
   center" → canonical_capability `imaging` (8 locations); map 8 imaging pins (full NH map 62 =
   25 hospital + 26 urgent_care + 8 imaging + 3 lab). Baseline 26/26·50/50 and safety PASS held.
 
+## DATA-QUALITY FIX — PARKLAND DERRY DUPLICATE LOCATION — ✅ RESOLVED (2026-08-16)
+
+Migration 0014's backfill left PARKLAND MEDICAL CENTER (CMS 300017) with two FacilityLocation
+rows for the SAME physical Derry campus (1 Parkland Dr / "1 PARKLAND DRIVE", 03038): an ACTIVE
+priced survivor (913 price summaries, 143,926 records) with NO coordinates, and an INACTIVE
+geocoded twin holding only 2 capabilities. Because one was inactive, consumers already saw
+Parkland once — but the geocode sat on the dead row, so Parkland was the one hospital missing
+from the map.
+
+Resolved WITHOUT data loss (`scripts/consolidate_parkland_derry_duplicate.py`, unit-tested,
+run against a pre-change Cloud SQL backup):
+- **Proved identity first** (read-only inspector across all 10 facility_location FK tables):
+  same facility, type, city/state/ZIP, normalized address.
+- Deterministic survivor = the row with the pricing; **merged the twin's coordinates onto it**
+  (Parkland now has a map pin — 25→26 hospital pins); re-pointed all 10 FK classes; deduped
+  the 2 colliding capabilities; asserted zero remaining refs; deleted the duplicate — one txn.
+- **Regression guard:** `scripts/detect_duplicate_locations.py` flags any same-facility
+  same-address location pair so backfills cannot recreate this. Now reports 0.
+- **Verified:** Parkland appears once (`price_available` true, 50 procedures); baseline
+  26/26·50/50; false-positive detector 0 (Parkland CLEAN); safety PASS; duplicate detector 0.
+
 ## SOURCE-RESEARCH TEMPLATE (complete BEFORE each wave's ingestion)
 
 For every provider category answer, with provenance:
