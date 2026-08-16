@@ -14,6 +14,7 @@ from __future__ import annotations
 
 # ruff: noqa: E501  -- diagnostic print lines are kept readable
 import argparse
+import json
 import re
 from collections import defaultdict
 
@@ -120,12 +121,23 @@ def dump_facility(session: Session, name_substr: str) -> None:
         )
         print(f"    locations={len(locs)}")
         for loc in locs:
-            print(f"    LOC id={loc.id} name={loc.location_name!r} type={loc.location_type} "
-                  f"addr={loc.address_line_1!r} city={loc.city} zip={loc.postal_code} "
-                  f"lat={loc.latitude} lng={loc.longitude} active={loc.active}")
             counts = _ref_counts(session, loc.id)
-            nonzero = {k: v for k, v in counts.items() if v}
-            print(f"        refs={nonzero if nonzero else 'NONE'}")
+            row = {
+                "facility_id": str(f.id),
+                "loc_id": str(loc.id),
+                "name": loc.location_name,
+                "type": loc.location_type,
+                "addr": loc.address_line_1,
+                "norm_addr": _norm_addr(loc.address_line_1),
+                "city": loc.city,
+                "state": loc.state,
+                "zip": loc.postal_code,
+                "lat": str(loc.latitude) if loc.latitude is not None else None,
+                "lng": str(loc.longitude) if loc.longitude is not None else None,
+                "active": loc.active,
+                "refs": {k: v for k, v in counts.items() if v},
+            }
+            print("LOCJSON=" + json.dumps(row, sort_keys=True))
 
 
 def inspect(session: Session | None = None, *, facility_filter: str | None = None) -> None:
