@@ -69,11 +69,14 @@ def _source_file(session: Session) -> SourceFile:
     return source
 
 
-def ingest(session: Session | None = None, *, dry_run: bool = False) -> dict[str, int]:
+def ingest(
+    session: Session | None = None, *, dry_run: bool = False, verbose: bool = False
+) -> dict[str, int]:
     if session is None:
         session = next(get_session())
     source = _source_file(session)
     result = {"capabilities_added": 0, "facilities_with_ed": 0, "excluded_psychiatric": 0}
+    audit: list[str] = []
 
     # Only consider locations that already hold the `hospital` capability — the ED capability
     # is layered onto the existing hospital location, never onto a non-hospital location.
@@ -99,6 +102,12 @@ def ingest(session: Session | None = None, *, dry_run: bool = False) -> dict[str
             continue
 
         result["facilities_with_ed"] += 1
+        if verbose:
+            audit.append(
+                f"  ED-> {facility.display_name} [{facility.facility_type}] "
+                f"| loc='{location.location_name}' type={location.location_type} "
+                f"city={location.city}"
+            )
         existing = session.scalar(
             select(LocationCapability).where(
                 LocationCapability.facility_location_id == location.id,
@@ -116,6 +125,9 @@ def ingest(session: Session | None = None, *, dry_run: bool = False) -> dict[str
             )
             result["capabilities_added"] += 1
 
+    if verbose:
+        for line in sorted(audit):
+            print(line)
     if dry_run:
         session.rollback()
     else:
@@ -126,8 +138,9 @@ def ingest(session: Session | None = None, *, dry_run: bool = False) -> dict[str
 def main() -> None:
     parser = argparse.ArgumentParser(description="Add ED capability to NH hospitals (Wave 3)")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--verbose", action="store_true", help="print each affected location")
     args = parser.parse_args()
-    result = ingest(dry_run=args.dry_run)
+    result = ingest(dry_run=args.dry_run, verbose=args.verbose)
     prefix = "DRY-RUN " if args.dry_run else ""
     print(f"{prefix}NH_EMERGENCY_DEPARTMENTS_WAVE3={result}")
 
