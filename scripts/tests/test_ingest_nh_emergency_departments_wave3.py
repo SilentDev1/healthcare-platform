@@ -20,18 +20,26 @@ def _session() -> Session:
     return Session(engine)
 
 
-def _hospital(session: Session, name: str, ftype: str) -> FacilityLocation:
-    facility = Facility(
-        legal_name=name, display_name=name, facility_type=ftype, active=True
-    )
-    session.add(facility)
-    session.flush()
+def _hospital(
+    session: Session,
+    name: str,
+    ftype: str,
+    *,
+    facility: Facility | None = None,
+    location_type: str = "hospital_campus",
+) -> FacilityLocation:
+    if facility is None:
+        facility = Facility(
+            legal_name=name, display_name=name, facility_type=ftype, active=True
+        )
+        session.add(facility)
+        session.flush()
     loc = FacilityLocation(
         facility_id=facility.id,
         location_name=name,
-        location_type="hospital_campus",
+        location_type=location_type,
         active=True,
-        address_line_1="1 Hospital Way",
+        address_line_1=f"1 {name} Way",
         city="Anytown",
         state="NH",
         postal_code="03000",
@@ -46,10 +54,21 @@ def _hospital(session: Session, name: str, ftype: str) -> FacilityLocation:
 
 
 def _fixture(session: Session) -> dict[str, FacilityLocation]:
+    acute = _hospital(session, "General Acute Hospital", "Acute Care Hospitals")
+    acute_facility = session.get(Facility, acute.facility_id)
+    # Same acute-care system also runs a freestanding ER at a separate location.
+    freestanding = _hospital(
+        session,
+        "System Freestanding ER",
+        "Acute Care Hospitals",
+        facility=acute_facility,
+        location_type="freestanding_emergency_room",
+    )
     return {
-        "acute": _hospital(session, "General Acute Hospital", "Acute Care Hospitals"),
+        "acute": acute,
         "cah": _hospital(session, "Rural CAH", "Critical Access Hospitals"),
         "psych": _hospital(session, "State Psychiatric Hospital", "Psychiatric"),
+        "freestanding": freestanding,
     }
 
 
@@ -67,10 +86,16 @@ def test_ed_added_to_acute_and_cah_but_not_psychiatric() -> None:
     session = _session()
     locs = _fixture(session)
     result = ingest(session)
-    assert result["capabilities_added"] == 2
+    assert result["emergency_department_added"] == 2  # acute + cah campuses
+    assert result["freestanding_emergency_department_added"] == 1  # the freestanding ER
     assert result["excluded_psychiatric"] == 1
     assert _caps(session, locs["acute"].id) == ["emergency_department", "hospital"]
     assert _caps(session, locs["cah"].id) == ["emergency_department", "hospital"]
+    # Freestanding ER gets the DISTINCT capability, never a hospital-campus ED.
+    assert _caps(session, locs["freestanding"].id) == [
+        "freestanding_emergency_department",
+        "hospital",
+    ]
     # Psychiatric hospital keeps ONLY its hospital capability — never an asserted ER.
     assert _caps(session, locs["psych"].id) == ["hospital"]
 
@@ -91,7 +116,9 @@ def test_provenance_attached_to_ed_capability() -> None:
     ingest(session)
     for cap in session.scalars(
         select(LocationCapability).where(
-            LocationCapability.capability == "emergency_department"
+            LocationCapability.capability.in_(
+                ["emergency_department", "freestanding_emergency_department"]
+            )
         )
     ):
         assert cap.evidence_source_id is not None
@@ -102,7 +129,8 @@ def test_idempotent() -> None:
     _fixture(session)
     ingest(session)
     second = ingest(session)
-    assert second["capabilities_added"] == 0
+    assert second["emergency_department_added"] == 0
+    assert second["freestanding_emergency_department_added"] == 0
 
 
 def test_dry_run_persists_nothing() -> None:

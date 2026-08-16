@@ -14,9 +14,14 @@ already on each facility:
 - **Psychiatric hospitals** (New Hampshire Hospital, Hampstead Hospital) — do NOT operate a
   general emergency department and are EXCLUDED. Asserting an ER there would be unsafe.
 
-`emergency_department` is a DISTINCT capability from `urgent_care`; the two are never
-conflated. This is additive and reversible (new LocationCapability rows only); it does not
-create facilities, does not touch pricing, and does not modify the audited hospital pipeline.
+NH also has HOSPITAL-AFFILIATED FREESTANDING ERs already modeled as
+`location_type='freestanding_emergency_room'` (Portsmouth Regional → Dover & Seabrook;
+Parkland → Plaistow). Those get the DISTINCT `freestanding_emergency_department` capability
+(a freestanding ER bills like an ER but is not the hospital campus) — never conflated with a
+hospital-campus `emergency_department`, and never with `urgent_care`.
+
+This is additive and reversible (new LocationCapability rows only); it does not create
+facilities, does not touch pricing, and does not modify the audited hospital pipeline.
 
 Run: python -m scripts.ingest_nh_emergency_departments_wave3 [--dry-run]
 """
@@ -75,7 +80,12 @@ def ingest(
     if session is None:
         session = next(get_session())
     source = _source_file(session)
-    result = {"capabilities_added": 0, "facilities_with_ed": 0, "excluded_psychiatric": 0}
+    result = {
+        "emergency_department_added": 0,
+        "freestanding_emergency_department_added": 0,
+        "locations_with_ed": 0,
+        "excluded_psychiatric": 0,
+    }
     audit: list[str] = []
 
     # Only consider locations that already hold the `hospital` capability — the ED capability
@@ -101,29 +111,35 @@ def ingest(
             # Unknown type — do NOT assert an ED without an authoritative basis.
             continue
 
-        result["facilities_with_ed"] += 1
+        # A freestanding ER is a DISTINCT capability from a hospital-campus ED.
+        if location.location_type == "freestanding_emergency_room":
+            capability = "freestanding_emergency_department"
+        else:
+            capability = "emergency_department"
+
+        result["locations_with_ed"] += 1
         if verbose:
             audit.append(
-                f"  ED-> {facility.display_name} [{facility.facility_type}] "
+                f"  {capability}-> {facility.display_name} [{facility.facility_type}] "
                 f"| loc='{location.location_name}' type={location.location_type} "
                 f"city={location.city}"
             )
         existing = session.scalar(
             select(LocationCapability).where(
                 LocationCapability.facility_location_id == location.id,
-                LocationCapability.capability == "emergency_department",
+                LocationCapability.capability == capability,
             )
         )
         if existing is None:
             session.add(
                 LocationCapability(
                     facility_location_id=location.id,
-                    capability="emergency_department",
+                    capability=capability,
                     active=True,
                     evidence_source_id=source.id,
                 )
             )
-            result["capabilities_added"] += 1
+            result[f"{capability}_added"] += 1
 
     if verbose:
         for line in sorted(audit):
