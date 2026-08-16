@@ -25,6 +25,8 @@ import time
 import uuid
 from dataclasses import dataclass, field
 
+import httpx
+import structlog
 from sqlalchemy.orm import Session
 
 from packages.search.ai_contract import (
@@ -41,6 +43,8 @@ from services.ai.domain import DomainClass, classify_domain, response_for
 from services.ai.prompts import INTENT_PROMPT_VERSION, INTENT_SYSTEM_PROMPT
 from services.ai.provider import AIProvider, ProviderRequest
 from services.ai.telemetry import IntentTrace, record_intent
+
+logger = structlog.get_logger(service="carevero_ai_resolver")
 
 
 @dataclass(frozen=True)
@@ -335,8 +339,26 @@ class CareveroIntentResolver:
         )
         try:
             provider_result = await self._provider.generate_result(request)
-        except Exception:
-            # Any provider failure (timeout, 429, 5xx, malformed) -> deterministic fallback.
+        except httpx.HTTPStatusError as exc:
+            # Log status code + provider error CODE only (never body/prompt/key) so an
+            # invalid model id (400/404) is distinguishable from auth (401/403) in ops.
+            error_code = None
+            try:
+                payload = exc.response.json()
+                if isinstance(payload, dict) and isinstance(payload.get("error"), dict):
+                    error_code = payload["error"].get("code") or payload["error"].get("type")
+            except Exception:
+                error_code = None
+            logger.warning(
+                "ai_provider_http_error",
+                model=model,
+                status_code=exc.response.status_code,
+                error_code=error_code,
+            )
+            return None, 0, 0, True
+        except Exception as exc:
+            # Any other provider failure (timeout, connection, malformed) -> fallback.
+            logger.warning("ai_provider_error", model=model, error_type=type(exc).__name__)
             return None, 0, 0, True
         proposal = parse_intent_proposal(provider_result.text)
         return proposal, provider_result.input_tokens, provider_result.output_tokens, False
