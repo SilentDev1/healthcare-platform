@@ -5,7 +5,7 @@ import { Suspense, useEffect, useState } from "react";
 import { CareSearch } from "../components/CareSearch";
 import { EmptyState, ErrorState, LoadingSkeleton } from "../components/ui";
 import type { SearchResult } from "../../lib/api";
-import { localePath, messages } from "../../lib/i18n";
+import { capabilityLabel, localePath, messages } from "../../lib/i18n";
 import { useLocale } from "../components/useLocale";
 import { SearchCategoryResults } from "./SearchCategoryResults";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
@@ -20,6 +20,7 @@ function SearchContent() {
   const location = params.get("location") ?? "";
   const payer = params.get("payer") ?? "";
   const [items, setItems] = useState<SearchResult[]>([]);
+  const [capabilityLocations, setCapabilityLocations] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(q.length >= 2);
   const [error, setError] = useState(false);
   const [clarificationQuestion, setClarificationQuestion] = useState<string | null>(null);
@@ -45,6 +46,9 @@ function SearchContent() {
       })
       .then((d) => {
         const results = (d.items ?? []) as SearchResult[];
+        // Provider-neutral capability group — verified locations only (real data;
+        // empty when no location holds the matched capability, never fabricated).
+        setCapabilityLocations((d.capability_locations ?? []) as SearchResult[]);
         if (d.clarification_needed) {
           setClarificationQuestion(d.clarification_question ?? t.searchClarificationTitle);
           setItems(results);
@@ -100,6 +104,11 @@ function SearchContent() {
           item.match_reason !== "category_member",
       )
     : items;
+  // When a capability "Locations" group is shown, facility items in the main list are
+  // the same entities — suppress them there to avoid duplicate cards.
+  const hasCapabilityGroup = capabilityLocations.length > 0;
+  const withoutFacilities = (arr: SearchResult[]) =>
+    hasCapabilityGroup ? arr.filter((item) => item.entity_type !== "facility") : arr;
   const priceParams = new URLSearchParams();
   if (location) priceParams.set("location", location);
   if (payer) priceParams.set("payer", payer);
@@ -151,7 +160,7 @@ function SearchContent() {
           onRetry={() => setRequestNonce((value) => value + 1)}
           messages={t}
         />
-      ) : q && items.length === 0 ? (
+      ) : q && items.length === 0 && !hasCapabilityGroup ? (
         <EmptyState title={t.searchNoMatchTitle}>
           {t.searchNoMatchBody}
         </EmptyState>
@@ -176,11 +185,11 @@ function SearchContent() {
             locale={locale}
             procedureQuery={procedureQuery}
           />
-          {otherItems.length > 0 && (
+          {withoutFacilities(otherItems).length > 0 && (
             <div className="search-other-results">
               <h2>{t.searchOtherMatches}</h2>
               <SearchCards
-                items={otherItems}
+                items={withoutFacilities(otherItems)}
                 locale={locale}
                 location={location}
                 payer={payer}
@@ -192,13 +201,40 @@ function SearchContent() {
         </>
       ) : (
         <SearchCards
-          items={items}
+          items={withoutFacilities(items)}
           locale={locale}
           location={location}
           payer={payer}
           compareLabel={t.searchCompareCta}
           detailsLabel={t.viewDetails}
         />
+      )}
+      {!loading && !error && hasCapabilityGroup && (
+        <section className="search-locations-group">
+          <h2>{t.searchLocationsGroup}</h2>
+          <div className="cards">
+            {capabilityLocations.map((loc) => (
+              <article className="card" key={`loc-${loc.entity_id}`}>
+                <span className="badge neutral">
+                  {capabilityLabel(String(loc.metadata.capability ?? ""), locale)}
+                </span>
+                <h3>{loc.title}</h3>
+                {typeof loc.metadata.organization_name === "string" &&
+                loc.metadata.organization_name &&
+                loc.metadata.organization_name !== loc.title ? (
+                  <p className="muted">{loc.metadata.organization_name}</p>
+                ) : null}
+                {loc.location && <p className="location">{loc.location}</p>}
+                <Link
+                  className="button"
+                  href={localePath(locale, `/hospitals/${loc.entity_id}`)}
+                >
+                  {t.viewDetails}
+                </Link>
+              </article>
+            ))}
+          </div>
+        </section>
       )}
     </main>
   );

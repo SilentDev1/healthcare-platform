@@ -109,6 +109,13 @@ export interface SearchResult {
     category?: string;
     procedure_count?: number;
     navigation_only?: boolean;
+    // Provider-neutral capability-location results:
+    capability?: string;
+    facility_location_id?: string;
+    location_type?: string;
+    organization_name?: string | null;
+    organization_type?: string | null;
+    region?: string | null;
   };
 }
 export interface Procedure {

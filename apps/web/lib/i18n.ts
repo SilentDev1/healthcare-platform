@@ -612,6 +612,7 @@ const en = {
   searchResultCountOne: "{count} matching result",
   searchResultCountOther: "{count} matching results",
   searchVerifiedOnly: "Only verified catalog and facility records",
+  searchLocationsGroup: "Locations",
   searchNoMatchTitle: "No matching care or hospital found",
   searchNoMatchBody:
     "Try a more specific care term, browse the procedure catalog, or search by hospital or city. A missing result does not mean the service is unavailable.",
@@ -1357,6 +1358,7 @@ export const messages: Record<Locale, Messages> = {
     searchResultCountOne: "{count} resultado coincidente",
     searchResultCountOther: "{count} resultados coincidentes",
     searchVerifiedOnly: "Solo registros verificados de catálogo y de centros",
+    searchLocationsGroup: "Ubicaciones",
     searchNoMatchTitle: "No se encontró atención ni hospital coincidente",
     searchNoMatchBody:
       "Pruebe con un término más amplio, una ciudad cercana o explore el catálogo de procedimientos. Un resultado ausente no significa que el servicio no esté disponible.",
@@ -2002,6 +2004,7 @@ export const messages: Record<Locale, Messages> = {
     searchResultCountOne: "{count} kết quả khớp",
     searchResultCountOther: "{count} kết quả khớp",
     searchVerifiedOnly: "Chỉ các bản ghi danh mục và cơ sở đã được xác minh",
+    searchLocationsGroup: "Địa điểm",
     searchNoMatchTitle: "Không tìm thấy dịch vụ chăm sóc hay bệnh viện nào khớp",
     searchNoMatchBody:
       "Hãy thử một từ khóa rộng hơn, một thành phố lân cận, hoặc duyệt danh mục thủ thuật. Việc thiếu kết quả không có nghĩa là dịch vụ không có sẵn.",
@@ -2605,6 +2608,7 @@ export const messages: Record<Locale, Messages> = {
     searchResultCountOne: "{count} 筆相符結果",
     searchResultCountOther: "{count} 筆相符結果",
     searchVerifiedOnly: "僅限已驗證的目錄與服務地點記錄",
+    searchLocationsGroup: "地點",
     searchNoMatchTitle: "找不到符合的照護或醫院",
     searchNoMatchBody:
       "請嘗試更廣泛的詞彙、鄰近城市，或瀏覽醫療項目目錄。查無結果並不代表無法提供該服務。",
@@ -3200,6 +3204,7 @@ export const messages: Record<Locale, Messages> = {
     searchResultCountOne: "{count} 条匹配结果",
     searchResultCountOther: "{count} 条匹配结果",
     searchVerifiedOnly: "仅限已验证的目录和机构记录",
+    searchLocationsGroup: "地点",
     searchNoMatchTitle: "未找到匹配的医疗服务或医院",
     searchNoMatchBody:
       "请尝试更宽泛的词语、附近的城市，或浏览医疗项目目录。没有结果并不代表该服务不可用。",
