@@ -17,7 +17,7 @@ import {
 } from "../../components/ui";
 import { FacilityPrices } from "../../components/FacilityPrices";
 import { FacilityImage } from "../../components/FacilityImage";
-import { localePath } from "../../../lib/i18n";
+import { capabilityLabel, localePath } from "../../../lib/i18n";
 import { requestLocale, requestMessages } from "../../../lib/i18n-server";
 
 export async function generateMetadata({
@@ -55,6 +55,11 @@ export default async function FacilityPage({
       ),
     ]);
     const location = facility.locations[0];
+    // Hospital-only gate: CMS quality + hospital schema/rating must NEVER render for a
+    // non-hospital location (lab, urgent care, PT, etc.).
+    const isHospital =
+      facility.is_hospital ?? facility.cms_certification_number != null;
+    const capabilities = facility.capabilities ?? [];
     const overall = quality.items.find(
       (q) => q.cms_measure_id === "OVERALL_RATING",
     );
@@ -73,7 +78,7 @@ export default async function FacilityPage({
     );
     const structuredData = {
       "@context": "https://schema.org",
-      "@type": "Hospital",
+      "@type": isHospital ? "Hospital" : "MedicalOrganization",
       name: facility.display_name,
       telephone: facility.phone ?? undefined,
       url: facility.website_url ?? undefined,
@@ -115,21 +120,35 @@ export default async function FacilityPage({
         )}
         <div className="page-heading">
           <p className="eyebrow">
-            {facility.facility_type ?? t.facilityTypeHospital}
+            {capabilities.length > 0
+              ? capabilities
+                  .map((cap) => capabilityLabel(cap, locale))
+                  .join(" · ")
+              : (facility.facility_type ?? t.facilityTypeHospital)}
           </p>
           <h1>{facility.display_name}</h1>
+          {facility.organization_name &&
+          facility.organization_name !== facility.display_name ? (
+            <p className="muted">{facility.organization_name}</p>
+          ) : null}
           <p className="lede">
             {location
               ? `${location.city}, ${location.state}`
-              : t.hospLocationNotPublished}{" "}
-            · <QualityRating value={overall?.score} messages={t} />
+              : t.hospLocationNotPublished}
+            {/* CMS rating is hospital-only. */}
+            {isHospital ? (
+              <>
+                {" "}
+                · <QualityRating value={overall?.score} messages={t} />
+              </>
+            ) : null}
           </p>
         </div>
         <div className="toolbar" aria-label={t.hospPageSections}>
           <div className="toolbar-group">
             <a href="#overview">{t.hospOverviewNav}</a>
             <a href="#prices">{t.hospPricesNav}</a>
-            <a href="#quality">{t.hospQualityNav}</a>
+            {isHospital ? <a href="#quality">{t.hospQualityNav}</a> : null}
             <a href="#sources">{t.hospDataSourcesNav}</a>
           </div>
         </div>
@@ -205,38 +224,40 @@ export default async function FacilityPage({
             </EmptyState>
           )}
         </section>
-        <section id="quality" className="section" style={{ paddingInline: 0 }}>
-          <div className="section-heading">
-            <p className="eyebrow">{t.hospCmsQuality}</p>
-            <h2>{t.hospQualityMeasures}</h2>
-            <p>{t.hospQualityMeasuresIntro}</p>
-          </div>
-          <article className="rating">
-            <h3>{t.hospOverallRating}</h3>
-            <QualityRating value={overall?.score} messages={t} />
-          </article>
-          {quality.items.length ? (
-            <div className="cards">
-              {Object.entries(groups).map(([category, values]) => (
-                <article className="card" key={category}>
-                  <h3>{category.replaceAll("_", " ")}</h3>
-                  <ul className="measures">
-                    {values?.slice(0, 5).map((q) => (
-                      <li key={q.id}>
-                        <span>{q.measure_name}</span>
-                        <strong>{q.score ?? t.notAvailable}</strong>
-                      </li>
-                    ))}
-                  </ul>
-                </article>
-              ))}
+        {isHospital ? (
+          <section id="quality" className="section" style={{ paddingInline: 0 }}>
+            <div className="section-heading">
+              <p className="eyebrow">{t.hospCmsQuality}</p>
+              <h2>{t.hospQualityMeasures}</h2>
+              <p>{t.hospQualityMeasuresIntro}</p>
             </div>
-          ) : (
-            <EmptyState title={t.hospNoQualityTitle}>
-              {t.hospNoQualityBody}
-            </EmptyState>
-          )}
-        </section>
+            <article className="rating">
+              <h3>{t.hospOverallRating}</h3>
+              <QualityRating value={overall?.score} messages={t} />
+            </article>
+            {quality.items.length ? (
+              <div className="cards">
+                {Object.entries(groups).map(([category, values]) => (
+                  <article className="card" key={category}>
+                    <h3>{category.replaceAll("_", " ")}</h3>
+                    <ul className="measures">
+                      {values?.slice(0, 5).map((q) => (
+                        <li key={q.id}>
+                          <span>{q.measure_name}</span>
+                          <strong>{q.score ?? t.notAvailable}</strong>
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <EmptyState title={t.hospNoQualityTitle}>
+                {t.hospNoQualityBody}
+              </EmptyState>
+            )}
+          </section>
+        ) : null}
         <section id="sources" className="section" style={{ paddingInline: 0 }}>
           <div className="section-heading">
             <p className="eyebrow">{t.hospDataSourcesNav}</p>

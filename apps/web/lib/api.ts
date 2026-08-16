@@ -25,7 +25,7 @@ export interface Location {
 }
 export interface Facility {
   id: string;
-  cms_certification_number: string;
+  cms_certification_number: string | null;
   display_name: string;
   legal_name: string;
   facility_type: string | null;
@@ -34,6 +34,10 @@ export interface Facility {
   website_url: string | null;
   updated_at: string;
   locations: Location[];
+  organization_name?: string | null;
+  organization_type?: string | null;
+  capabilities?: string[];
+  is_hospital?: boolean;
   image_url?: string | null;
   image_alt?: string | null;
   image_attribution?: string | null;

@@ -25,6 +25,9 @@ vi.mock("../../../lib/api", () => ({
         : Promise.resolve({
             id: "1",
             display_name: "Concord Hospital",
+            cms_certification_number: "300001",
+            is_hospital: true,
+            capabilities: ["hospital"],
             updated_at: "2026-08-06T12:00:00Z",
             locations: [
               {

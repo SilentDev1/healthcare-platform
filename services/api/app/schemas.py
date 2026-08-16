@@ -35,6 +35,12 @@ class FacilityResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     locations: list[FacilityLocationResponse]
+    # Provider-neutral additions (additive; hospital-only fields like CMS quality are
+    # gated by is_hospital so they never render for labs/urgent care/etc.).
+    organization_name: str | None = None
+    organization_type: str | None = None
+    capabilities: list[str] = Field(default_factory=list)
+    is_hospital: bool = False
     # Verified facility imagery (None -> web renders the neutral placeholder).
     image_url: str | None = None
     image_alt: str | None = None

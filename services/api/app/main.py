@@ -606,6 +606,7 @@ def facilities_map_data(
     session: Annotated[Session, Depends(get_session)],
     pricing_status: Annotated[str | None, Query(max_length=30)] = None,
     state_code: Annotated[str, Query(alias="state", min_length=2, max_length=2)] = "NH",
+    capability: Annotated[str | None, Query(max_length=60)] = None,
 ) -> MapDataResponse:
     facility_ids = active_consumer_facility_ids(session, state_code)
     rows = session.execute(
@@ -622,8 +623,26 @@ def facilities_map_data(
         .order_by(Facility.display_name)
     ).all()
 
+    # Batched capabilities per location so map pins are capability-aware (no N+1).
+    location_ids = [location.id for _facility, location in rows]
+    caps_by_location: dict[uuid.UUID, list[str]] = {}
+    if location_ids:
+        for loc_id, cap in session.execute(
+            select(LocationCapability.facility_location_id, LocationCapability.capability)
+            .where(
+                LocationCapability.facility_location_id.in_(location_ids),
+                LocationCapability.active.is_(True),
+            )
+            .order_by(LocationCapability.capability)
+        ):
+            caps_by_location.setdefault(loc_id, []).append(cap)
+
     features = []
     for facility, location in rows:
+        capabilities = caps_by_location.get(location.id, [])
+        # Capability-aware filtering — show only pins that actually hold the capability.
+        if capability and capability not in capabilities:
+            continue
         procedure_count = (
             session.scalar(
                 select(func.count(func.distinct(FacilityProcedurePriceSummary.procedure_id))).where(
@@ -656,6 +675,8 @@ def facilities_map_data(
                     "city": location.city,
                     "pricing_status": fac_status,
                     "procedure_count": procedure_count,
+                    "location_type": location.location_type,
+                    "capabilities": capabilities,
                 },
             }
         )
@@ -674,8 +695,40 @@ def get_facility(
     if facility is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="facility not found")
     media = resolve_facility_media(session, [facility.id], api_settings)
+    # Provider-neutral enrichment: union of capabilities across the facility's active
+    # locations, owning organization, and a hospital flag gating hospital-only UI (CMS).
+    location_ids = [loc.id for loc in facility.locations]
+    capabilities = sorted(
+        {
+            cap
+            for (cap,) in session.execute(
+                select(LocationCapability.capability)
+                .where(
+                    LocationCapability.facility_location_id.in_(location_ids),
+                    LocationCapability.active.is_(True),
+                )
+                .distinct()
+            )
+        }
+        if location_ids
+        else set()
+    )
+    organization = (
+        session.get(Organization, facility.organization_id) if facility.organization_id else None
+    )
+    is_hospital = (
+        "hospital" in capabilities
+        or facility.cms_certification_number is not None
+        or (organization is not None and organization.organization_type == "hospital_system")
+    )
     return FacilityResponse.model_validate(facility).model_copy(
-        update=media_fields(pick_media(media, facility.id, None))
+        update={
+            "capabilities": capabilities,
+            "organization_name": organization.display_name if organization else None,
+            "organization_type": organization.organization_type if organization else None,
+            "is_hospital": is_hospital,
+            **media_fields(pick_media(media, facility.id, None)),
+        }
     )
 
 
