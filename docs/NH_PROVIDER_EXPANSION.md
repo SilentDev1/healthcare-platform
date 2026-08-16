@@ -177,6 +177,27 @@ run against a pre-change Cloud SQL backup):
 - **Verified:** Parkland appears once (`price_available` true, 50 procedures); baseline
   26/26·50/50; false-positive detector 0 (Parkland CLEAN); safety PASS; duplicate detector 0.
 
+## WAVE 5 — NH AMBULATORY SURGERY CENTERS — ✅ LIVE (2026-08-16)
+
+Ingested (idempotent `scripts/ingest_nh_asc_wave5.py`, tested) 3 independent ASCs verified
+from their official websites, capability `ambulatory_surgery`, org type
+`ambulatory_surgery_center`:
+
+| Organization | Location | Capability | Price |
+|---|---|---|---|
+| Bedford Ambulatory Surgical Center | 11 Washington Pl, Bedford 03110 | ambulatory_surgery | not available |
+| Nashua Ambulatory Surgical Center | 15 Riverside St, Nashua 03062 | ambulatory_surgery | not available |
+| Orthopaedic Surgery Center | 116 Langley Pkwy, Concord 03301 | ambulatory_surgery | not available |
+
+- **Accuracy over coverage:** these three had street address + ZIP fully verified from an
+  authoritative source. NH's COMPLETE licensed-ASC roster lives in the NH DHHS Health
+  Facilities licensed-facilities list, which was not machine-fetchable at ingest (HTTP 403).
+  Remaining ASCs (e.g. Capital Orthopedic Surgery Center; the Dartmouth-Hitchcock
+  hospital-affiliated ASC in Manchester) are a fail-forward follow-up — never fabricated.
+- **Live (verified):** directory facet `ambulatory_surgery: 3`; search "surgery center"/
+  "ambulatory surgery center" → `ambulatory_surgery` (3 locations); 3 ASC map pins (full NH
+  map 66). Baseline 26/26·50/50 and safety PASS held.
+
 ## SOURCE-RESEARCH TEMPLATE (complete BEFORE each wave's ingestion)
 
 For every provider category answer, with provenance:
@@ -198,7 +219,7 @@ is an expected, first-class state. Never $0; never fabricate availability or pri
 | 2 | Urgent care (ConvenientMD, ClearChoiceMD) | ✅ **live (2 orgs, 26 verified locations)** |
 | 3 | Emergency departments / freestanding ER (as capabilities, no dup hospitals) | ✅ **live (26 hospital EDs + 3 freestanding ERs)** |
 | 4 | Imaging centers (independent) | ✅ **live (2 orgs, 8 verified locations)** |
-| 5 | Ambulatory surgery centers | ⏳ not started |
+| 5 | Ambulatory surgery centers | ✅ **live (3 verified independent ASCs)** |
 | 6 | Physical therapy + rehabilitation (kept distinct) | ⏳ not started |
 | 7 | Chiropractic | ⏳ not started |
 
