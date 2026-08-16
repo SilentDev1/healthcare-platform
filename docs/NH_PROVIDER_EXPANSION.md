@@ -198,6 +198,29 @@ from their official websites, capability `ambulatory_surgery`, org type
   "ambulatory surgery center" → `ambulatory_surgery` (3 locations); 3 ASC map pins (full NH
   map 66). Baseline 26/26·50/50 and safety PASS held.
 
+## WAVE 6 — NH PHYSICAL THERAPY + REHABILITATION — ✅ LIVE (2026-08-16)
+
+Ingested (idempotent `scripts/ingest_nh_pt_rehab_wave6.py`, tested) 7 verified Northeast
+Rehabilitation Hospital Network locations from the official directory
+(`northeastrehab.com/locations`) — one authoritative org exercising BOTH capabilities,
+**kept distinct**:
+
+| Capability | Locations |
+|---|---|
+| `rehabilitation` (inpatient rehab hospitals) | 4 — Nashua (SNHMC West), Manchester (1 Elliot Way), Portsmouth (Pease), Salem (Butler St) |
+| `physical_therapy` (outpatient PT centers) | 5 — Portsmouth (Pease), Salem (Butler St), Salem (Stiles Rd), Plaistow, Windham |
+
+- **Distinct capabilities, never conflated.** Two addresses host BOTH a rehab hospital and a
+  PT clinic (105 Corporate Dr Portsmouth; 70 Butler St Salem) → modeled as ONE physical
+  location carrying BOTH capabilities (7 distinct locations from 9 directory listings), never
+  duplicate rows — applying the Parkland-duplicate lesson. Duplicate detector stayed 0.
+- **Accuracy over coverage:** one authoritative network, not an exhaustive PT/rehab census
+  (a fragmented long tail). Other PT chains (ATI, Select) + independents are a fail-forward
+  follow-up once official per-location addresses are retrievable — never fabricated.
+- **Live (verified):** directory facets `rehabilitation: 4`, `physical_therapy: 5`; search
+  "physical therapy" → `physical_therapy` (5), "rehabilitation" → `rehabilitation` (4).
+  Baseline 26/26·50/50, safety PASS, duplicate detector 0.
+
 ## SOURCE-RESEARCH TEMPLATE (complete BEFORE each wave's ingestion)
 
 For every provider category answer, with provenance:
@@ -220,7 +243,7 @@ is an expected, first-class state. Never $0; never fabricate availability or pri
 | 3 | Emergency departments / freestanding ER (as capabilities, no dup hospitals) | ✅ **live (26 hospital EDs + 3 freestanding ERs)** |
 | 4 | Imaging centers (independent) | ✅ **live (2 orgs, 8 verified locations)** |
 | 5 | Ambulatory surgery centers | ✅ **live (3 verified independent ASCs)** |
-| 6 | Physical therapy + rehabilitation (kept distinct) | ⏳ not started |
+| 6 | Physical therapy + rehabilitation (kept distinct) | ✅ **live (Northeast Rehab: 4 rehab + 5 PT locations)** |
 | 7 | Chiropractic | ⏳ not started |
 
 Per-wave report fields: provider category; organizations discovered/verified; locations
