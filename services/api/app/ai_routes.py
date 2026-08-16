@@ -6,15 +6,35 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from packages.database import get_session
+from services.ai.budget import ai_budget
 from services.ai.context import build_context
 from services.ai.domain import DomainClass, classify_domain, response_for
 from services.ai.orchestrator import CareveroAIOrchestrator
 from services.ai.prompts import INTENT_PROMPT_VERSION
 from services.ai.provider import build_provider
-from services.ai.schemas import AIRequest, AIResponse
+from services.ai.resolver import CareveroIntentResolver, ResolverConfig
+from services.ai.schemas import AIRequest, AIResolveResponse, AIResponse
 from services.api.app.settings import api_settings
 
 router = APIRouter(prefix="/api/v1/ai", tags=["ai"])
+
+
+def _resolver() -> CareveroIntentResolver:
+    provider = build_provider(
+        endpoint=api_settings.resolved_ai_endpoint,
+        api_key=api_settings.resolved_ai_api_key,
+    )
+    config = ResolverConfig(
+        enabled=api_settings.ai_assistant_enabled and api_settings.ai_intent_search_enabled,
+        primary_model=api_settings.ai_primary_model,
+        escalation_model=api_settings.ai_escalation_model,
+        max_output_tokens=api_settings.ai_max_output_tokens,
+        timeout_seconds=api_settings.ai_timeout_seconds,
+        daily_budget_usd=api_settings.ai_daily_budget_usd,
+        cost_input_per_million=api_settings.ai_cost_input_per_million,
+        cost_output_per_million=api_settings.ai_cost_output_per_million,
+    )
+    return CareveroIntentResolver(provider=provider, config=config, budget=ai_budget)
 
 
 def _orchestrator() -> CareveroAIOrchestrator:
@@ -63,6 +83,31 @@ async def ai_intent(
     if refusal is not None:
         return refusal
     return await _orchestrator().interpret(session, request)
+
+
+@router.post("/resolve", response_model=AIResolveResponse)
+async def ai_resolve(
+    request: AIRequest, session: Annotated[Session, Depends(get_session)]
+) -> AIResolveResponse:
+    """Scope-locked intent resolution: classifier -> deterministic -> Luna/Terra -> validate.
+
+    Obvious requests resolve deterministically (no LLM). Out-of-scope / medical-advice are
+    refused with no LLM. The LLM proposes only canonical candidate slugs, all validated.
+    """
+    _require_flag(api_settings.ai_intent_search_enabled)
+    result = await _resolver().resolve(session, request.message, request.locale)
+    return AIResolveResponse(
+        domain=str(result.domain.value),
+        intent_type=result.intent_type,
+        candidate_slugs=result.candidate_slugs,
+        clarification_needed=result.clarification_needed,
+        clarification_question=result.clarification_question,
+        refusal_message=result.refusal_message,
+        source=result.source,
+        used_llm=result.used_llm,
+        escalated=result.escalated,
+        trace_id=result.trace_id,
+    )
 
 
 @router.post("/query", response_model=AIResponse)

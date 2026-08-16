@@ -118,3 +118,18 @@ class AIResponse(BaseModel):
     ai_generated: bool = True
     prompt_version: str
     trace_id: str
+
+
+class AIResolveResponse(BaseModel):
+    """Result of scope-locked intent resolution. No model names leaked to consumers."""
+
+    domain: str
+    intent_type: str
+    candidate_slugs: list[str] = Field(default_factory=list)
+    clarification_needed: bool = False
+    clarification_question: str | None = None
+    refusal_message: str | None = None
+    source: str
+    used_llm: bool = False
+    escalated: bool = False
+    trace_id: str
