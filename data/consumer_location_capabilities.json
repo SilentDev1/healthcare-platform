@@ -1,0 +1,122 @@
+[
+  {
+    "capability": "hospital",
+    "i18n_key": "cap_hospital",
+    "labels": {
+      "en": "Hospital",
+      "es": "Hospital",
+      "vi": "Bệnh viện",
+      "zh-TW": "醫院",
+      "zh-CN": "医院"
+    },
+    "aliases": ["hospitals"]
+  },
+  {
+    "capability": "emergency_department",
+    "i18n_key": "cap_emergency_department",
+    "labels": {
+      "en": "Emergency Department",
+      "es": "Sala de emergencias",
+      "vi": "Khoa cấp cứu",
+      "zh-TW": "急診部",
+      "zh-CN": "急诊部"
+    },
+    "aliases": ["er", "emergency room", "emergency department", "ed visit", "emergency"]
+  },
+  {
+    "capability": "freestanding_emergency_department",
+    "i18n_key": "cap_freestanding_emergency_department",
+    "labels": {
+      "en": "Freestanding ER",
+      "es": "Sala de emergencias independiente",
+      "vi": "Phòng cấp cứu độc lập",
+      "zh-TW": "獨立急診中心",
+      "zh-CN": "独立急诊中心"
+    },
+    "aliases": ["freestanding er", "freestanding emergency"]
+  },
+  {
+    "capability": "urgent_care",
+    "i18n_key": "cap_urgent_care",
+    "labels": {
+      "en": "Urgent Care",
+      "es": "Atención de urgencia",
+      "vi": "Chăm sóc khẩn cấp",
+      "zh-TW": "緊急照護中心",
+      "zh-CN": "紧急护理中心"
+    },
+    "aliases": ["urgent care", "walk in clinic", "walk-in clinic"]
+  },
+  {
+    "capability": "laboratory",
+    "i18n_key": "cap_laboratory",
+    "labels": {
+      "en": "Laboratory",
+      "es": "Laboratorio",
+      "vi": "Phòng xét nghiệm",
+      "zh-TW": "檢驗中心",
+      "zh-CN": "检验中心"
+    },
+    "aliases": ["lab", "labs", "independent lab", "independent laboratory"]
+  },
+  {
+    "capability": "imaging",
+    "i18n_key": "cap_imaging",
+    "labels": {
+      "en": "Imaging Center",
+      "es": "Centro de imágenes",
+      "vi": "Trung tâm chẩn đoán hình ảnh",
+      "zh-TW": "影像中心",
+      "zh-CN": "影像中心"
+    },
+    "aliases": ["imaging center", "radiology center"]
+  },
+  {
+    "capability": "ambulatory_surgery",
+    "i18n_key": "cap_ambulatory_surgery",
+    "labels": {
+      "en": "Surgery Center",
+      "es": "Centro de cirugía ambulatoria",
+      "vi": "Trung tâm phẫu thuật",
+      "zh-TW": "門診手術中心",
+      "zh-CN": "门诊手术中心"
+    },
+    "aliases": ["surgery center", "ambulatory surgery center", "asc"]
+  },
+  {
+    "capability": "physical_therapy",
+    "i18n_key": "cap_physical_therapy",
+    "labels": {
+      "en": "Physical Therapy",
+      "es": "Fisioterapia",
+      "vi": "Vật lý trị liệu",
+      "zh-TW": "物理治療",
+      "zh-CN": "物理治疗"
+    },
+    "aliases": ["pt clinic"]
+  },
+  {
+    "capability": "rehabilitation",
+    "i18n_key": "cap_rehabilitation",
+    "labels": {
+      "en": "Rehabilitation",
+      "es": "Rehabilitación",
+      "vi": "Phục hồi chức năng",
+      "zh-TW": "復健中心",
+      "zh-CN": "康复中心"
+    },
+    "aliases": ["rehab", "rehab center", "rehabilitation center"]
+  },
+  {
+    "capability": "chiropractic",
+    "i18n_key": "cap_chiropractic",
+    "labels": {
+      "en": "Chiropractic",
+      "es": "Quiropráctica",
+      "vi": "Nắn chỉnh cột sống",
+      "zh-TW": "脊骨神經科",
+      "zh-CN": "脊骨神经科"
+    },
+    "aliases": ["chiropractor", "chiropractic clinic"]
+  }
+]

@@ -300,6 +300,11 @@ class SearchPage(PageMetadata):
     ai_fallback_eligible: bool = False
     canonical_category_slug: str | None = None
     location_text: str | None = None
+    # Provider-neutral capability resolution (a SEPARATE result group, not mixed into
+    # `items`). `canonical_capability` is set only when the query names a capability AND
+    # verified locations actually hold it — never fabricated for absent provider types.
+    canonical_capability: str | None = None
+    capability_locations: list[SearchResultResponse] = Field(default_factory=list)
 
 
 class ProcedureCategoryResponse(BaseModel):

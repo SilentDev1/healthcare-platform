@@ -54,6 +54,7 @@ from packages.database import (
 from packages.geo import resolve_origin
 from packages.markets import consumer_visible_markets
 from packages.search import resolve_search, search
+from packages.search.location_capabilities import match_capability, resolve_capability_locations
 from services.api.app.comparison_insights import annotate as annotate_comparison
 from services.api.app.comparison_insights import summarize_cash_components
 from services.api.app.coverage import consumer_pricing_status, pricing_status_matches
@@ -1161,6 +1162,23 @@ def unified_search(
         )
         all_items = resolution.results
     items = all_items[(page - 1) * page_size : page * page_size]
+
+    # Provider-neutral capability resolution — a SEPARATE result group. Only populated
+    # when the query names a capability AND verified locations actually hold it (real
+    # data only, from location_capabilities), so absent provider types never fabricate
+    # results. Does not alter the deterministic procedure/category/facility `items`.
+    canonical_capability: str | None = None
+    capability_location_items: list[dict[str, object]] = []
+    if entity_type is None:
+        matched_capability = match_capability(q)
+        if matched_capability:
+            capability_locations = resolve_capability_locations(
+                session, matched_capability, state=state_code, limit=page_size
+            )
+            if capability_locations:
+                canonical_capability = matched_capability
+                capability_location_items = [item.__dict__ for item in capability_locations]
+
     return SearchPage(
         items=[item.__dict__ for item in items],
         page=page,
@@ -1174,6 +1192,8 @@ def unified_search(
         ai_fallback_eligible=resolution.ai_fallback_eligible if resolution else False,
         canonical_category_slug=(resolution.canonical_category_slug if resolution else None),
         location_text=resolution.location_text if resolution else None,
+        canonical_capability=canonical_capability,
+        capability_locations=capability_location_items,
     )
 
 
