@@ -608,7 +608,23 @@ def facilities_map_data(
     state_code: Annotated[str, Query(alias="state", min_length=2, max_length=2)] = "NH",
     capability: Annotated[str | None, Query(max_length=60)] = None,
 ) -> MapDataResponse:
-    facility_ids = active_consumer_facility_ids(session, state_code)
+    # Priced consumer hospitals (unchanged scope) PLUS provider-neutral locations that
+    # hold a non-hospital capability (labs, urgent care, ...) — so verified non-hospital
+    # locations appear on the map even without a published price. Hospital scope is
+    # untouched; only additive non-hospital-capability facilities are added.
+    facility_ids = set(active_consumer_facility_ids(session, state_code))
+    non_hospital_facility_ids = session.scalars(
+        select(FacilityLocation.facility_id)
+        .join(LocationCapability, LocationCapability.facility_location_id == FacilityLocation.id)
+        .where(
+            LocationCapability.capability != "hospital",
+            LocationCapability.active.is_(True),
+            FacilityLocation.active.is_(True),
+            FacilityLocation.state == state_code.upper(),
+        )
+        .distinct()
+    ).all()
+    facility_ids.update(non_hospital_facility_ids)
     rows = session.execute(
         select(Facility, FacilityLocation)
         .join(FacilityLocation)
