@@ -221,6 +221,54 @@ Rehabilitation Hospital Network locations from the official directory
   "physical therapy" → `physical_therapy` (5), "rehabilitation" → `rehabilitation` (4).
   Baseline 26/26·50/50, safety PASS, duplicate detector 0.
 
+## WAVE 7 — NH CHIROPRACTIC — ✅ LIVE (2026-08-16)
+
+Ingested (idempotent `scripts/ingest_nh_chiropractic_wave7.py`, tested) 3 verified The Joint
+Chiropractic NH clinics from the official NH group directory (`thejointnh.com`), capability
+`chiropractic`, org type `chiropractic`: **Nashua** (219 Daniel Webster Hwy C2, 03060),
+**Manchester** (655 S Willow St #102, 03103), **Salem** (236 N Broadway, 03079).
+
+- **Accuracy over coverage:** chiropractic is NH's most fragmented provider type (mostly
+  solo/small practices); this ships one authoritative multi-location operator, not a census.
+  Independent chiropractors are a fail-forward follow-up. Never fabricated.
+- **Live (verified):** directory facet `chiropractic: 3`; search "chiropractor" →
+  `chiropractic` (3). Baseline 26/26·50/50, safety PASS, duplicate detector 0.
+
+---
+
+## PROVIDER-NEUTRAL EXPANSION — ALL 7 NH WAVES LIVE (2026-08-16)
+
+| Capability | Locations | Source |
+|---|---|---|
+| hospital | 26 (+ campuses) | audited MRF pipeline (unchanged) |
+| emergency_department | 26 | CMS designation (Wave 3) |
+| freestanding_emergency_department | 3 | HCA freestanding ERs (Wave 3) |
+| urgent_care | 26 | ConvenientMD 15 + ClearChoiceMD 11 (Wave 2) |
+| laboratory | 3 | Quest ×2 + Labcorp (Wave 1) |
+| imaging | 8 | Derry Imaging 7 + Shields (Wave 4) |
+| ambulatory_surgery | 3 | Bedford/Nashua/Concord ASCs (Wave 5) |
+| rehabilitation | 4 | Northeast Rehab (Wave 6) |
+| physical_therapy | 5 | Northeast Rehab (Wave 6) |
+| chiropractic | 3 | The Joint (Wave 7) |
+
+**76 map pins across 10 capabilities.** Throughout all 7 waves + the Parkland consolidation,
+the regression gates held: **NH hospitals 26/26, procedures 50/50, crosswalk false-positives 0,
+duplicate-physical-locations 0, `phase_4_7_safety` PASS**, raw hospital pricing/provenance
+preserved, offered≠priced honored (no $0, no fabricated availability), 5-locale UI intact.
+
+**Massachusetts remains deferred** (not started) per directive — NH provider categories are
+now proven end-to-end.
+
+### Cross-cutting fail-forward follow-ups (never fabricated; all price-not-available today)
+- Per-location **priced service menus** for non-hospital providers (labs, imaging, urgent
+  care, ASC) → real `LocationServiceAvailability` + prices. Derry Imaging & The Joint are
+  price-transparency leaders and strong first candidates.
+- **Fuller rosters** where an authoritative machine-readable list was blocked at ingest:
+  remaining Quest/Labcorp sites; NH DHHS complete ASC list (HTTP 403); more PT chains
+  (ATI/Select) + independent PT/chiro.
+- **Geocoding** the 3 freestanding-ER location rows (discoverable in directory/search; not
+  yet on the map).
+
 ## SOURCE-RESEARCH TEMPLATE (complete BEFORE each wave's ingestion)
 
 For every provider category answer, with provenance:
@@ -244,7 +292,7 @@ is an expected, first-class state. Never $0; never fabricate availability or pri
 | 4 | Imaging centers (independent) | ✅ **live (2 orgs, 8 verified locations)** |
 | 5 | Ambulatory surgery centers | ✅ **live (3 verified independent ASCs)** |
 | 6 | Physical therapy + rehabilitation (kept distinct) | ✅ **live (Northeast Rehab: 4 rehab + 5 PT locations)** |
-| 7 | Chiropractic | ⏳ not started |
+| 7 | Chiropractic | ✅ **live (The Joint: 3 verified clinics)** |
 
 Per-wave report fields: provider category; organizations discovered/verified; locations
 discovered/verified; services verified; locations with/without prices; price records;
