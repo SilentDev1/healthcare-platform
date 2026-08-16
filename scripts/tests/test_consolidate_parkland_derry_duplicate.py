@@ -19,7 +19,11 @@ from packages.database.pricing_models import (
     FacilityProcedurePriceSummary,
 )
 from scripts.consolidate_parkland_derry_duplicate import consolidate
-from scripts.detect_duplicate_locations import find_duplicate_physical_locations
+from scripts.detect_duplicate_locations import (
+    find_cross_org_shared_buildings,
+    find_duplicate_physical_locations,
+    normalize_address,
+)
 
 
 def _session() -> Session:
@@ -169,6 +173,34 @@ def test_dry_run_changes_nothing() -> None:
     assert (
         session.scalar(select(func.count()).select_from(FacilityLocation)) == 2
     )
+
+
+def test_normalizer_folds_abbreviations() -> None:
+    assert normalize_address("65 Calef Highway") == normalize_address("65 Calef Hwy")
+    assert normalize_address("1 Parkland Drive") == normalize_address("1 Parkland Dr")
+    assert normalize_address("29 Northwest Boulevard") == normalize_address("29 Northwest Blvd")
+
+
+def test_cross_org_shared_building_reported_not_merged() -> None:
+    """Two different orgs at the same street address are reported, never merged."""
+    session = _session()
+    pairs = [("Lab Co", "6 Tsienneto Rd, Ste LL102"), ("Imaging Co", "6 Tsienneto Road")]
+    for org_name, addr in pairs:
+        f = Facility(legal_name=org_name, display_name=org_name, facility_type="X", active=True)
+        session.add(f)
+        session.flush()
+        session.add(
+            FacilityLocation(
+                facility_id=f.id, location_name=org_name, location_type="service_location",
+                active=True, address_line_1=addr, city="Derry", state="NH", postal_code="03038",
+            )
+        )
+    session.flush()
+    shared = find_cross_org_shared_buildings(session)
+    assert len(shared) == 1
+    assert len(shared[0]["facilities"]) == 2
+    # Not a same-facility duplicate -> gate stays clean.
+    assert find_duplicate_physical_locations(session) == []
 
 
 def test_refuses_when_addresses_differ() -> None:

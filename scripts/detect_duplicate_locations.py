@@ -32,9 +32,19 @@ def normalize_address(value: str | None) -> str:
     s = re.sub(r"\bdrive\b", "dr", s)
     s = re.sub(r"\broad\b", "rd", s)
     s = re.sub(r"\bavenue\b", "ave", s)
+    s = re.sub(r"\bhighway\b", "hwy", s)
+    s = re.sub(r"\bboulevard\b", "blvd", s)
     s = re.sub(r"\bsuite\b", "ste", s)
     s = re.sub(r"\bunit\b", "ste", s)
     s = re.sub(r"\s+", " ", s)
+    return s.strip()
+
+
+def base_address(value: str | None) -> str:
+    """Street address with suite/unit/floor/building stripped — for shared-building matching."""
+    s = normalize_address(value)
+    s = re.sub(r"\b(ste|unit|apt|fl|floor|bldg|building|rm|room)\b.*$", "", s)
+    s = re.sub(r",.*$", "", s)  # anything after a comma is usually the suite line
     return s.strip()
 
 
@@ -75,8 +85,51 @@ def find_duplicate_physical_locations(session: Session) -> list[dict[str, object
     return duplicates
 
 
+def find_cross_org_shared_buildings(session: Session) -> list[dict[str, object]]:
+    """Report (do NOT merge) same physical ADDRESS shared by DIFFERENT facilities/orgs.
+
+    A medical building can host a lab, an imaging center and a PT clinic — different
+    organizations at the same street address. These are legitimate distinct locations, not
+    duplicates, but the directive asks that they be surfaced for human review rather than
+    silently merged. Grouped by (normalized address, city, ZIP) across facilities.
+    """
+    groups: dict[tuple[str, str, str], list[FacilityLocation]] = defaultdict(list)
+    for loc in session.scalars(select(FacilityLocation)):
+        na = base_address(loc.address_line_1)
+        if not na:
+            continue
+        groups[(na, (loc.city or "").strip().upper(), (loc.postal_code or "").strip())].append(loc)
+
+    shared: list[dict[str, object]] = []
+    for (na, city, zip_), locs in groups.items():
+        facility_ids = {loc.facility_id for loc in locs}
+        if len(facility_ids) < 2:
+            continue  # same facility handled by find_duplicate_physical_locations
+        names = []
+        for fid in facility_ids:
+            f = session.get(Facility, fid)
+            names.append(f.display_name if f else str(fid))
+        shared.append(
+            {
+                "normalized_address": na,
+                "city": city,
+                "postal_code": zip_,
+                "facilities": sorted(names),
+            }
+        )
+    return shared
+
+
 def main() -> None:
     session = next(get_session())
+
+    # Informational: cross-org shared buildings (reported, never auto-merged).
+    shared = find_cross_org_shared_buildings(session)
+    print(f"CROSS_ORG_SHARED_BUILDINGS={len(shared)} (review-only, not merged)")
+    for s in shared:
+        print(f"  ~ {s['normalized_address']} {s['city']} {s['postal_code']} | {s['facilities']}")
+
+    # Gate: true same-facility duplicate physical locations.
     dups = find_duplicate_physical_locations(session)
     if not dups:
         print("DUPLICATE_PHYSICAL_LOCATIONS=0 OK")
