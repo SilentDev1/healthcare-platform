@@ -59,8 +59,11 @@ class OpenAICompatibleProvider:
                 {"role": "user", "content": request.user_prompt},
             ],
             "max_output_tokens": request.max_output_tokens,
-            # Deterministic-leaning: this layer interprets language, it does not create facts.
-            "temperature": 0,
+            # NOTE: do NOT send `temperature`. The configured GPT-5.6 reasoning models
+            # (Luna/Terra) reject it — "Unsupported parameter: 'temperature' is not
+            # supported with this model" (HTTP 400) — confirmed via scripts.diagnose_openai.
+            # Determinism does not depend on it: this layer only interprets language, and
+            # every candidate is canonical-validated + grounding-guarded downstream.
             "store": False,
         }
         if request.json_schema is not None:

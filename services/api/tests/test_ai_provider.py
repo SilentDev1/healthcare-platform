@@ -55,13 +55,22 @@ def test_payload_shapes_responses_api_with_json_schema() -> None:
     payload = provider._payload(_request(json_schema=intent_json_schema()))
     assert payload["model"] == "gpt-5.6-luna"
     assert payload["max_output_tokens"] == 400
-    assert payload["temperature"] == 0
     assert payload["store"] is False
+    # Regression: the GPT-5.6 reasoning models reject `temperature` (HTTP 400
+    # "Unsupported parameter") — it must NOT be sent. See scripts.diagnose_openai.
+    assert "temperature" not in payload
     messages = cast(list[dict[str, str]], payload["input"])
     assert [m["role"] for m in messages] == ["system", "user"]
     text_format = cast(dict[str, dict[str, object]], payload["text"])["format"]
     assert text_format["type"] == "json_schema"
     assert text_format["strict"] is True
+
+
+def test_payload_never_sends_temperature_even_without_schema() -> None:
+    provider = OpenAICompatibleProvider(endpoint="https://api.openai.com/v1/responses", api_key="k")
+    payload = provider._payload(_request())
+    assert "temperature" not in payload
+    assert "text" not in payload  # no structured format unless a schema is requested
 
 
 def test_parse_output_text_and_usage(monkeypatch: pytest.MonkeyPatch) -> None:
