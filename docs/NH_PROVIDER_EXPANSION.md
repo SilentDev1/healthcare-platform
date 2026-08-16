@@ -134,6 +134,28 @@ each facility:
   consumers, inflates counts); (b) the 3 freestanding-ER location rows lack coordinates, so
   they are discoverable in directory/search but not yet on the map (geocode follow-up).
 
+## WAVE 4 — NH INDEPENDENT IMAGING — ✅ LIVE (2026-08-16)
+
+Authoritative research from each provider's OFFICIAL directory (Derry Imaging:
+`derryimaging.com/derry-imaging-2/locations`; Shields: `shields.com/locations`). Ingested
+(idempotent `scripts/ingest_nh_imaging_wave4.py`, tested) 8 verified independent imaging
+locations, capability `imaging`, `organization_type=imaging_center`:
+
+| Organization | Locations | Capability | Price |
+|---|---|---|---|
+| Derry Imaging | 7 — Derry, Bedford, Concord, Dover, Londonderry, Raymond, Windham | imaging | not available |
+| Shields Health Care Group | 1 — Portsmouth (Shields MRI) | imaging | not available |
+
+- **Verified:** organization + NH presence + street address + city/ZIP + phone + official URL
+  (provenance `SourceFile`). Coordinates: ZIP-centroid (all 8 geocoded → on map).
+- **Price:** none machine-readable → `price_available=false` (never $0). **Follow-up flagged:**
+  Derry Imaging is a price-transparency leader ("40–70% less than hospitals") — a strong
+  candidate for a future cash-price ingestion (real prices + `LocationServiceAvailability`).
+- **Service availability:** intentionally NOT asserted per-procedure (needs a priced menu).
+- **Live (verified):** directory facet `imaging: 8`; search "imaging center"/"radiology
+  center" → canonical_capability `imaging` (8 locations); map 8 imaging pins (full NH map 62 =
+  25 hospital + 26 urgent_care + 8 imaging + 3 lab). Baseline 26/26·50/50 and safety PASS held.
+
 ## SOURCE-RESEARCH TEMPLATE (complete BEFORE each wave's ingestion)
 
 For every provider category answer, with provenance:
@@ -154,7 +176,7 @@ is an expected, first-class state. Never $0; never fabricate availability or pri
 | 1 | Independent laboratories (Quest, Labcorp) | ✅ **live (2 orgs, 3 verified locations)** |
 | 2 | Urgent care (ConvenientMD, ClearChoiceMD) | ✅ **live (2 orgs, 26 verified locations)** |
 | 3 | Emergency departments / freestanding ER (as capabilities, no dup hospitals) | ✅ **live (26 hospital EDs + 3 freestanding ERs)** |
-| 4 | Imaging centers (independent + hospital-affiliated) | ⏳ not started |
+| 4 | Imaging centers (independent) | ✅ **live (2 orgs, 8 verified locations)** |
 | 5 | Ambulatory surgery centers | ⏳ not started |
 | 6 | Physical therapy + rehabilitation (kept distinct) | ⏳ not started |
 | 7 | Chiropractic | ⏳ not started |
