@@ -12,6 +12,7 @@ COPY data/fixtures/zip_city_centroids.json data/fixtures/zip_city_centroids.json
 COPY data/consumer_procedure_categories.json data/consumer_procedure_categories.json
 COPY data/consumer_location_capabilities.json data/consumer_location_capabilities.json
 COPY data/nh_roster_expansion.json data/nh_roster_expansion.json
+COPY data/nh_nonhospital_published_prices.json data/nh_nonhospital_published_prices.json
 COPY data/fixtures/cdm_crosswalk.json data/fixtures/cdm_crosswalk.json
 COPY data/fixtures/verified_hospital_price_sources.json data/fixtures/verified_hospital_price_sources.json
 COPY data/fixtures/verified_price_locations.json data/fixtures/verified_price_locations.json

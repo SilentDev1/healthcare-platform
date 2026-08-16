@@ -1,0 +1,32 @@
+{
+  "_meta": {
+    "description": "REAL, provider-published non-hospital CASH prices for NH, captured from official provider price pages during a 2026-08-16 research sweep. These are ingested as NON-PUBLIC candidate_review rows (publication_status != 'publishable') so nothing reaches consumers automatically — promotion to public requires human review, exactly like hospital mapping approvals. Prices are transcribed verbatim from the cited source; none is inferred or estimated. Missing prices stay 'price not available' (never $0).",
+    "policy": "Candidate discovery is separate from approved public mappings. Mapping a provider's published line item to a canonical Carevero procedure is a human-review step; the canonical_slug here is a PROPOSED exact-name match, not an approved public mapping.",
+    "sources_researched_but_not_yet_built": {
+      "labcorp_ondemand": "ondemand.labcorp.com/products — fixed consumer self-pay prices (CBC $29, Lipid $59, HbA1c $39, PSA $69) — national, buildable",
+      "questhealth": "questhealth.com product pages — CBC $29, CMP $49, Vitamin D $75 — national, buildable",
+      "the_joint_chiropractic": "thejoint.com/plans-pricing — single visit $55, new-patient $29 — buildable (no canonical chiropractic procedure yet)",
+      "convenientmd": "convenientmd.com/urgent-care/faqs — flat urgent-care visit $175 (cap $265) + occ-health PDF",
+      "clearchoicemd": "ccmdcenters.com/prompt-pay — flat self-pay urgent-care visit $160",
+      "excluded_estimated_only": "Shields (calculator only), Bedford/Nashua/Concord ASCs (phone quote only), NH HealthCost (claims-ESTIMATED medians — reference only, not provider-published)"
+    }
+  },
+  "organizations": [
+    {
+      "organization": "Derry Imaging",
+      "source_url": "https://www.derryimaging.com/derry-imaging-2/about-us/cost-savings/",
+      "source_format": "HTML price table (no machine-readable download; no CPT published)",
+      "retrieval_date": "2026-08-16",
+      "price_scope": "organization-wide published cash/self-pay list price (applies to all Derry Imaging NH locations)",
+      "service_setting": "outpatient",
+      "prices": [
+        {"published_description": "X-Ray (Chest)", "canonical_slug": "chest-x-ray", "cash_price": 95, "component_scope": "global (technical+professional) per provider", "mapping_confidence": "exact_name"},
+        {"published_description": "Ultrasound (Abdomen)", "canonical_slug": "abdominal-ultrasound", "cash_price": 325, "component_scope": "global", "mapping_confidence": "exact_name"},
+        {"published_description": "CT Chest", "canonical_slug": "ct-chest", "cash_price": 450, "component_scope": "global", "mapping_confidence": "exact_name"},
+        {"published_description": "CT Abdomen/Pelvis with Contrast", "canonical_slug": "ct-abdomen-pelvis", "cash_price": 1135, "component_scope": "global; WITH contrast", "mapping_confidence": "name_match_contrast_note"},
+        {"published_description": "MRI Brain", "canonical_slug": "mri-brain-without-contrast", "cash_price": 800, "component_scope": "global; contrast status not specified by provider", "mapping_confidence": "name_match_contrast_ambiguous"},
+        {"published_description": "MRI Back (Lumbar)", "canonical_slug": "mri-lumbar-spine-without-contrast", "cash_price": 800, "component_scope": "global; contrast status not specified by provider", "mapping_confidence": "name_match_contrast_ambiguous"}
+      ]
+    }
+  ]
+}
