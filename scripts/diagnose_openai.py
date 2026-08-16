@@ -116,6 +116,34 @@ def _layers(client: httpx.Client, model: str) -> dict[str, object]:
                 }
             },
         },
+        # The CORRECTED adapter payloads (no `temperature`) — these must succeed once the
+        # project has credits, confirming both the billing fix and the adapter fix.
+        "L7_fixed_adapter": {
+            "model": model,
+            "input": [
+                {"role": "system", "content": "You are a test."},
+                {"role": "user", "content": "Respond with OK"},
+            ],
+            "max_output_tokens": 16,
+            "store": False,
+        },
+        "L8_fixed_structured": {
+            "model": model,
+            "input": [
+                {"role": "system", "content": "You are a test."},
+                {"role": "user", "content": 'Respond with JSON {"answer":"OK"}'},
+            ],
+            "max_output_tokens": 64,
+            "store": False,
+            "text": {
+                "format": {
+                    "type": "json_schema",
+                    "name": "probe",
+                    "strict": True,
+                    "schema": _SCHEMA,
+                }
+            },
+        },
     }
     return {name: _post(client, payload) for name, payload in layers.items()}
 
