@@ -86,11 +86,20 @@ function SearchContent() {
       controller.abort();
     };
   }, [q, location, payer, requestNonce, router, locale, t.searchClarificationTitle]);
-  const category = items.find(
+  // Drop empty categories (0 procedures) that only matched via description text — they
+  // would render a confusing "0 procedures" header with no cards.
+  const visibleItems = items.filter(
+    (item) =>
+      !(
+        item.entity_type === "procedure_category" &&
+        (item.metadata.procedure_count ?? 0) === 0
+      ),
+  );
+  const category = visibleItems.find(
     (item) => item.entity_type === "procedure_category",
   );
   const categoryProcedures = category
-    ? items.filter(
+    ? visibleItems.filter(
         (item) =>
           item.entity_type === "procedure" &&
           item.match_reason === "category_member" &&
@@ -98,12 +107,12 @@ function SearchContent() {
       )
     : [];
   const otherItems = category
-    ? items.filter(
+    ? visibleItems.filter(
         (item) =>
           item.entity_type !== "procedure_category" &&
           item.match_reason !== "category_member",
       )
-    : items;
+    : visibleItems;
   // When a capability "Locations" group is shown, facility items in the main list are
   // the same entities — suppress them there to avoid duplicate cards.
   const hasCapabilityGroup = capabilityLocations.length > 0;
@@ -138,7 +147,7 @@ function SearchContent() {
               ? t.searchSearching
               : ((category
                     ? (category.metadata.procedure_count ?? categoryProcedures.length)
-                    : items.length) === 1
+                    : visibleItems.length) === 1
                   ? t.searchResultCountOne
                   : t.searchResultCountOther
                 ).replace(
@@ -146,7 +155,7 @@ function SearchContent() {
                   String(
                     category
                       ? (category.metadata.procedure_count ?? categoryProcedures.length)
-                      : items.length,
+                      : visibleItems.length,
                   ),
                 )}
           </strong>
@@ -160,7 +169,7 @@ function SearchContent() {
           onRetry={() => setRequestNonce((value) => value + 1)}
           messages={t}
         />
-      ) : q && items.length === 0 && !hasCapabilityGroup ? (
+      ) : q && visibleItems.length === 0 && !hasCapabilityGroup ? (
         <EmptyState title={t.searchNoMatchTitle}>
           {t.searchNoMatchBody}
         </EmptyState>
@@ -169,7 +178,7 @@ function SearchContent() {
           <h2>{clarificationQuestion}</h2>
           <p>{t.searchClarificationBody}</p>
           <SearchCards
-            items={items}
+            items={visibleItems}
             locale={locale}
             location={location}
             payer={payer}
@@ -201,7 +210,7 @@ function SearchContent() {
         </>
       ) : (
         <SearchCards
-          items={withoutFacilities(items)}
+          items={withoutFacilities(visibleItems)}
           locale={locale}
           location={location}
           payer={payer}
