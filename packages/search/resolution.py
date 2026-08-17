@@ -347,7 +347,10 @@ def _resolve_search_core(
     # resolve — retry with consumer lead-in phrases AND self-pay/uninsured/intent
     # filler removed, accepting only a confident (non-unknown) deterministic result.
     # This never overrides an already-resolving query (the raw query was tried above).
-    for variant in _consumer_query_variants(query):
+    # Clean the location-split remainder (effective_query), not the raw query, so
+    # "self pay MRI near Concord" retries as "mri" (not "mri concord"). Preserve any
+    # location context captured by the split.
+    for variant in _consumer_query_variants(effective_query):
         retry = resolve_search(
             session,
             variant,
@@ -358,6 +361,8 @@ def _resolve_search_core(
             locale=locale,
         )
         if retry.intent_type != SearchIntentType.UNKNOWN:
+            if location_text and retry.location_text is None:
+                retry = replace(retry, location_text=location_text)
             return retry
     resolution = SearchResolution(
         SearchIntentType.UNKNOWN,

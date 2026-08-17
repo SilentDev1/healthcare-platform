@@ -131,8 +131,10 @@ def _compile(*fragments: str) -> tuple[re.Pattern[str], ...]:
 
 # --- Prompt-injection / jailbreak (always refused as out-of-scope) -------------------------
 _INJECTION = _compile(
-    r"ignore (all|any|the|previous|prior|above)",
-    r"disregard (all|any|the|previous|prior|above)",
+    r"ignore (all|any|the|previous|prior|above|carevero|your)",
+    r"\bignore\b.{0,30}\b(restriction|restrictions|guardrail|guardrails|limits|"
+    r"filter|filters|safeguard|safeguards|safety)\b",
+    r"disregard (all|any|the|previous|prior|above|carevero|your)",
     r"forget (all|your|the|previous) (instruction|rule|prompt)",
     r"you are now\b",
     r"pretend (to be|you are)",
