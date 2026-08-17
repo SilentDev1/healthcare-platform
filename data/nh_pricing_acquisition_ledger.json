@@ -1986,6 +1986,23 @@
       "consumer_visibility": "Directory shows Derry price_available=true (5/5/5/5/5/3/1 procs per location). /procedures/{slug}/prices includes Derry rows. GAP: /procedures/{slug}/comparison (procedure page) is scoped to active_consumer_facility_ids (hospitals only) -> Derry NOT shown there yet. NEXT: broaden comparison scope to non-hospital priced facilities (reviewed API change; must not alter the verified hospital comparison/26-26 baseline).",
       "rollback": "gs://carevero-beta-sources-carecompare-development/verification/derry_promotion_rollback.json (29 promoted ids + 35 LSA ids).",
       "coverage_delta": "priced facilities 26 -> 33 (+7 Derry Imaging); unpriced 122 -> 115."
+    },
+    "quest_cmp_candidate": {
+      "status": "STAGED candidate_review (NON-PUBLIC), 2026-08-17, browser-verified",
+      "rows": 14,
+      "locations": 14,
+      "procedure": "comprehensive-metabolic-panel",
+      "price": "$49 test + $6 physician service fee ($55 total); questhealth.com DTC",
+      "applicability": "NATIONAL direct-to-consumer online-purchase price, NOT location-specific, NOT ordinary walk-in billing; $49 EXCLUDES the $6 fee. Will NOT auto-promote (lab = unknown imaging modality in promotion gate + no per-location LSA evidence).",
+      "next": "Same verified in-browser method scales to Quest CBC/lipid/A1C and LabCorp OnDemand. A lab-specific availability + promotion path (with the DTC-national applicability decision) is required before any lab candidate could be published."
     }
+  },
+  "coverage_snapshot_2026_08_17": {
+    "priced_facilities": 33,
+    "unpriced": 115,
+    "hospital_baseline": "26/26",
+    "procedures": "50/50",
+    "published_nonhospital": "Derry Imaging 7 locations (29 prices)",
+    "candidates_nonpublic": "Derry 6 (not-offered) + Quest CMP 14"
   }
 }
