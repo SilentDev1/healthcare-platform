@@ -16,11 +16,11 @@
       "organization": "Derry Imaging",
       "source_url": "https://www.derryimaging.com/derry-imaging-2/about-us/cost-savings/",
       "source_format": "HTML price table (no machine-readable download; no CPT published)",
-      "retrieval_date": "2026-08-16",
+      "retrieval_date": "2026-08-17",
+      "retrieval_note": "Re-verified 2026-08-17 against the live cost-savings page. Kept only line items whose exact price still matches the current page; dropped the prior 'X-Ray (Chest) $95' entry because the current page shows 'X-Ray (Lumbar Spine) $110' instead (no lumbar-spine X-ray canonical procedure to map to yet).",
       "price_scope": "organization-wide published cash/self-pay list price (applies to all Derry Imaging NH locations)",
       "service_setting": "outpatient",
       "prices": [
-        {"published_description": "X-Ray (Chest)", "canonical_slug": "chest-x-ray", "cash_price": 95, "component_scope": "global (technical+professional) per provider", "mapping_confidence": "exact_name"},
         {"published_description": "Ultrasound (Abdomen)", "canonical_slug": "abdominal-ultrasound", "cash_price": 325, "component_scope": "global", "mapping_confidence": "exact_name"},
         {"published_description": "CT Chest", "canonical_slug": "ct-chest", "cash_price": 450, "component_scope": "global", "mapping_confidence": "exact_name"},
         {"published_description": "CT Abdomen/Pelvis with Contrast", "canonical_slug": "ct-abdomen-pelvis", "cash_price": 1135, "component_scope": "global; WITH contrast", "mapping_confidence": "name_match_contrast_note"},
