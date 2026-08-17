@@ -9,8 +9,8 @@ Run: python -m scripts.trace_price_anomaly --facility LACONIA --procedure allerg
 """
 
 from __future__ import annotations
-# ruff: noqa: E501
 
+# ruff: noqa: E501
 import argparse
 import json
 

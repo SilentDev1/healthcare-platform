@@ -326,12 +326,17 @@ _MEDICAL_ADVICE = _compile(
     r"\bnen di (cap cuu|phong cap cuu|kham cap cuu|benh vien)\b",
     r"\b(toi )?(nen|can) (uong|dung) thuoc gi\b",
     r"\b(can|nen) chup gi\b",
-    r"\b(dau|benh|sot|dau dau|dau lung|dau nguc)\b.{0,25}\b(chup gi|xet nghiem gi|nen lam gi|can gi|bi gi|di cap cuu)\b",
+    r"\b(dau|benh|sot|dau dau|dau lung|dau nguc|dau bung|kho tho|chong mat|buon non|chay mau|ho|te|sung)\b.{0,30}\b(chup gi|xet nghiem gi|nen lam gi|can gi|bi gi|di cap cuu|nen di dau|di dau|di kham o dau|kham o dau|lam sao|lam gi|the nao|co sao khong|co nguy hiem|nen gap bac si|nen di kham|di benh vien|di bac si|co nghiem trong)\b",
+    # symptom + where-should-I-go triage (mirror of EN _SYMPTOM + "should i / where")
+    r"\b(dau nguc|kho tho|dau tim|dau bung du doi|chay mau|ngat xiu|bat tinh|te liet|noi ban|dot quy)\b.{0,30}\b(nen|can|phai|di dau|di cap cuu|lam gi|lam sao)\b",
+    r"\b(toi|em|con|be|me|bo)\b.{0,20}\b(dau nguc|kho tho|dau tim|ngat xiu|bat tinh|te liet|dot quy)\b",
     r"\bbi gi( vay| the| khong)?\b",
     r"\b(gia vo|dong vai)\b.{0,15}\bbac si\b",
     r"\ba1c.{0,25}(co (cao|xau) khong|co sao khong|cao khong)\b",
     r"\b(sot|dau|benh)\b.{0,20}(co )?can di cap cuu\b",
     r"\bnen di cap cuu khong\b",
+    r"\bnen di (dau|kham o dau|benh vien nao)\b.{0,20}\b(dau|benh|sot|kho tho|nguc|tim|trieu chung)\b",
+    r"\b(trieu chung|benh|dau|sot|kho tho)\b.{0,20}\bnghia la (gi|benh gi)\b",
     # --- ZH ---
     r"我(得了|有|患了).{0,6}(癌|腫瘤|肿瘤|病|感染)",
     r"我(需要|要不要|該不該|该不该).{0,6}(手術|手术|開刀|开刀|做(mri|ct|核磁|檢查|检查|化驗|化验)|生檢|活檢|活检)",
