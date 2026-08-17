@@ -1,5 +1,40 @@
 # Carevero — Final NH Procedure & Provider Validation
 
+> ## ★ NH EXIT GATE — RE-VALIDATED 2026-08-17 → **NH COMPLETE (current scope)**; **MA READY**
+>
+> Full re-run of the completion sequence against the current production baseline.
+>
+> | Exit-gate criterion | Result |
+> |---|---|
+> | 26/26 NH hospital baseline | ✅ preserved |
+> | 50/50 canonical procedures publish verified prices | ✅ preserved |
+> | Procedure × hospital combinations audited | ✅ **1,300** (50 × 26) |
+> | Exhaustive false-negative audit completed | ✅ PUBLISHING 1120, REVIEW_REQUIRED 35, DESCRIPTION_CANDIDATE 74, NO_MATCHING 68, SUMMARY_BUILD_GAP 3, KNOWN_CODE_NOT_MAPPED 0 |
+> | Crosswalk false-positive detector | ✅ **0** suspects (26/26 CLEAN) |
+> | Material false-negatives reviewed + remediated | ✅ bidirectional CPT↔HCPCS alias (`G0438` AWV) → AWV **13→17 hospitals**, +68 summaries; false-positive still 0 |
+> | Price anomaly audit | ✅ 0 $0/negative/duplicate; 262 extreme-ratio = legitimate multi-CPT dispersion; $0.30 allergy traced = per-unit CPT:95004 (kept) |
+> | Duplicate physical-location detector | ✅ **0** |
+> | Safety audit | ✅ **PASS** (`ai_modified_prices: 0`, `public_unreviewed_mappings: 0`) |
+> | AI medical gate | ✅ **PASS** (195/195 refused pre-LLM, 5 languages, `used_llm=false`, 0/40 over-blocked) |
+> | Live consumer QA | ✅ **PASS** (procedure pages render providers + real prices + deterministic comparison + honest insurance/no-price states; 50/50 API sweep clean) |
+> | Provider-neutral directory/search/map/detail | ✅ functioning; non-hospital providers visible even without prices |
+> | Full automated test suite | ✅ **431 passed, 4 skipped** |
+>
+> **Non-hospital coverage (reported separately from 26/26):** 60 organizations · 151 service
+> locations · 10 capabilities. Non-hospital locations with a PUBLIC Carevero price: **0** — this
+> is the honest, expected "OFFERS SERVICE + PRICE NOT CURRENTLY AVAILABLE" state (no defensible
+> public non-hospital price feed exists; real Derry Imaging cash prices are staged as NON-PUBLIC
+> `candidate_review`). Never $0, never inferred. The Littleton SUMMARY_BUILD_GAP (3) is the same
+> state at record level: reviewed-mapped delivery/AWV lines with **null published prices**.
+>
+> **NH FINAL STATUS: COMPLETE (current scope). MASSACHUSETTS READINESS: READY.** "Complete" means
+> Carevero accurately distinguishes *offered + priced* from *offered + price-not-available*, not
+> that every provider has a price. MA foundation started — see `docs/MA_READINESS.md`.
+>
+> ---
+
+
+
 **Date:** 2026-08-17 · **Scope:** New Hampshire · **Massachusetts:** NOT STARTED (deferred, awaiting owner review of this report).
 
 This report is the NH release gate. It reports **actual** completeness honestly — NH is not
