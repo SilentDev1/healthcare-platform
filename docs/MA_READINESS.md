@@ -16,24 +16,44 @@ MA reuses the existing provider-neutral model verbatim:
   reused. MA is NOT modeled as a flat hospital list.
 - The CPT↔HCPCS code-system equivalence remediations already in place apply to MA MRFs too.
 
-## MA regional taxonomy (draft — being verified against authoritative MA geography)
+## MA regional taxonomy (VERIFIED against CMS hospital distribution + MA HPC/CHIA service areas)
 
-MA must be regionally filterable, not one flat list. Draft `region` values (subregion optional):
+MA must be regionally filterable, not one flat list. **Locked at 10 regions** (research adjusted
+the initial 8: split Western MA → Pioneer Valley + Berkshires; carve Southeastern MA / South
+Coast out of South Shore — these are distinct provider markets with separate networks):
 
-| region | anchor counties / areas |
+| region | anchor areas |
 |---|---|
-| Greater Boston | Suffolk + inner metro (Boston, Cambridge, Somerville, Newton, Brookline, Quincy) |
-| North Shore | Essex coast (Salem, Beverly, Gloucester, Peabody, Lynn) |
-| South Shore | Plymouth/Norfolk coast (Weymouth, Plymouth, Brockton) |
-| MetroWest | Framingham, Natick, Marlborough, Milford |
+| Greater Boston | Boston, Cambridge, Newton, Brookline, Quincy, Milton, Winchester, Melrose |
+| North Shore | Salem, Beverly, Gloucester, Newburyport, Burlington (Lahey) |
 | Merrimack Valley | Lawrence, Lowell, Haverhill, Methuen |
-| Central Massachusetts | Worcester County (Worcester, Leominster, Fitchburg) |
-| Western Massachusetts | Pioneer Valley (Springfield, Northampton) + Berkshires (Pittsfield) — subregion split candidate |
-| Cape Cod & Islands | Barnstable, Dukes, Nantucket (Hyannis, Falmouth) |
+| MetroWest | Framingham, Natick, Marlborough, Milford, Concord |
+| South Shore | Weymouth, Plymouth, Brockton |
+| Southeastern MA / South Coast | New Bedford, Fall River, Taunton, Attleboro, Wareham |
+| Central Massachusetts | Worcester, Leominster, Clinton, Gardner, Athol, Southbridge |
+| Pioneer Valley | Springfield, Holyoke, Northampton, Greenfield, Westfield, Palmer |
+| Berkshires | Pittsfield, Great Barrington, North Adams |
+| Cape Cod & Islands | Hyannis, Falmouth, Nantucket, Martha's Vineyard |
 
-The authoritative-geography research (in progress) will confirm/adjust these — notably whether
-Western MA should split into **Pioneer Valley** and **Berkshires** subregions, and exact
-city→region assignments. The taxonomy is locked only after that verification.
+## Verified MA hospital identity (CMS-anchored — the seed for step 1)
+
+Source: CMS Hospital General Information (`data.cms.gov` dataset `xubh-q36u`, state=MA), cross-
+checked vs Mass.gov (Steward) + MHA. **~53 operating general acute + 4 CAH = ~57 to seed.**
+Captured to `data/ma_hospitals_seed.json` for the (future) `ingest_ma_hospitals_foundation.py`.
+
+- **EXCLUDE (closed — CMS may still carry the CCN):** Carney 220017, Nashoba Valley 220098,
+  Norwood 220126.
+- **Steward re-parents (seed under NEW owner):** St. Elizabeth's→BMC-Brighton 220036; Good
+  Samaritan→BMC 220111; Saint Anne's→Brown University Health 220020; Morton→Brown 220073; Holy
+  Family→Merrimack Health 220080.
+- **Specialty acute (bucket separately, NOT general acute):** Mass Eye & Ear 220075, New England
+  Baptist 220088, AdCare 220062.
+- **Multi-campus single-CCN (needs per-campus handling):** Southcoast 220074 (3), Cambridge
+  Health Alliance 220011 (3), Northeast/Beverly 220033 (2), Holy Family 220080 (2), HealthAlliance
+  220001 (2), MetroWest 220175 (2).
+- **System MRF portals to prioritize:** Mass General Brigham, Beth Israel Lahey Health, UMass
+  Memorial, Baystate, Boston Medical Center, Tufts Medicine, Berkshire Health Systems, Cape Cod
+  Healthcare, Tenet, Brown University Health, Heywood.
 
 ## Acquisition sequence (mirrors the proven NH order)
 
