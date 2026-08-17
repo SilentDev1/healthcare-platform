@@ -39,6 +39,7 @@ from packages.database.models import (
     SourceStatus,
 )
 from packages.database.pricing_models import FacilityProcedurePriceSummary as Summary
+from packages.database.pricing_models import FacilityProcedurePriceSummarySource
 from packages.database.session import session_factory
 
 AVAIL_PATH = Path(__file__).resolve().parent.parent / "data" / "nh_location_service_availability.json"
@@ -196,6 +197,33 @@ def run(session: Session, organization: str, *, dry_run: bool) -> dict[str, Any]
         result["promoted"] += 1
         by["promoted"] += 1
         result["promoted_summary_ids"].append(str(summ.id))
+
+    # Provenance linkage: every PUBLIC summary needs a FacilityProcedurePriceSummarySource
+    # row (the safety invariant). Non-hospital published summaries carry the provider source
+    # on source_file_id; ensure the linkage exists (idempotent; backfills prior promotions).
+    result["provenance_links_created"] = 0
+    pub_here = session.execute(
+        select(Summary.id, Summary.source_file_id, Summary.record_count).where(
+            Summary.facility_location_id.in_(list(locs)),
+            Summary.publication_status == "publishable",
+        )
+    ).all()
+    for sid, sfid, rc in pub_here:
+        has = session.scalar(
+            select(func.count())
+            .select_from(FacilityProcedurePriceSummarySource)
+            .where(
+                FacilityProcedurePriceSummarySource.summary_id == sid,
+                FacilityProcedurePriceSummarySource.source_file_id == sfid,
+            )
+        )
+        if not has:
+            session.add(
+                FacilityProcedurePriceSummarySource(
+                    summary_id=sid, source_file_id=sfid, observation_count=int(rc or 1)
+                )
+            )
+            result["provenance_links_created"] += 1
 
     if dry_run:
         session.rollback()
