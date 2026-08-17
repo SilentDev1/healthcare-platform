@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { AskEntry } from "./components/AskEntry";
-import { NewEnglandMap } from "./components/NewEnglandMap";
 import { ComparisonFacilityCard, CoverageNotice } from "./components/ui";
 import { InlineComparePanel } from "./components/CompareSelect";
 import { apiGet } from "../lib/api";
@@ -78,11 +77,28 @@ export default async function Home() {
               </li>
             </ul>
           </div>
-
-          <div className="ne-hero-right">
-            <NewEnglandMap locale={locale} t={t} />
-          </div>
         </div>
+
+        {/* Expansion card overlays the New England map baked into the hero image.
+            Honest status: NH is live, other states are "soon" — no live-MA claim,
+            no hardcoded coverage numbers. */}
+        <aside className="ne-expand-card" aria-label={home.expandTitle}>
+          <span className="ne-expand-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.6" />
+              <path
+                d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.4"
+              />
+            </svg>
+          </span>
+          <div className="ne-expand-text">
+            <p className="ne-expand-title">{home.expandTitle}</p>
+            <p className="ne-expand-body">{home.expandBody}</p>
+          </div>
+        </aside>
       </main>
       {featured && featuredItems.length > 0 && (
         <section className="section featured-marketplace">
