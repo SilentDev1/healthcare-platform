@@ -1,0 +1,1936 @@
+{
+  "generated_from": "production API (authority)",
+  "state": "NH",
+  "totals": {
+    "total_locations": 148,
+    "priced": 26,
+    "unpriced": 122
+  },
+  "capability_coverage": {
+    "ambulatory_surgery": {
+      "priced": 0,
+      "total": 10
+    },
+    "chiropractic": {
+      "priced": 0,
+      "total": 3
+    },
+    "emergency_department": {
+      "priced": 26,
+      "total": 26
+    },
+    "hospital": {
+      "priced": 26,
+      "total": 28
+    },
+    "imaging": {
+      "priced": 0,
+      "total": 10
+    },
+    "laboratory": {
+      "priced": 0,
+      "total": 24
+    },
+    "physical_therapy": {
+      "priced": 0,
+      "total": 33
+    },
+    "rehabilitation": {
+      "priced": 0,
+      "total": 4
+    },
+    "urgent_care": {
+      "priced": 0,
+      "total": 39
+    }
+  },
+  "organizations": [
+    {
+      "organization": "ConvenientMD",
+      "organization_type": "urgent_care",
+      "location_count": 15,
+      "capabilities": [
+        "urgent_care"
+      ],
+      "locations": [
+        {
+          "id": "c014e4be-d727-40af-b484-15952401d137",
+          "name": "ConvenientMD — Bedford",
+          "city": "Bedford",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "f10a6b39-fab1-449c-bfff-2e042450496d",
+          "name": "ConvenientMD — Belmont",
+          "city": "Belmont",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "7d38d4ec-4864-44cd-8161-6c69f603f514",
+          "name": "ConvenientMD — Concord",
+          "city": "Concord",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "a55a56c1-e586-46d0-ad47-dd4521373eae",
+          "name": "ConvenientMD — Dover",
+          "city": "Dover",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "d41e7b6c-1c2e-4df9-83cc-15e220e69a63",
+          "name": "ConvenientMD — Keene",
+          "city": "Keene",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "e457a944-97f6-4eac-9c48-aafdfbbee2d8",
+          "name": "ConvenientMD — Littleton",
+          "city": "Littleton",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "c3fcbb75-9659-48db-aadb-7741987b7261",
+          "name": "ConvenientMD — Londonderry",
+          "city": "Londonderry",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "45518eb2-65a6-422a-9b8e-f664aab21e1b",
+          "name": "ConvenientMD — Manchester",
+          "city": "Manchester",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "13241fd3-f833-4664-8d05-b014714a9b23",
+          "name": "ConvenientMD — Merrimack",
+          "city": "Merrimack",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "ce367bb4-e9b2-4c0e-b8a6-390cf7a96f11",
+          "name": "ConvenientMD — Nashua",
+          "city": "Nashua",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "1c07048b-bc27-4222-9113-5172d5bd0bc2",
+          "name": "ConvenientMD — Plaistow",
+          "city": "Plaistow",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "226ef344-0d2e-4b6c-9558-9d0e3e641915",
+          "name": "ConvenientMD — Portsmouth",
+          "city": "Portsmouth",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "31a89265-a203-4a94-a419-0ee94cbacf1c",
+          "name": "ConvenientMD — Stratham",
+          "city": "Stratham",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "7c4cd4a4-67d1-4b4a-ba58-6fb0b33fc7ad",
+          "name": "ConvenientMD — West Lebanon",
+          "city": "West Lebanon",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "60d24fb8-3f95-4f08-a6eb-58027d332d01",
+          "name": "ConvenientMD — Windham",
+          "city": "Windham",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Quest Diagnostics",
+      "organization_type": "independent_lab",
+      "location_count": 14,
+      "capabilities": [
+        "laboratory"
+      ],
+      "locations": [
+        {
+          "id": "ff120058-5ddd-4ce7-8e54-6becfd674b5d",
+          "name": "Quest Diagnostics — Amherst",
+          "city": "Amherst",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "97e6b585-98da-4d82-9a66-179cb28b217e",
+          "name": "Quest Diagnostics — Bedford",
+          "city": "Bedford",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "d1d5ec32-2ba7-4c26-bf65-1876ef97203e",
+          "name": "Quest Diagnostics — Claremont",
+          "city": "Claremont",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "a4ecf62a-33da-456e-9db3-2831c16a3c95",
+          "name": "Quest Diagnostics — Concord",
+          "city": "Concord",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "f460d01f-6a12-4b74-98b9-6b6ac1fdb4a2",
+          "name": "Quest Diagnostics — Derry (14 Tsienneto Rd)",
+          "city": "Derry",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "1f8eafea-dc44-40b6-becc-2dec28bd9a1a",
+          "name": "Quest Diagnostics — Derry (6 Tsienneto Rd)",
+          "city": "Derry",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "1f00d056-86f9-497a-8f17-f6f2d42a6a19",
+          "name": "Quest Diagnostics — Dover",
+          "city": "Dover",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "892f851f-e8c6-4d3f-8cc2-2f1c09a7575e",
+          "name": "Quest Diagnostics — Gilford",
+          "city": "Gilford",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "e5e005b6-a539-40f1-9d9c-1de3b083b8af",
+          "name": "Quest Diagnostics — Goffstown",
+          "city": "Goffstown",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "01655104-38be-4459-b86b-4f1bc9847e92",
+          "name": "Quest Diagnostics — Londonderry",
+          "city": "Londonderry",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "00538dd8-2d52-4ad3-8fe9-c92ba9fa6332",
+          "name": "Quest Diagnostics — Manchester",
+          "city": "Manchester",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "48479b45-ff0a-4858-9a44-dd4454d01bc2",
+          "name": "Quest Diagnostics — Nashua",
+          "city": "Nashua",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "5ea5cf5e-28ef-4eba-9a27-0244ccec4dcc",
+          "name": "Quest Diagnostics — Pelham",
+          "city": "Pelham",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "49073c52-0d0e-4201-8905-b22912544b10",
+          "name": "Quest Diagnostics — Salem",
+          "city": "Salem",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "ClearChoiceMD",
+      "organization_type": "urgent_care",
+      "location_count": 11,
+      "capabilities": [
+        "urgent_care"
+      ],
+      "locations": [
+        {
+          "id": "4245a7ea-efce-4a93-84c9-3f91ba3b10ad",
+          "name": "ClearChoiceMD — Alton",
+          "city": "Alton",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "55865548-75be-453a-acbe-5c8bbcf9f996",
+          "name": "ClearChoiceMD — Epping",
+          "city": "Epping",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "5e868fb4-8b13-4fee-8794-553ad43ca9da",
+          "name": "ClearChoiceMD — Gilford",
+          "city": "Gilford",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "e487c2e0-4a8f-496b-ada1-2262a05edce4",
+          "name": "ClearChoiceMD — Goffstown",
+          "city": "Goffstown",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "8ad8eaa0-f66c-443d-a714-4a45af65f619",
+          "name": "ClearChoiceMD — Hooksett",
+          "city": "Hooksett",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "ffaefd69-8bf4-4253-9188-39a457728208",
+          "name": "ClearChoiceMD — Lebanon",
+          "city": "Lebanon",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "1158c02b-d1f9-433d-a298-4a93e0159467",
+          "name": "ClearChoiceMD — Nashua",
+          "city": "Nashua",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "283dda7a-b6ae-4da5-9dbf-9865ca5ae48c",
+          "name": "ClearChoiceMD — Plaistow",
+          "city": "Plaistow",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "d754e4eb-be93-492f-a815-54177f31386f",
+          "name": "ClearChoiceMD — Rochester",
+          "city": "Rochester",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "b86a29a0-7e39-465b-8948-d5aeaeac9da5",
+          "name": "ClearChoiceMD — Seabrook",
+          "city": "Seabrook",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "64f305eb-04a8-4597-9740-48edd7515153",
+          "name": "ClearChoiceMD — Tilton",
+          "city": "Tilton",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Laboratory Corporation of America",
+      "organization_type": "independent_lab",
+      "location_count": 10,
+      "capabilities": [
+        "laboratory"
+      ],
+      "locations": [
+        {
+          "id": "2a95d0e4-f445-417b-9148-1fb807350fe9",
+          "name": "Labcorp — Bedford",
+          "city": "Bedford",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "a1a879c6-04d5-466b-981a-1e975bef9689",
+          "name": "Labcorp — Derry",
+          "city": "Derry",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "4564cbc4-e2b1-480d-9835-4fba8ccd8094",
+          "name": "Labcorp — Dover",
+          "city": "Dover",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "da95a3c7-8c62-49f2-920e-a5880f48b4dc",
+          "name": "Labcorp — Exeter",
+          "city": "Exeter",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "cb3d5b54-9243-4e8f-ab45-e85acbea6ba7",
+          "name": "Labcorp — Portsmouth (Greenland Rd)",
+          "city": "Portsmouth",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "06cba37e-475d-44fd-824e-12803a41651d",
+          "name": "Labcorp — Portsmouth (Greenleaf Woods)",
+          "city": "Portsmouth",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "03a46af6-63ac-4ee1-803f-e0723f64f50c",
+          "name": "Labcorp — Raymond",
+          "city": "Raymond",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "5acc5f17-661c-4e95-a230-4281af295e75",
+          "name": "Labcorp — Rochester",
+          "city": "Rochester",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "ba94a251-d60e-41d8-bd36-f24df824126a",
+          "name": "Labcorp — Salem",
+          "city": "Salem",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "ca3129d4-f8ae-4fc5-bf06-6f484f81a0c8",
+          "name": "Labcorp — Windham",
+          "city": "Windham",
+          "capabilities": [
+            "laboratory"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Derry Imaging",
+      "organization_type": "imaging_center",
+      "location_count": 7,
+      "capabilities": [
+        "imaging"
+      ],
+      "locations": [
+        {
+          "id": "7d57f604-fb83-4bec-804f-5259ed97c0c9",
+          "name": "Derry Imaging — Bedford",
+          "city": "Bedford",
+          "capabilities": [
+            "imaging"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "34d238e5-e750-4aef-a2cd-a98fd9ac552c",
+          "name": "Derry Imaging — Concord",
+          "city": "Concord",
+          "capabilities": [
+            "imaging"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "9cd53c63-0ee2-4900-9799-f27222d5c1ba",
+          "name": "Derry Imaging — Derry",
+          "city": "Derry",
+          "capabilities": [
+            "imaging"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "2eebaa97-1c7f-4b1c-a7f8-39c0a7e0a749",
+          "name": "Derry Imaging — Dover",
+          "city": "Dover",
+          "capabilities": [
+            "imaging"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "97b12eb0-9245-4bb5-bfdd-cea4074a0025",
+          "name": "Derry Imaging — Londonderry",
+          "city": "Londonderry",
+          "capabilities": [
+            "imaging"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "dc6a7106-9b45-4e9d-a337-d36d40d412c4",
+          "name": "Derry Imaging — Raymond",
+          "city": "Raymond",
+          "capabilities": [
+            "imaging"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "de8fa52d-0cdd-43de-bf7d-9c1c9197b02b",
+          "name": "Derry Imaging — Windham",
+          "city": "Windham",
+          "capabilities": [
+            "imaging"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Northeast Rehabilitation Hospital Network",
+      "organization_type": "rehabilitation",
+      "location_count": 7,
+      "capabilities": [
+        "physical_therapy",
+        "rehabilitation"
+      ],
+      "locations": [
+        {
+          "id": "732f6149-0e16-448a-b20a-f5c6fbd46bee",
+          "name": "Northeast Rehab Hospital — Manchester",
+          "city": "Manchester",
+          "capabilities": [
+            "rehabilitation"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "85d02d5d-1e16-4474-8060-1767666e3d0d",
+          "name": "Northeast Rehab Hospital — Nashua (SNHMC West)",
+          "city": "Nashua",
+          "capabilities": [
+            "rehabilitation"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "6146d7ea-e6cc-46e5-9a00-8f834c136319",
+          "name": "Northeast Rehab Physical Therapy — Plaistow",
+          "city": "Plaistow",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "c2a64fcb-e107-4e77-8d98-d767d4679619",
+          "name": "Northeast Rehab Physical Therapy — Salem (Stiles Rd)",
+          "city": "Salem",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "0682499b-479b-4d24-96f4-79b9b02e88a9",
+          "name": "Northeast Rehab Physical Therapy — Windham",
+          "city": "Windham",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "fe69460f-8185-43e6-9657-38964f8d7084",
+          "name": "Northeast Rehab — Portsmouth (Pease)",
+          "city": "Portsmouth",
+          "capabilities": [
+            "physical_therapy",
+            "rehabilitation"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "ac1e1f98-cab5-4c20-a81c-b5ca122e6070",
+          "name": "Northeast Rehab — Salem (Butler St)",
+          "city": "Salem",
+          "capabilities": [
+            "physical_therapy",
+            "rehabilitation"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Wentworth-Douglass Hospital",
+      "organization_type": "health_system",
+      "location_count": 7,
+      "capabilities": [
+        "physical_therapy",
+        "urgent_care"
+      ],
+      "locations": [
+        {
+          "id": "ef2bcc01-1f73-4046-b8d3-6c8386c39e58",
+          "name": "Wentworth-Douglass Express Care — Dover",
+          "city": "Dover",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "fec1fb97-606c-4ff5-bb61-ec42de9b6e3d",
+          "name": "Wentworth-Douglass Express Care — Lee",
+          "city": "Lee",
+          "capabilities": [
+            "physical_therapy",
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "e8103beb-77b6-4fa6-bcbe-8d2293c52537",
+          "name": "Wentworth-Douglass Marsh Brook Rehab — Somersworth",
+          "city": "Somersworth",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "05b2ee1d-7380-4eb3-9caf-66c1271ae646",
+          "name": "Wentworth-Douglass Rehabilitation — Dover",
+          "city": "Dover",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "9021e735-d56e-4b36-974c-b0d617ceaa8a",
+          "name": "Wentworth-Douglass Rehabilitation — Durham",
+          "city": "Durham",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "f8a15329-41f0-4977-b1a2-e774591e554d",
+          "name": "Wentworth-Douglass Rehabilitation — Portsmouth",
+          "city": "Portsmouth",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "d4fc05e6-d757-493f-93e8-61ef6eb91938",
+          "name": "Wentworth-Douglass Rehabilitation — Somersworth (The Works)",
+          "city": "Somersworth",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Apple Therapy Services",
+      "organization_type": "physical_therapy",
+      "location_count": 6,
+      "capabilities": [
+        "physical_therapy"
+      ],
+      "locations": [
+        {
+          "id": "2020a56d-4400-4f50-8e71-79b981bf97ed",
+          "name": "Apple Therapy Services — Amherst",
+          "city": "Amherst",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "17b945e5-9ae9-4594-8218-f76737453624",
+          "name": "Apple Therapy Services — Bedford",
+          "city": "Bedford",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "1c422b54-3794-4910-8d00-aee0208724ab",
+          "name": "Apple Therapy Services — Londonderry",
+          "city": "Londonderry",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "6ba92f5d-2e8a-4385-bdb1-640159230b8e",
+          "name": "Apple Therapy Services — Manchester (Downtown)",
+          "city": "Manchester",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "91c8492f-b8fb-4134-99f9-4b14c0156c8a",
+          "name": "Apple Therapy Services — Manchester (Executive)",
+          "city": "Manchester",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "de8cc243-7dc4-443d-bd52-3b174f180eff",
+          "name": "Apple Therapy Services — Nashua",
+          "city": "Nashua",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Access Sports Medicine & Orthopaedics",
+      "organization_type": "ambulatory_surgery_center",
+      "location_count": 4,
+      "capabilities": [
+        "ambulatory_surgery",
+        "physical_therapy"
+      ],
+      "locations": [
+        {
+          "id": "f0fac95f-1885-453a-9bf9-29bc3ef3b9a3",
+          "name": "Access Ambulatory Surgery Center — Auburn",
+          "city": "Auburn",
+          "capabilities": [
+            "ambulatory_surgery"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "5f931adc-c540-4737-b0f5-9821222fa534",
+          "name": "Access Sports Medicine — Dover",
+          "city": "Dover",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "871a89fd-6878-47ef-99c6-8aac8a84c1c2",
+          "name": "Access Sports Medicine — Exeter",
+          "city": "Exeter",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "f6aa8490-4c38-4281-8942-4837909da5a5",
+          "name": "Access Sports Medicine — Portsmouth",
+          "city": "Portsmouth",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Granite State Physical Therapy",
+      "organization_type": "physical_therapy",
+      "location_count": 4,
+      "capabilities": [
+        "physical_therapy"
+      ],
+      "locations": [
+        {
+          "id": "2efd0b8d-1cfd-4764-828d-da5d843a3ec9",
+          "name": "Granite State Physical Therapy — Concord",
+          "city": "Concord",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "a171ce3b-6e35-4345-ba14-a5391129bb2b",
+          "name": "Granite State Physical Therapy — Gilford",
+          "city": "Gilford",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "fe771167-4daf-4992-aaf8-5c36bec5679d",
+          "name": "Granite State Physical Therapy — Hooksett",
+          "city": "Hooksett",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "a5b8af7c-ca5d-4b27-adf1-a273fe90805b",
+          "name": "Granite State Physical Therapy — Plymouth",
+          "city": "Plymouth",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Professional Physical Therapy",
+      "organization_type": "physical_therapy",
+      "location_count": 4,
+      "capabilities": [
+        "physical_therapy"
+      ],
+      "locations": [
+        {
+          "id": "fb760aee-4331-49a3-a2a0-b41ae79dd669",
+          "name": "Professional Physical Therapy — Epping",
+          "city": "Epping",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "158924d9-2034-40af-9af9-1455da41b509",
+          "name": "Professional Physical Therapy — Seabrook",
+          "city": "Seabrook",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "7bba7654-a3de-4f1c-9810-f2e255254ae6",
+          "name": "Professional Physical Therapy — Somersworth",
+          "city": "Somersworth",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "6b260aff-2b31-4766-af2b-452d00c39179",
+          "name": "Professional Physical Therapy — Stratham",
+          "city": "Stratham",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Concentra",
+      "organization_type": "urgent_care",
+      "location_count": 3,
+      "capabilities": [
+        "urgent_care"
+      ],
+      "locations": [
+        {
+          "id": "b3e4847c-e574-4a0b-9a36-2fb6c57464b9",
+          "name": "Concentra Urgent Care — Concord",
+          "city": "Concord",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "524638ae-b728-4443-9970-1e6ec6a538cc",
+          "name": "Concentra Urgent Care — Manchester",
+          "city": "Manchester",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "19425585-0ba4-4427-9dd8-aa81d69ac329",
+          "name": "Concentra Urgent Care — Nashua",
+          "city": "Nashua",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Elliot Health System",
+      "organization_type": "health_system",
+      "location_count": 3,
+      "capabilities": [
+        "urgent_care"
+      ],
+      "locations": [
+        {
+          "id": "b9260d5b-d6bd-4a99-bbb4-ad12e9ae5a89",
+          "name": "Elliot Urgent Care — Bedford",
+          "city": "Bedford",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "06df99a3-4c4f-41d8-9ac7-b4db92c3f18c",
+          "name": "Elliot Urgent Care — Londonderry",
+          "city": "Londonderry",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "7f3ce7a5-4e71-4877-8128-4eb3970dbc2a",
+          "name": "Elliot Urgent Care — River's Edge (Manchester)",
+          "city": "Manchester",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "The Joint Chiropractic",
+      "organization_type": "chiropractic",
+      "location_count": 3,
+      "capabilities": [
+        "chiropractic"
+      ],
+      "locations": [
+        {
+          "id": "77e0a71d-19dd-4855-a302-6e21b12f9d24",
+          "name": "The Joint Chiropractic — Manchester",
+          "city": "Manchester",
+          "capabilities": [
+            "chiropractic"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "62fc783b-ee2a-44fe-af4d-4c4813cbe770",
+          "name": "The Joint Chiropractic — Nashua",
+          "city": "Nashua",
+          "capabilities": [
+            "chiropractic"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "6e7bd685-3f3a-40bf-a69c-ff5eb13a627f",
+          "name": "The Joint Chiropractic — Salem",
+          "city": "Salem",
+          "capabilities": [
+            "chiropractic"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Bedford Ambulatory Surgical Center",
+      "organization_type": "ambulatory_surgery_center",
+      "location_count": 2,
+      "capabilities": [
+        "ambulatory_surgery",
+        "imaging"
+      ],
+      "locations": [
+        {
+          "id": "f94b238d-e107-405f-94f1-ed813ab974a2",
+          "name": "BASC Imaging — Bedford",
+          "city": "Bedford",
+          "capabilities": [
+            "imaging"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "0191a340-5ef2-494d-8aee-6afe224f1fa0",
+          "name": "Bedford Ambulatory Surgical Center",
+          "city": "Bedford",
+          "capabilities": [
+            "ambulatory_surgery"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Cioffredi & Associates",
+      "organization_type": "physical_therapy",
+      "location_count": 2,
+      "capabilities": [
+        "physical_therapy"
+      ],
+      "locations": [
+        {
+          "id": "d6beffe1-fd98-48ed-b547-b189b160f038",
+          "name": "Cioffredi & Associates — Grantham",
+          "city": "Grantham",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "82ef790e-0fb1-4f18-8c31-9dfceeb85e27",
+          "name": "Cioffredi & Associates — Lebanon",
+          "city": "Lebanon",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Dartmouth Health",
+      "organization_type": "health_system",
+      "location_count": 2,
+      "capabilities": [
+        "physical_therapy"
+      ],
+      "locations": [
+        {
+          "id": "7d28b4df-8907-4064-8dc4-d9247d007d77",
+          "name": "Dartmouth Hitchcock Medical Center — Lebanon (PT)",
+          "city": "Lebanon",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "050d868d-1e33-4f0f-a5b0-559796455720",
+          "name": "Dartmouth Hitchcock — Heater Road (Lebanon PT)",
+          "city": "Lebanon",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Southern NH Health",
+      "organization_type": "health_system",
+      "location_count": 2,
+      "capabilities": [
+        "urgent_care"
+      ],
+      "locations": [
+        {
+          "id": "66e93bb2-807b-4b09-844e-fc29ae788ff9",
+          "name": "SNHH Immediate Care — South Nashua",
+          "city": "Nashua",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        },
+        {
+          "id": "230be4e9-88dc-4ea3-8aba-89100cb6b240",
+          "name": "SNHH Immediate Care — West Campus (Nashua)",
+          "city": "Nashua",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "AFC Urgent Care",
+      "organization_type": "urgent_care",
+      "location_count": 1,
+      "capabilities": [
+        "urgent_care"
+      ],
+      "locations": [
+        {
+          "id": "88e824ea-bfd8-4daf-923a-2385f6491cd3",
+          "name": "AFC Urgent Care — Hudson",
+          "city": "Hudson",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Concord Hospital",
+      "organization_type": "health_system",
+      "location_count": 1,
+      "capabilities": [
+        "urgent_care"
+      ],
+      "locations": [
+        {
+          "id": "0ff8b012-bb1f-48d1-a687-a870840d92a1",
+          "name": "Concord Hospital Walk-In Urgent Care — Horseshoe Pond",
+          "city": "Concord",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "HAMPSTEAD HOSPITAL & RESIDENTIAL TREATMENT FACILIT",
+      "organization_type": "hospital_system",
+      "location_count": 1,
+      "capabilities": [
+        "hospital"
+      ],
+      "locations": [
+        {
+          "id": "4be7b241-f124-4180-a938-e2e4ac07be3c",
+          "name": "HAMPSTEAD HOSPITAL & RESIDENTIAL TREATMENT FACILIT",
+          "city": "HAMPSTEAD",
+          "capabilities": [
+            "hospital"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Minimally Invasive Surgery Center of New England",
+      "organization_type": "ambulatory_surgery_center",
+      "location_count": 1,
+      "capabilities": [
+        "ambulatory_surgery"
+      ],
+      "locations": [
+        {
+          "id": "2f779947-ca32-40be-bb90-f8718764e7fe",
+          "name": "Minimally Invasive Surgery Center of New England — Bedford",
+          "city": "Bedford",
+          "capabilities": [
+            "ambulatory_surgery"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "MinuteClinic",
+      "organization_type": "urgent_care",
+      "location_count": 1,
+      "capabilities": [
+        "urgent_care"
+      ],
+      "locations": [
+        {
+          "id": "c1351d77-c7ff-4c84-8f29-2d9304ec9416",
+          "name": "MinuteClinic at CVS — Nashua",
+          "city": "Nashua",
+          "capabilities": [
+            "urgent_care"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "NEW HAMPSHIRE HOSPITAL",
+      "organization_type": "hospital_system",
+      "location_count": 1,
+      "capabilities": [
+        "hospital"
+      ],
+      "locations": [
+        {
+          "id": "56033ee3-d426-40ac-ad3e-8d935bb1728c",
+          "name": "NEW HAMPSHIRE HOSPITAL",
+          "city": "CONCORD",
+          "capabilities": [
+            "hospital"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Nashua Ambulatory Surgical Center",
+      "organization_type": "ambulatory_surgery_center",
+      "location_count": 1,
+      "capabilities": [
+        "ambulatory_surgery"
+      ],
+      "locations": [
+        {
+          "id": "255d59eb-980a-4aed-825e-1cbff9e8fff3",
+          "name": "Nashua Ambulatory Surgical Center",
+          "city": "Nashua",
+          "capabilities": [
+            "ambulatory_surgery"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "New Hampshire Open MRI",
+      "organization_type": "imaging_center",
+      "location_count": 1,
+      "capabilities": [
+        "imaging"
+      ],
+      "locations": [
+        {
+          "id": "9198b8f9-bbd4-45b0-bb8f-57b232dd7161",
+          "name": "New Hampshire Open MRI — West Lebanon",
+          "city": "West Lebanon",
+          "capabilities": [
+            "imaging"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "North Atlantic Surgical Suites",
+      "organization_type": "ambulatory_surgery_center",
+      "location_count": 1,
+      "capabilities": [
+        "ambulatory_surgery"
+      ],
+      "locations": [
+        {
+          "id": "4fa531d5-d3ac-40d0-b88d-0a286f964f85",
+          "name": "North Atlantic Surgical Suites — Salem",
+          "city": "Salem",
+          "capabilities": [
+            "ambulatory_surgery"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Northridge Surgical Suites",
+      "organization_type": "ambulatory_surgery_center",
+      "location_count": 1,
+      "capabilities": [
+        "ambulatory_surgery"
+      ],
+      "locations": [
+        {
+          "id": "0804febc-2498-4ae8-b0b7-38586ce91d49",
+          "name": "Northridge Surgical Suites — Nashua",
+          "city": "Nashua",
+          "capabilities": [
+            "ambulatory_surgery"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Novamed Surgery Center of Nashua",
+      "organization_type": "ambulatory_surgery_center",
+      "location_count": 1,
+      "capabilities": [
+        "ambulatory_surgery"
+      ],
+      "locations": [
+        {
+          "id": "9e68dd15-460c-4ec8-8d2e-867cd253eec9",
+          "name": "Novamed Surgery Center of Nashua",
+          "city": "Nashua",
+          "capabilities": [
+            "ambulatory_surgery"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Orthopaedic Surgery Center",
+      "organization_type": "ambulatory_surgery_center",
+      "location_count": 1,
+      "capabilities": [
+        "ambulatory_surgery"
+      ],
+      "locations": [
+        {
+          "id": "5c2d9cf7-119f-4af8-93a7-f2f702c13d02",
+          "name": "Orthopaedic Surgery Center — Concord",
+          "city": "Concord",
+          "capabilities": [
+            "ambulatory_surgery"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Performance Health NH",
+      "organization_type": "physical_therapy",
+      "location_count": 1,
+      "capabilities": [
+        "physical_therapy"
+      ],
+      "locations": [
+        {
+          "id": "f02dd6e4-6a92-4c10-bd01-3670f0be0619",
+          "name": "Performance Health — Concord",
+          "city": "Concord",
+          "capabilities": [
+            "physical_therapy"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Portsmouth Surgery Center",
+      "organization_type": "ambulatory_surgery_center",
+      "location_count": 1,
+      "capabilities": [
+        "ambulatory_surgery"
+      ],
+      "locations": [
+        {
+          "id": "39f22bab-801d-427b-8ec1-df28a4786055",
+          "name": "Portsmouth Surgery Center — Seabrook",
+          "city": "Seabrook",
+          "capabilities": [
+            "ambulatory_surgery"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Shields Health Care Group",
+      "organization_type": "imaging_center",
+      "location_count": 1,
+      "capabilities": [
+        "imaging"
+      ],
+      "locations": [
+        {
+          "id": "4dfb00cc-ad9e-4fc8-988a-b54a6a7de123",
+          "name": "Shields MRI — Portsmouth",
+          "city": "Portsmouth",
+          "capabilities": [
+            "imaging"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    },
+    {
+      "organization": "Surgical Center of New Hampshire at Derry",
+      "organization_type": "ambulatory_surgery_center",
+      "location_count": 1,
+      "capabilities": [
+        "ambulatory_surgery"
+      ],
+      "locations": [
+        {
+          "id": "9cbe5876-cfa2-467b-8b9c-662722d604d6",
+          "name": "Surgical Center of New Hampshire at Derry",
+          "city": "Derry",
+          "capabilities": [
+            "ambulatory_surgery"
+          ],
+          "current_price_records": 0
+        }
+      ],
+      "disposition": {
+        "reason_codes": [
+          "NEEDS_MANUAL_REVIEW"
+        ],
+        "public_pricing_source": null,
+        "source_url": null,
+        "source_type": null,
+        "applicability": null,
+        "ingestion_status": "pending",
+        "mapping_status": "pending",
+        "qa_status": "pending",
+        "blocker": null
+      }
+    }
+  ]
+}
