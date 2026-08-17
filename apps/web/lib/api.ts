@@ -73,6 +73,10 @@ export interface DirectoryCapabilityOption {
   capability: string;
   location_count: number;
 }
+export interface DirectoryRegionOption {
+  region: string;
+  location_count: number;
+}
 export interface FacilityDirectory {
   items: DirectoryFacility[];
   page: number;
@@ -82,6 +86,7 @@ export interface FacilityDirectory {
   states: DirectoryStateOption[];
   facility_types: string[];
   capabilities: DirectoryCapabilityOption[];
+  regions: DirectoryRegionOption[];
 }
 export interface FacilityPage {
   items: Facility[];
