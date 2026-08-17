@@ -187,11 +187,21 @@ def ingest(
                         publication_status=CANDIDATE_STATUS,
                         completeness_score=Decimal("1.0"),
                         notes=(
-                            f"Provider-published cash price. Source: {org_block['source_url']} "
-                            f"(retrieved {org_block['retrieval_date']}). "
+                            f"Provider-published cash price. Source: "
+                            f"{item.get('product_url') or org_block['source_url']} "
+                            f"(retrieved {item.get('retrieval_date') or org_block['retrieval_date']}). "
                             f"Published as {item['published_description']!r}; component_scope="
-                            f"{item['component_scope']}; mapping={item['mapping_confidence']}. "
-                            f"NON-PUBLIC candidate — requires human review before publish."
+                            f"{item['component_scope']}; mapping={item['mapping_confidence']}."
+                            + (
+                                f" Components: test={item.get('test_price')} + "
+                                f"physician_service_fee={item.get('physician_service_fee')} "
+                                f"= total={item.get('total_price')}; sku={item.get('sku')};"
+                                f" national_dtc={item.get('national_dtc')}."
+                                if item.get("total_price") is not None
+                                else ""
+                            )
+                            + (f" NOTE: {item['mapping_note']}." if item.get("mapping_note") else "")
+                            + " NON-PUBLIC candidate — requires human review before publish."
                         ),
                     )
                 )
