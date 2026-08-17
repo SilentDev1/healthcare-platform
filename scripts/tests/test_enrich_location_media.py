@@ -56,3 +56,22 @@ def test_uses_attribution_text_too() -> None:
         facility_name="Derry Imaging — Derry", org_name="Derry Imaging", city="Derry",
     )
     assert ok
+
+
+def test_derry_substring_of_londonderry_is_rejected() -> None:
+    # REGRESSION: "derry" must NOT match inside "Londonderry" (word-boundary, not substring).
+    ok, reason = verify_identity(
+        _cand("File:Vital records of Londonderry, New Hampshire; a full and accurate transcript.jpg"),
+        facility_name="Derry Imaging — Londonderry", org_name="Derry Imaging", city="Londonderry",
+    )
+    assert not ok and reason == "no_distinctive_name_token"
+
+
+def test_wrong_building_with_city_but_no_brand_token_rejected() -> None:
+    # REGRESSION: a "military health care facility" doc in Portsmouth must NOT verify as
+    # Portsmouth Regional Hospital (no "regional"/"hospital" token present).
+    ok, reason = verify_identity(
+        _cand("File:Format B PROPOSED CONSTRUCTION, MILITARY HEALTH CARE FACILITY, Portsmouth.jpg"),
+        facility_name="PORTSMOUTH REGIONAL HOSPITAL", org_name=None, city="Portsmouth",
+    )
+    assert not ok and reason == "no_distinctive_name_token"

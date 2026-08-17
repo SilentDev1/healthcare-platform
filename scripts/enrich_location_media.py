@@ -93,14 +93,17 @@ def verify_identity(
     ).lower()
     if not haystack:
         return False, "no_text_metadata"
+    # WORD-BOUNDARY token matching (never substring): "derry" must not match inside
+    # "londonderry", and generic prose must not partial-match a brand token.
+    hay_tokens = set(_TOKEN.findall(haystack))
     city_tok = city.lower().strip()
-    if city_tok and city_tok not in haystack:
+    city_parts = set(_TOKEN.findall(city_tok))
+    if city_parts and not city_parts.issubset(hay_tokens):
         return False, "city_not_in_candidate"
     # The distinctive provider token must be something OTHER than the city itself, so a generic
     # "<city> skyline" photo can never verify as a specific provider's building.
-    city_parts = set(_TOKEN.findall(city_tok))
     name_tokens = _distinctive_tokens(facility_name, org_name) - city_parts
-    matched = [t for t in name_tokens if t in haystack]
+    matched = [t for t in name_tokens if t in hay_tokens]
     if not matched:
         return False, "no_distinctive_name_token"
     return True, f"matched_city+{'+'.join(sorted(matched))}"
@@ -261,6 +264,69 @@ def enrich(
     }
 
 
+def _title_from_urls(*urls: str | None) -> str:
+    """Reconstruct a Commons file title from a stored source/cdn URL for re-verification."""
+    import os
+    import urllib.parse
+
+    for url in urls:
+        if not url:
+            continue
+        name = urllib.parse.unquote(os.path.basename(url.split("?")[0]))
+        if name:
+            return name.replace("_", " ")
+    return ""
+
+
+def purge_unverifiable(session: Session, *, state: str, apply: bool) -> dict[str, object]:
+    """Re-verify every enrich-attached media row against the CURRENT strict rule; remove failures.
+
+    Self-healing: if the verification is tightened, previously-attached rows that no longer pass
+    are deleted (a generic placeholder is better than a wrong building). Only touches rows this
+    tool attached (verified_by='enrich_location_media').
+    """
+    rows = list(
+        session.scalars(
+            select(FacilityMedia).where(FacilityMedia.verified_by == "enrich_location_media")
+        )
+    )
+    removed: list[dict[str, str]] = []
+    kept = 0
+    for m in rows:
+        facility = session.get(Facility, m.facility_id)
+        location = session.scalar(
+            select(FacilityLocation).where(
+                FacilityLocation.facility_id == m.facility_id,
+                FacilityLocation.active.is_(True),
+            )
+        )
+        org = session.get(Organization, facility.organization_id) if facility and facility.organization_id else None
+        title = _title_from_urls(m.source_url, m.cdn_url)
+        pseudo = MediaCandidate(
+            title=title, image_url=m.cdn_url or "", description_url=m.source_url or "",
+            license_type=m.license_type, license_url=m.license_url,
+            attribution_text=m.attribution_text, copyright_owner=m.copyright_owner,
+            width=m.width, height=m.height, mime_type=m.mime_type, is_free=True,
+        )
+        ok, reason = verify_identity(
+            pseudo,
+            facility_name=facility.display_name if facility else "",
+            org_name=org.display_name if org else None,
+            city=location.city if location else "",
+        )
+        if ok:
+            kept += 1
+        else:
+            removed.append({"facility": facility.display_name if facility else str(m.facility_id), "title": title[:70], "reason": reason})
+            if apply:
+                session.delete(m)
+    if apply:
+        session.commit()
+    else:
+        session.rollback()
+    return {"applied": apply, "reviewed": len(rows), "kept": kept, "removed": len(removed), "removed_detail": removed}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--state", default="NH")
@@ -268,7 +334,13 @@ def main() -> None:
     parser.add_argument("--capability", default=None)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--purge", action="store_true", help="re-verify existing enriched media, remove failures")
     args = parser.parse_args()
+    if args.purge:
+        with session_factory() as session:
+            result = purge_unverifiable(session, state=args.state, apply=args.apply)
+        print("LOCATION_MEDIA_PURGE=" + json.dumps(result, default=str, separators=(",", ":")))
+        return
     with session_factory() as session:
         result = enrich(
             session,
