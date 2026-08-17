@@ -1,14 +1,19 @@
-import type { CSSProperties } from "react";
+"use client";
+
+import { type CSSProperties, useState } from "react";
 
 /**
  * Shared facility / service-location image with a polished neutral fallback.
  *
- * Phase 4.8 (§8–11, §20, §25): result cards and comparison thumbnails must show
- * an image. Until verified organization-provided imagery exists, every facility
- * renders a deterministic, clearly-neutral Carevero placeholder — never a broken
- * image icon and never generic stock photography that could be mistaken for the
- * real hospital. When the API later supplies a verified `imageUrl`, it is used
- * directly with lazy loading; the component's contract does not change per page.
+ * Result cards, comparison thumbnails, and detail pages show a verified location
+ * image when the API supplies one, otherwise a deterministic, clearly-neutral
+ * Carevero placeholder — never a broken-image icon and never generic stock that
+ * could be mistaken for the real building.
+ *
+ * Robustness: if a verified remote image fails to load for a given viewer (e.g. a
+ * network that blocks the image host), the component falls back to the SAME neutral
+ * placeholder via `onError` — so a broken-image state is never shown. Location
+ * accuracy is unaffected: the placeholder is used only when there is no usable photo.
  */
 
 function hashHue(value: string): number {
@@ -47,11 +52,12 @@ export function FacilityImage({
   variant?: "card" | "thumb";
   className?: string;
 }) {
+  const [failed, setFailed] = useState(false);
   const baseClass = `facility-image facility-image-${variant}${
     className ? ` ${className}` : ""
   }`;
 
-  if (imageUrl) {
+  if (imageUrl && !failed) {
     return (
       <span className={baseClass}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -60,6 +66,7 @@ export function FacilityImage({
           alt={imageAlt ?? `${name} location`}
           loading="lazy"
           decoding="async"
+          onError={() => setFailed(true)}
         />
         {attribution ? (
           <span className="facility-image-credit" title={attribution}>

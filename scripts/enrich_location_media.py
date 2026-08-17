@@ -61,7 +61,8 @@ _DISQUALIFIERS = {
     "records", "record", "census", "report", "annual", "proposed", "construction", "military",
     "naval", "army", "transcript", "vital", "account", "map", "atlas", "seal", "logo", "coat",
     "arms", "document", "manuscript", "register", "directory", "almshouse", "asylum", "ruins",
-    "historical", "demolished", "former", "postcard", "engraving", "lithograph", "drawing",
+    "historical", "demolished", "former", "postcard", "postcards", "engraving", "lithograph",
+    "drawing", "sketch", "print", "publisher", "publishing", "tichnor", "vintage", "circa",
 }
 
 
