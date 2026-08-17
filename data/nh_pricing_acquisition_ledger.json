@@ -1947,5 +1947,12 @@
     "machine_readable": "No CSV/JSON/API on provider pages (HTML); needs a reviewed collector + robots/terms check (do not bypass protections).",
     "mapping": "No CPT codes on NH HealthCost — description-based deterministic mapping to canonical procedures, evidence-backed, false-positive detector after each batch.",
     "why_not_ingested_this_turn": "New authoritative source + new price_type + comparability design is a reviewed batch; rushing risks the mandate's 'schema decision that risks corrupting production pricing' + unsafe comparisons. Flagged for owner-reviewed design as the primary next batch."
+  },
+  "operational_findings": {
+    "production_db_write": "GATED (owner action). Local .env points to DB 'carecompare' (11 publishable facilities) which is NOT production (prod API = 26). Production DB writes this session went through Cloud Run jobs holding the prod connection. Track B ingestion into production needs either the production DATABASE_URL (owner secret) or a Cloud Run job pipeline.",
+    "ingest_tooling_ready": "scripts/ingest_nonhospital_published_prices.py exists: reads data/nh_nonhospital_published_prices.json (verbatim official prices + provenance), writes SourceFile + FacilityProcedurePriceSummary at publication_status='candidate_review' (NON-PUBLIC; consumers only see 'publishable'); fails if price<=0; org-wide list price attached to all active org locations; additive/reversible. Promotion to publishable is a deliberate human-review step.",
+    "lab_dtc_path_validated": "Common lab tests ARE canonical procedures (complete-blood-count, comprehensive-metabolic-panel, lipid-panel, a1c-test, thyroid-test, urinalysis) -> Quest/LabCorp DTC self-pay prices are MAPPABLE. Highest-value mappable non-hospital published-price source. Applicability = org-wide/national (order online, drawn at any NH PSC), NOT per-draw-station.",
+    "next_independent_step": "Transcribe EXACT current official Quest questhealth.com / LabCorp OnDemand self-pay test prices into data/nh_nonhospital_published_prices.json with provenance + proposed canonical mapping (org-wide applicability). CAUTION: these are JS e-commerce pages; prices must be read from the official page exactly (never estimated). Then ingest via the script once production DB access is available -> candidate_review -> human-review promotion to publishable.",
+    "track_A_nhchis": "docs/NHCHIS_DATA_REQUEST_PLAN.md prepared (owner files the request; not submitted)."
   }
 }
