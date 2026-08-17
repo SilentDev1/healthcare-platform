@@ -1,0 +1,23 @@
+{
+  "_meta": {
+    "description": "Per-location modality availability transcribed from official provider sites. Drives LocationServiceAvailability (offered/not_offered) and gates candidate->publishable price promotion so an organization-wide published price is applied ONLY at locations that actually offer the modality. Evidence-backed; never inferred from capability alone.",
+    "modality_of_slug": "mri-* -> mri; ct-* -> ct; *ultrasound* -> ultrasound; *x-ray*/xray -> xray; mammogra* -> mammography; dexa/bone-densit* -> dexa"
+  },
+  "organizations": [
+    {
+      "organization": "Derry Imaging",
+      "source_url": "http://www.derryimaging.com/",
+      "retrieval_date": "2026-08-17",
+      "evidence_note": "Per-location modalities from the official Derry Imaging site (locations/services). Derry is the flagship full-service center; Londonderry lacks CT; Windham offers ultrasound (+X-ray/mammography) only.",
+      "modality_by_city": {
+        "Bedford": ["mri", "ct", "ultrasound", "xray", "mammography"],
+        "Concord": ["mri", "ct", "ultrasound", "xray", "mammography"],
+        "Derry": ["mri", "ct", "ultrasound", "pet", "xray", "mammography", "dexa"],
+        "Dover": ["mri", "ct", "ultrasound", "xray", "mammography"],
+        "Londonderry": ["mri", "ultrasound", "xray", "mammography"],
+        "Raymond": ["mri", "ct", "ultrasound", "xray", "mammography"],
+        "Windham": ["ultrasound", "xray", "mammography"]
+      }
+    }
+  ]
+}
