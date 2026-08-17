@@ -104,6 +104,11 @@ export default async function Providers({
   }));
   const allCount =
     data.states.find((s) => s.code === state)?.facility_count ?? data.total;
+  // Most-common provider types become the primary quick-filter chips; the rest fall
+  // under "More". Sorted by real location counts (never a hardcoded list).
+  const capabilitiesByCount = [...data.capabilities].sort(
+    (a, b) => b.location_count - a.location_count,
+  );
 
   const total = data.total;
   const totalPages = Math.max(1, Math.ceil(total / size));
@@ -207,7 +212,7 @@ export default async function Providers({
         allCount={allCount}
         states={stateOptions}
         regions={regionOptions}
-        capabilities={data.capabilities}
+        capabilities={capabilitiesByCount}
         quickCount={total}
       />
 
