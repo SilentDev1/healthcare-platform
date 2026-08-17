@@ -125,12 +125,15 @@ def ingest(
                 result["unmatched_procedures"] += 1
                 continue
             for loc in locations:
+                # Idempotent across ANY status: never re-create a candidate for a
+                # (location, procedure, setting) that already has a summary — including
+                # one already promoted to publishable (else we'd duplicate / violate the
+                # unique constraint after promotion).
                 exists = session.scalar(
                     select(FacilityProcedurePriceSummary).where(
                         FacilityProcedurePriceSummary.facility_location_id == loc.id,
                         FacilityProcedurePriceSummary.procedure_id == procedure.id,
                         FacilityProcedurePriceSummary.service_setting == setting,
-                        FacilityProcedurePriceSummary.publication_status == CANDIDATE_STATUS,
                     )
                 )
                 if exists is not None:
