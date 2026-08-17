@@ -4396,160 +4396,302 @@ body .comparison-toolbar .sort-form .button {
   .ask-card-link, .ask-more { margin-left: 0; }
 }
 
-/* ===== Home hero: Ask Carevero primary, manual search secondary ===== */
-/* Consolidated, centered, low-height hero. Keeps the Carevero brand + gradient
-   background from .product-hero; overrides the old two-column search layout. */
-.home-hero {
-  padding-top: 2.6rem;
-  padding-bottom: 2.6rem;
+/* ===== Home hero: New England, Ask Carevero primary ===== */
+/* Two-column hero. LEFT: headline + Ask Carevero (primary) + manual search CTA +
+   trust row. RIGHT: stylized New England map + expansion card. Region-forward
+   (Carevero -> New England), not NH-only. Keeps the Carevero blue identity. */
+.product-hero.ne-hero {
+  padding: 2.6rem 0 2.4rem;
+  text-align: left;
+  overflow: hidden;
+  background: linear-gradient(
+    105deg,
+    #ffffff 0%,
+    #f5f8ff 44%,
+    #e9f1fe 66%,
+    #dbe8fc 100%
+  );
 }
-.home-hero-inner {
-  max-width: 780px;
+.ne-hero-inner {
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 0 clamp(1rem, 4vw, 2.5rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+}
+.ne-hero-left {
   display: flex;
   flex-direction: column;
-  gap: 1.15rem;
-  align-items: stretch;
+  gap: 1rem;
+  min-width: 0;
 }
-.home-hero .hero-copy {
-  text-align: center;
-  padding-bottom: 0;
-}
-.home-hero h1 {
-  max-width: 100%;
-  margin: 0.4rem 0 0.85rem;
-  font-size: clamp(2.3rem, 4.3vw, 3.5rem);
-  line-height: 1.05;
-}
-.home-hero .lede {
-  max-width: 640px;
-  margin: 0 auto 1rem;
-}
-.home-hero .hero-assurance {
-  justify-content: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.15rem;
-}
-
-/* Primary panel — prominent but not oversized. */
-.home-hero .ask-entry {
-  margin: 0 auto;
-  width: 100%;
-  max-width: 660px;
-  padding: 1.5rem 1.5rem 1.35rem;
-  border: 1px solid rgba(8, 118, 92, 0.2);
-  border-radius: 1.1rem;
-  background: #ffffff;
-  box-shadow:
-    0 20px 44px -26px rgba(8, 118, 92, 0.4),
-    0 2px 6px rgba(15, 23, 42, 0.05);
-  text-align: left;
-}
-.home-hero .ask-entry-heading {
+.ne-hero .ne-eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
   font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--brand);
 }
-.home-hero .ask-entry-sub {
-  margin: 0.3rem 0 0.95rem;
-  font-size: 1.2rem;
+.ne-hero .ne-headline {
+  margin: 0;
+  max-width: 100%;
+  font-size: clamp(2.4rem, 4.6vw, 3.9rem);
+  line-height: 1.03;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.ne-hero .ne-headline span {
+  display: block;
+  color: var(--brand);
+}
+.ne-hero .ne-lede {
+  margin: 0;
+  max-width: 34rem;
+  color: var(--muted, #45526b);
+  font-size: 1.02rem;
+}
+
+/* Primary Ask Carevero panel */
+.ne-hero .ask-entry {
+  margin: 0.35rem 0 0;
+  width: 100%;
+  max-width: 560px;
+  padding: 1.3rem 1.35rem 1.2rem;
+  border: 1px solid rgba(9, 97, 220, 0.18);
+  border-radius: 1rem;
+  background: #ffffff;
+  box-shadow:
+    0 22px 46px -28px rgba(9, 97, 220, 0.45),
+    0 2px 6px rgba(15, 23, 42, 0.05);
+}
+.ne-hero .ask-entry-heading {
+  font-size: 0.75rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--brand);
+}
+.ne-hero .ask-entry-sub {
+  margin: 0.3rem 0 0.85rem;
+  font-size: 1.12rem;
   line-height: 1.3;
   font-weight: 600;
-  color: var(--ink, #1f2937);
+  color: var(--ink, #16233b);
 }
-.home-hero .ask-entry-input {
-  flex: 1 1 320px;
-  padding: 0.9rem 1rem;
-  font-size: 1rem;
-  border-radius: 0.7rem;
+.ne-hero .ask-entry-input {
+  flex: 1 1 240px;
+  padding: 0.85rem 1rem;
+  font-size: 0.98rem;
+  border-radius: 0.65rem;
   border: 1px solid #cbd5e1;
 }
-.home-hero .ask-entry-input:focus-visible {
+.ne-hero .ask-entry-input:focus-visible {
   outline: 2px solid var(--brand);
   outline-offset: 1px;
   border-color: var(--brand);
 }
-.home-hero .ask-entry-cta {
-  padding: 0.9rem 1.35rem;
-  font-size: 1rem;
-  border-radius: 0.7rem;
-  box-shadow: 0 8px 18px -10px rgba(8, 118, 92, 0.6);
+.ne-hero .ask-entry-cta {
+  padding: 0.85rem 1.25rem;
+  font-size: 0.98rem;
+  border-radius: 0.65rem;
+  box-shadow: 0 8px 18px -10px rgba(9, 97, 220, 0.6);
 }
-.home-hero .ask-entry-cta:hover {
-  background: var(--brand-dark, #075744);
+.ne-hero .ask-entry-cta:hover {
+  background: var(--brand-dark, #064bb1);
 }
-.home-hero .ask-entry-chips {
-  margin-top: 0.9rem;
+.ne-hero .ask-entry-chips {
+  margin-top: 0.8rem;
 }
 
-/* Secondary manual-search disclosure. */
-.manual-search {
-  width: 100%;
-  max-width: 660px;
-  margin: 0.1rem auto 0;
-  text-align: center;
+/* Manual search — visible secondary CTA */
+.ne-manual {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin-top: 0.15rem;
 }
-.manual-search-summary {
-  list-style: none;
-  cursor: pointer;
+.ne-manual-prompt {
+  color: var(--muted, #45526b);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+.ne-manual-cta.button.secondary {
   display: inline-flex;
-  gap: 0.45rem;
-  align-items: baseline;
-  justify-content: center;
-  padding: 0.5rem 0.4rem;
-  font-size: 0.92rem;
-  color: var(--muted, #4a5568);
-  border-radius: 0.6rem;
-}
-.manual-search-summary::-webkit-details-marker {
-  display: none;
-}
-.manual-search-summary:hover .manual-search-cta,
-.manual-search-summary:focus-visible .manual-search-cta {
-  text-decoration: underline;
-}
-.manual-search-summary:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-}
-.manual-search-cta {
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.6rem 1.1rem;
+  border: 1.5px solid var(--brand);
   color: var(--brand);
-  font-weight: 600;
-}
-.manual-search[open] .manual-search-summary {
-  margin-bottom: 0.7rem;
-}
-.manual-search-body {
-  text-align: left;
-  border: 1px solid var(--line, #e5e9f0);
-  border-radius: 1rem;
   background: #ffffff;
-  padding: 1.2rem;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  border-radius: 0.65rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
 }
-.manual-search-body .popular {
-  margin-top: 1rem;
+.ne-manual-cta.button.secondary:hover {
+  background: var(--brand-soft, #eaf3ff);
 }
 
-@media (max-width: 640px) {
-  .home-hero {
-    padding-top: 1.9rem;
-    padding-bottom: 1.9rem;
+/* Trust row */
+.ne-trust {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  padding: 0;
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted, #45526b);
+}
+.ne-trust li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.ne-trust-check {
+  color: var(--brand);
+  font-weight: 800;
+}
+
+/* Right column: New England map */
+.ne-hero-right {
+  min-width: 0;
+}
+.ne-map {
+  position: relative;
+  width: 100%;
+}
+.ne-map-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+}
+.ne-state-live {
+  filter: drop-shadow(0 6px 14px rgba(9, 97, 220, 0.35));
+}
+.ne-state-next {
+  stroke-dasharray: 5 4;
+  stroke: #0961dc;
+}
+.ne-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  fill: #33507d;
+  text-transform: uppercase;
+}
+.ne-label-nh {
+  fill: #0b3e93;
+}
+.ne-label-sm {
+  font-size: 9.5px;
+}
+
+/* Expansion card */
+.ne-expand-card {
+  position: absolute;
+  right: 2%;
+  bottom: 3%;
+  max-width: 300px;
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  background: #ffffff;
+  border: 1px solid rgba(9, 97, 220, 0.16);
+  border-radius: 0.9rem;
+  padding: 0.85rem 1rem;
+  box-shadow: 0 16px 34px -20px rgba(15, 23, 42, 0.4);
+}
+.ne-expand-icon {
+  color: var(--brand);
+  flex: 0 0 auto;
+  margin-top: 0.1rem;
+}
+.ne-expand-title {
+  margin: 0 0 0.25rem;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--ink, #16233b);
+  line-height: 1.25;
+}
+.ne-expand-body {
+  margin: 0 0 0.45rem;
+  font-size: 0.82rem;
+  color: var(--muted, #45526b);
+  line-height: 1.4;
+}
+.ne-expand-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  font-size: 0.78rem;
+}
+.ne-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #33507d;
+}
+.ne-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+.ne-status-live .ne-status-dot {
+  background: #0961dc;
+}
+.ne-status-next .ne-status-dot {
+  background: transparent;
+  border: 1.5px solid #94a3b8;
+}
+
+/* Responsive: stack, map after the actions (mobile order per mockup) */
+@media (max-width: 900px) {
+  .ne-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
-  .home-hero .ask-entry {
-    padding: 1.2rem 1.1rem 1.15rem;
-    border-radius: 0.95rem;
+  .ne-hero-left {
+    order: 1;
   }
-  .home-hero .ask-entry-sub {
-    font-size: 1.08rem;
+  .ne-hero-right {
+    order: 2;
   }
-  .home-hero .ask-entry-cta {
-    flex: 1 1 100%;
+  .ne-map-svg {
+    max-height: 440px;
+    margin: 0 auto;
   }
-  .manual-search-body {
-    padding: 1rem;
+  .ne-hero .ask-entry {
+    max-width: 100%;
+  }
+}
+@media (max-width: 480px) {
+  .product-hero.ne-hero {
+    padding: 1.7rem 0 1.8rem;
+  }
+  .ne-manual {
+    gap: 0.55rem;
+  }
+  .ne-manual-cta.button.secondary {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  .ne-map {
+    display: flex;
+    flex-direction: column;
+  }
+  .ne-expand-card {
+    position: static;
+    max-width: 100%;
+    right: auto;
+    bottom: auto;
+    margin-top: 0.7rem;
   }
 }

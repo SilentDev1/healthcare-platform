@@ -24,10 +24,10 @@ const en = {
   footerDisclaimer:
     "Published hospital prices are estimates for comparison, not a quote or guarantee. Verify costs and network participation with your hospital and insurer.",
   eyebrow: "Clear information for confident choices",
-  heroTitle: "Healthcare prices.",
-  heroAccent: "Clear. Local. Comparable.",
+  heroTitle: "Find and compare",
+  heroAccent: "healthcare prices.",
   heroBody:
-    "Compare verified healthcare prices across hospitals, labs, imaging centers, urgent care, surgery centers, and other providers. Review pricing, location, and available quality information before choosing care.",
+    "Ask Carevero about a procedure, provider, or published price — or search verified healthcare data yourself.",
   free: "Free to use",
   noAccount: "No account required",
   publishedData: "Verified provider data",
@@ -772,10 +772,10 @@ export const messages: Record<Locale, Messages> = {
     footerDisclaimer:
       "Los precios publicados por hospitales son estimaciones para comparar, no una cotización ni garantía. Confirme los costos y la red con el hospital y su aseguradora.",
     eyebrow: "Información clara para decidir con confianza",
-    heroTitle: "Precios de atención médica.",
-    heroAccent: "Claros. Locales. Comparables.",
+    heroTitle: "Encuentre y compare",
+    heroAccent: "precios de atención médica.",
     heroBody:
-      "Compare precios verificados de atención médica en hospitales, laboratorios, centros de imágenes, atención de urgencia, centros quirúrgicos y otros proveedores. Revise precios, ubicación y la información de calidad disponible antes de elegir atención.",
+      "Pregunte a Carevero por un procedimiento, proveedor o precio publicado, o busque usted mismo datos de salud verificados.",
     free: "Uso gratuito",
     noAccount: "No se requiere cuenta",
     publishedData: "Datos de proveedores verificados",
@@ -1431,10 +1431,10 @@ export const messages: Record<Locale, Messages> = {
     footerDisclaimer:
       "Giá bệnh viện công bố chỉ dùng để so sánh, không phải báo giá hay bảo đảm. Hãy xác nhận chi phí và tình trạng trong mạng lưới với bệnh viện và hãng bảo hiểm.",
     eyebrow: "Thông tin rõ ràng để tự tin lựa chọn",
-    heroTitle: "Giá dịch vụ y tế.",
-    heroAccent: "Rõ ràng. Gần bạn. Dễ so sánh.",
+    heroTitle: "Tìm và so sánh",
+    heroAccent: "giá dịch vụ y tế.",
     heroBody:
-      "So sánh giá dịch vụ y tế đã xác minh tại các bệnh viện, phòng xét nghiệm, trung tâm chẩn đoán hình ảnh, cơ sở cấp cứu nhanh, trung tâm phẫu thuật và các nhà cung cấp khác. Xem giá, địa điểm và thông tin chất lượng hiện có trước khi chọn nơi chăm sóc.",
+      "Hỏi Carevero về một thủ thuật, nhà cung cấp hoặc giá đã công bố — hoặc tự tìm kiếm dữ liệu y tế đã xác minh.",
     free: "Miễn phí sử dụng",
     noAccount: "Không cần tài khoản",
     publishedData: "Dữ liệu nhà cung cấp đã xác minh",
@@ -2077,10 +2077,10 @@ export const messages: Record<Locale, Messages> = {
     footerDisclaimer:
       "醫院公布的價格僅供比較，並非報價或保證。請向醫院及保險公司確認費用與網絡資格。",
     eyebrow: "清楚資訊，安心選擇",
-    heroTitle: "醫療服務價格。",
-    heroAccent: "清楚。在地。可比較。",
+    heroTitle: "尋找並比較",
+    heroAccent: "醫療服務價格。",
     heroBody:
-      "比較醫院、化驗室、影像中心、緊急照護、手術中心及其他提供者已驗證的醫療價格。選擇照護前，可查看價格、地點及現有的品質資訊。",
+      "向 Carevero 詢問某項目、提供者或已公布價格，或自行搜尋已驗證的醫療資料。",
     free: "免費使用",
     noAccount: "無需帳戶",
     publishedData: "已驗證的提供者資料",

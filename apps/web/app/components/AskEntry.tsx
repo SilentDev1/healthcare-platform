@@ -71,7 +71,7 @@ export function AskEntry({
         </button>
       </form>
       <div className="ask-entry-chips">
-        {t.starters.map((s) => (
+        {t.starters.slice(0, 4).map((s) => (
           <button key={s} type="button" className="chip" onClick={() => go(s)}>
             {s}
           </button>

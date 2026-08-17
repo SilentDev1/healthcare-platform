@@ -21,7 +21,7 @@ describe("consumer internationalization", () => {
   });
 
   it("preserves reviewed Vietnamese and independent Chinese characters", () => {
-    expect(messages.vi.heroAccent).toContain("Rõ ràng");
+    expect(messages.vi.heroAccent).toContain("giá dịch vụ");
     expect(messages["zh-TW"].procedures).toBe("醫療項目");
     expect(messages["zh-CN"].procedures).toBe("医疗项目");
   });

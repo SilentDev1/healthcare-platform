@@ -14,16 +14,26 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 import Home from "./page";
 
 describe("Home", () => {
-  it("renders the consumer search and transparent coverage notice", async () => {
+  it("renders the New England hero with Ask Carevero primary, manual search, and coverage notice", async () => {
     render(await Home());
+    // New two-column hero: left-aligned headline (title + blue accent).
     expect(
       screen.getByRole("heading", {
-        name: "Healthcare prices. Clear. Local. Comparable.",
+        name: "Find and compare healthcare prices.",
+        level: 1,
       }),
     ).toBeInTheDocument();
+    // Ask Carevero is the primary interaction.
+    expect(screen.getByText("What are you looking for?")).toBeInTheDocument();
+    // Manual search remains an obvious secondary CTA.
     expect(
-      screen.getByRole("combobox", { name: "1. Procedure or service" }),
+      screen.getByRole("link", { name: /Search prices/ }),
     ).toBeInTheDocument();
+    // New England expansion messaging (region-forward, not NH-only).
+    expect(
+      screen.getByText(/Carevero is expanding across New England/),
+    ).toBeInTheDocument();
+    // Transparent current coverage still surfaced below the hero.
     expect(screen.getByText(/12 of 26 active hospitals/)).toBeInTheDocument();
     expect(
       screen.getByText(/Missing data stays visibly missing/),

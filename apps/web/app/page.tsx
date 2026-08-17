@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { AskEntry } from "./components/AskEntry";
-import { CareSearch } from "./components/CareSearch";
+import { NewEnglandMap } from "./components/NewEnglandMap";
 import { ComparisonFacilityCard, CoverageNotice } from "./components/ui";
 import { InlineComparePanel } from "./components/CompareSelect";
 import { apiGet } from "../lib/api";
 import type { ProcedureComparison } from "../lib/api";
-import { localePath, type Messages } from "../lib/i18n";
+import { localePath } from "../lib/i18n";
 import { askMessages } from "../lib/ask-i18n";
+import { homeMessages } from "../lib/home-i18n";
 import { requestLocale, requestMessages } from "../lib/i18n-server";
 
 interface Coverage {
@@ -14,17 +15,6 @@ interface Coverage {
   facilities_with_publishable_prices: number;
   publishable_procedures: number;
 }
-const popular: { q: string; key: keyof Messages }[] = [
-  { q: "MRI", key: "popularMri" },
-  { q: "CT scan", key: "popularCtScan" },
-  { q: "colonoscopy", key: "popularColonoscopy" },
-  { q: "mammogram", key: "popularMammogram" },
-  { q: "knee replacement", key: "popularKneeReplacement" },
-  { q: "hip replacement", key: "popularHipReplacement" },
-  { q: "childbirth", key: "popularChildbirth" },
-  { q: "lab tests", key: "popularLabTests" },
-];
-
 export default async function Home() {
   const locale = await requestLocale();
   const t = await requestMessages();
@@ -41,49 +31,57 @@ export default async function Home() {
   const featuredItems =
     featured?.items?.filter((item) => item.price_available).slice(0, 4) ?? [];
   const ask = askMessages[locale] ?? askMessages.en;
+  const home = homeMessages[locale] ?? homeMessages.en;
   return (
     <>
-      <main className="hero product-hero home-hero">
-        <div className="home-hero-inner">
-          <div className="hero-copy">
-            <p className="eyebrow">{t.eyebrow}</p>
-            <h1>
+      <main className="hero product-hero ne-hero">
+        <div className="ne-hero-inner">
+          <div className="ne-hero-left">
+            <p className="eyebrow ne-eyebrow">{home.eyebrow}</p>
+            <h1 className="ne-headline">
               {t.heroTitle} <span>{t.heroAccent}</span>
             </h1>
-            <p className="lede">{t.heroBody}</p>
-            <p className="hero-assurance">
-              <strong>{t.free}</strong> <i aria-hidden="true">•</i>{" "}
-              {t.noAccount} <i aria-hidden="true">•</i> {t.publishedData}
-            </p>
+            <p className="lede ne-lede">{t.heroBody}</p>
+
+            {/* Primary interaction: Ask Carevero (a friendly interface over verified data). */}
+            <AskEntry locale={locale} variant="home" />
+
+            {/* Secondary, but clearly visible: the existing deterministic price search. */}
+            <div className="ne-manual">
+              <span className="ne-manual-prompt">{ask.homeManualPrompt}</span>
+              <Link
+                className="button secondary ne-manual-cta"
+                href={localePath(locale, "/search")}
+              >
+                {ask.homeManualCta} →
+              </Link>
+            </div>
+
+            <ul className="ne-trust" aria-label={t.publishedData}>
+              <li>
+                <span className="ne-trust-check" aria-hidden="true">
+                  ✓
+                </span>{" "}
+                {t.free}
+              </li>
+              <li>
+                <span className="ne-trust-check" aria-hidden="true">
+                  ✓
+                </span>{" "}
+                {t.noAccount}
+              </li>
+              <li>
+                <span className="ne-trust-check" aria-hidden="true">
+                  ✓
+                </span>{" "}
+                {t.publishedData}
+              </li>
+            </ul>
           </div>
 
-          {/* Primary entry point: Ask Carevero (a friendly interface over verified data). */}
-          <AskEntry locale={locale} variant="home" />
-
-          {/* Secondary: the existing deterministic Procedure / Location / rate search. */}
-          <details className="manual-search">
-            <summary className="manual-search-summary">
-              <span className="manual-search-prompt">{ask.homeManualPrompt}</span>
-              <span className="manual-search-cta">{ask.homeManualCta} →</span>
-            </summary>
-            <div className="manual-search-body">
-              <CareSearch showInsurance locale={locale} />
-              <div className="popular">
-                <strong>{t.popular}</strong>
-                <div className="popular-links">
-                  {popular.map(({ q, key }) => (
-                    <Link
-                      className="chip"
-                      key={q}
-                      href={`${localePath(locale, "/search")}?q=${encodeURIComponent(q)}`}
-                    >
-                      {t[key]}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </details>
+          <div className="ne-hero-right">
+            <NewEnglandMap locale={locale} t={t} />
+          </div>
         </div>
       </main>
       {featured && featuredItems.length > 0 && (
