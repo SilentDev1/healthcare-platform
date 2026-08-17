@@ -11,6 +11,7 @@ import type { Locale } from "./i18n";
  * concepts (CMS ratings) are still labelled where they legitimately apply.
  */
 export interface DirectoryStrings {
+  navLabel: string;
   eyebrow: string;
   title: string;
   lede: string;
@@ -71,6 +72,7 @@ export interface DirectoryStrings {
 
 export const directoryMessages: Record<Locale, DirectoryStrings> = {
   en: {
+    navLabel: "Providers",
     eyebrow: "Provider directory",
     title: "Find healthcare providers",
     lede: "Hospitals, labs, urgent care, imaging centers, surgery centers, physical therapy and more.",
@@ -123,6 +125,7 @@ export const directoryMessages: Record<Locale, DirectoryStrings> = {
     unavailable: "Provider directory is temporarily unavailable.",
   },
   es: {
+    navLabel: "Proveedores",
     eyebrow: "Directorio de proveedores",
     title: "Encuentre proveedores de salud",
     lede: "Hospitales, laboratorios, atención de urgencia, centros de imágenes, centros quirúrgicos, fisioterapia y más.",
@@ -175,6 +178,7 @@ export const directoryMessages: Record<Locale, DirectoryStrings> = {
     unavailable: "El directorio de proveedores no está disponible temporalmente.",
   },
   vi: {
+    navLabel: "Nhà cung cấp",
     eyebrow: "Danh bạ nhà cung cấp",
     title: "Tìm nhà cung cấp dịch vụ y tế",
     lede: "Bệnh viện, phòng xét nghiệm, cấp cứu nhanh, trung tâm chẩn đoán hình ảnh, trung tâm phẫu thuật, vật lý trị liệu và hơn thế nữa.",
@@ -227,6 +231,7 @@ export const directoryMessages: Record<Locale, DirectoryStrings> = {
     unavailable: "Danh bạ nhà cung cấp tạm thời không khả dụng.",
   },
   "zh-CN": {
+    navLabel: "提供者",
     eyebrow: "提供者目录",
     title: "查找医疗提供者",
     lede: "医院、化验室、紧急护理、影像中心、手术中心、物理治疗等。",
@@ -279,6 +284,7 @@ export const directoryMessages: Record<Locale, DirectoryStrings> = {
     unavailable: "提供者目录暂时不可用。",
   },
   "zh-TW": {
+    navLabel: "提供者",
     eyebrow: "提供者目錄",
     title: "尋找醫療提供者",
     lede: "醫院、化驗室、緊急照護、影像中心、手術中心、物理治療等。",
