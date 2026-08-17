@@ -48,6 +48,35 @@ from packages.database.pricing_models import FacilityProcedurePriceSummary
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "nh_nonhospital_published_prices.json"
 CANDIDATE_STATUS = "candidate_review"  # NON-PUBLIC: consumer endpoints require "publishable"
 
+# Billing scopes the comparability engine treats as a complete facility charge a
+# self-pay consumer can compare across providers. We only ever persist a scope when
+# the provider's published component_scope maps to one of these (or an explicit
+# partial component); an unrecognized/absent scope stays NULL (never fabricated).
+_KNOWN_SCOPES = {
+    "global",
+    "combined",
+    "facility",
+    "bundled",
+    "professional",
+    "technical",
+    "component",
+}
+
+
+def normalize_component_scope(component_scope: str | None) -> str | None:
+    """Map a provider-published component_scope to a canonical billing scope token.
+
+    The published value may carry a procedure-identity qualifier after a ';'
+    (e.g. "global; WITH contrast") — that qualifier is about the mapped procedure,
+    not the billing component, so the billing scope is the leading token. Returns
+    None for anything not in the known scope vocabulary so we never invent a
+    comparable scope for an ambiguous component.
+    """
+    if not component_scope:
+        return None
+    token = component_scope.split(";", 1)[0].strip().lower()
+    return token if token in _KNOWN_SCOPES else None
+
 
 def _source_file(session: Session, url: str, name: str, retrieval_date: str) -> SourceFile:
     existing = session.scalar(select(SourceFile).where(SourceFile.source_url == url))
@@ -144,6 +173,9 @@ def ingest(
                         facility_location_id=loc.id,
                         procedure_id=procedure.id,
                         service_setting=setting,
+                        included_component_scope=normalize_component_scope(
+                            item.get("component_scope")
+                        ),
                         cash_price_min=Decimal(str(price)),
                         cash_price_max=Decimal(str(price)),
                         cash_price_median=Decimal(str(price)),
