@@ -112,7 +112,7 @@ export function AskCarevero({ locale }: { locale: Locale }) {
 
       // 2) Grounded results from the DETERMINISTIC search API (prices never come from the model).
       const search = await fetch(
-        `/api/ask/search?q=${encodeURIComponent(q)}&state=NH`,
+        `/api/ask/search?q=${encodeURIComponent(q)}&locale=${encodeURIComponent(locale)}`,
       ).then((r) => (r.ok ? r.json() : { items: [], capability_locations: [] }));
       const items: SearchItem[] = search.items ?? [];
       const locations: SearchItem[] = search.capability_locations ?? [];
