@@ -47,11 +47,17 @@ SYNONYMS: dict[str, list[str]] = {
     "ct scan": ["computed tomography", "cat scan"],
     "cat scan": ["computed tomography", "ct scan"],
     "x-ray": ["radiograph", "x ray", "xray"],
+    # Spelling variants of x-ray as the QUERY (the "x-ray" key above only helps
+    # when the hyphenated form is typed).
+    "xray": ["x-ray", "radiograph"],
+    "x ray": ["x-ray", "radiograph"],
     "dexa": ["bone density scan", "bone density"],
     "cbc": ["complete blood count"],
     "cmp": ["comprehensive metabolic panel"],
     "bmp": ["basic metabolic panel"],
     "tsh": ["thyroid stimulating hormone", "thyroid test"],
+    "thyroid test": ["thyroid stimulating hormone", "tsh"],
+    "thyroid": ["thyroid stimulating hormone", "tsh"],
     "a1c": ["hemoglobin a1c", "hba1c", "diabetes blood test"],
     "pap smear": ["cervical cancer screening", "pap test"],
     "strep test": ["strep throat test", "rapid strep"],

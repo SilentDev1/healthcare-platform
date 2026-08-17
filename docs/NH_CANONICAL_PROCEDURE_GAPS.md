@@ -54,3 +54,25 @@ loosely-related existing slug (that would be a false-positive mapping).
 
 Until then these prices remain unmappable and are recorded as blockers in the acquisition
 ledger — not published, not force-fit onto a wrong canonical slug.
+
+## Additional lab candidates discovered via search-demand sweep (2026-08-17)
+
+These are real consumer search terms that currently return no match because no
+canonical procedure exists. Do NOT force-map; recorded for review.
+
+### 5. Vitamin D test (25-hydroxyvitamin D)
+- **Evidence:** high-frequency consumer search ("vitamin d test"); Quest/LabCorp both
+  sell a DTC vitamin D product. Proposed slug `vitamin-d-test` (CPT 82306).
+- **Blocker:** `NO_CANONICAL_PROCEDURE`.
+
+### 6. PSA (prostate-specific antigen)
+- **Evidence:** common preventive/self-pay search ("psa test"); Quest/LabCorp DTC product.
+  Proposed slug `psa-test` (CPT 84153). Consumer name "PSA (prostate screening)".
+- **Blocker:** `NO_CANONICAL_PROCEDURE`.
+
+### 7. "Diabetes test" (ambiguous)
+- **Evidence:** search term "diabetes test". **Ambiguous** — could mean HbA1c, fasting
+  glucose, or OGTT. Per project rule (no fuzzy-mapping of ambiguous medical concepts) this
+  is intentionally NOT mapped. If HbA1c is adopted (candidate #1), route "diabetes test" to
+  a clarification between HbA1c and glucose rather than assuming one.
+- **Blocker:** `NEEDS_REVIEW` (ambiguity).

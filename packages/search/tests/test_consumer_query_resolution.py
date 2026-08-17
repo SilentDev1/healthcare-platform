@@ -283,6 +283,12 @@ NAV_MUST_RESOLVE = [
     "find a lab clinic",
     "MRI prices",
     "compare colonoscopy prices",
+    # Spelling / wording variants that must resolve deterministically.
+    "xray",
+    "x ray",
+    "where can I get an xray",
+    "thyroid test",
+    "thyroid test without insurance",
 ]
 
 
