@@ -1954,5 +1954,12 @@
     "lab_dtc_path_validated": "Common lab tests ARE canonical procedures (complete-blood-count, comprehensive-metabolic-panel, lipid-panel, a1c-test, thyroid-test, urinalysis) -> Quest/LabCorp DTC self-pay prices are MAPPABLE. Highest-value mappable non-hospital published-price source. Applicability = org-wide/national (order online, drawn at any NH PSC), NOT per-draw-station.",
     "next_independent_step": "Transcribe EXACT current official Quest questhealth.com / LabCorp OnDemand self-pay test prices into data/nh_nonhospital_published_prices.json with provenance + proposed canonical mapping (org-wide applicability). CAUTION: these are JS e-commerce pages; prices must be read from the official page exactly (never estimated). Then ingest via the script once production DB access is available -> candidate_review -> human-review promotion to publishable.",
     "track_A_nhchis": "docs/NHCHIS_DATA_REQUEST_PLAN.md prepared (owner files the request; not submitted)."
+  },
+  "track_b_results": {
+    "affiliated_mrf_linkage_audit": {
+      "ran": "production Cloud Run job (carevero-beta-price-audit), read-only, 2026-08-17",
+      "result": "0 evidence-backed candidates across 122 unpriced locations (DIRECT_LOCATION_LINK=0, SAME_FACILITY_SIBLING=0, ORG_AFFILIATION=0). priced_locations=29.",
+      "conclusion": "No pricing for affiliated non-hospital locations exists in imported hospital MRF data (separate billing entities). No recovery win; 122 require external published-price acquisition. Result: docs/affiliated_mrf_linkage_audit_result.json"
+    }
   }
 }

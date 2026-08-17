@@ -1,0 +1,13 @@
+{
+  "kind": "affiliated_mrf_linkage_audit",
+  "read_only": true,
+  "totals": {
+    "priced_locations": 29,
+    "unpriced_locations_examined": 122,
+    "candidates_with_evidence": 0,
+    "direct_location_link": 0,
+    "same_facility_sibling": 0,
+    "org_affiliation": 0
+  },
+  "findings": []
+}
