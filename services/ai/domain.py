@@ -318,7 +318,9 @@ _MEDICAL_ADVICE = _compile(
     # --- ES ---
     r"\bqu[eé] (enfermedad|medicamento|medicina) (tengo|debo|necesito)\b",
     r"\bnecesito (una |un )?(cirug[ií]a|operaci[oó]n|resonancia|tomograf[ií]a|radiograf[ií]a|biopsia)\b",
-    r"\bqu[eé] (estudio|prueba|examen|escaner|resonancia|tomograf[ií]a) (debo|necesito|me hago|hacer)\b",
+    r"\bqu[eé] (an[aá]lisis|estudio|prueba|examen|esc[aá]ner|escaner|resonancia|tomograf[ií]a|"
+    r"radiograf[ií]a|laboratorio|prueba de sangre|an[aá]lisis de sangre)\b.{0,25}\b"
+    r"(debo|deber[ií]a|necesito|me hago|me hace|hacer|hacerme|tomar)\b",
     r"\bme duele\b.{0,30}\b(qu[eé]|necesito|estudio|debo)\b",
     r"\b(debo|deber[ií]a) ir a (la sala de )?(emergencias|urgencias)\b",
     r"\btengo\b.{0,25}\b(dolor|fiebre|hinchaz[oó]n|sangrado|tos)\b.{0,25}\b(qu[eé]|debo|necesito|es)\b",
