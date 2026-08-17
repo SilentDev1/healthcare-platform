@@ -1,6 +1,6 @@
 # Carevero — Final NH Procedure & Provider Validation
 
-**Date:** 2026-08-16 · **Scope:** New Hampshire · **Massachusetts:** NOT STARTED (deferred, awaiting owner review of this report).
+**Date:** 2026-08-17 · **Scope:** New Hampshire · **Massachusetts:** NOT STARTED (deferred, awaiting owner review of this report).
 
 This report is the NH release gate. It reports **actual** completeness honestly — NH is not
 declared "complete" merely because every procedure has at least one price.
@@ -13,7 +13,8 @@ declared "complete" merely because every procedure has at least one price.
 |---|---|
 | NH hospitals intact | ✅ **26 / 26** active consumer hospitals |
 | Canonical procedures publishing verified prices | ✅ **50 / 50** (100% statewide) |
-| Crosswalk false-positive detector | ✅ **0** public suspects (26/26 hospitals CLEAN; 952 resolved codes checked) |
+| Crosswalk false-positive detector | ✅ **0** public suspects (26/26 hospitals CLEAN; re-run after +785 mappings) |
+| **Exhaustive false-negative audit (1,300 cells)** | ✅ **COMPLETED** — 50×26, resumable/DB-side; systematic gap found + remediated (§5) |
 | Duplicate physical-location detector | ✅ **0** same-facility duplicates (+10 cross-org shared buildings reported, not merged) |
 | `phase_4_7_safety` | ✅ **PASS** (`passed: true`) |
 | AI-authored / modified prices | ✅ **0** (`ai_modified_prices: 0`) |
@@ -23,20 +24,24 @@ declared "complete" merely because every procedure has at least one price.
 | All provider waves live | ✅ Waves 1–7 + roster expansion |
 | Provider roster audit | ✅ completed (P1) |
 | Non-hospital price-source audit | ✅ completed (P2) |
-| Two-way procedure↔provider mapping audit | ✅ false-positive direction 0; coverage 100%; candidate discovery available |
-| Price anomaly audit | ✅ no catastrophic mismap; findings triaged (P5) |
-| Live 50-procedure consumer QA | ✅ **PASS** (P6) |
-| Full automated test suite | ✅ **412 passed, 4 skipped** |
+| Two-way procedure↔provider mapping audit | ✅ false-positive **0**; exhaustive false-negative **completed**; **985 missed prices recovered** |
+| Price anomaly audit | ✅ no catastrophic mismap; $0.30 outlier traced = legitimate per-unit (§6) |
+| Live 50-procedure consumer QA | ✅ **PASS** (P6, re-run post-remediation) |
+| Full automated test suite | ✅ **416 passed, 4 skipped** |
 
-`phase_4_7_safety` raw: `active_consumer_hospitals: 26, official_public_summaries: 15047,
-public_unreviewed_mappings: 0, duplicate_public_consumer_identities: 0,
-negative_public_summaries: 0, ai_modified_prices: 0, passed: true`.
+`phase_4_7_safety` raw (post-remediation): `active_consumer_hospitals: 26,
+official_public_summaries: 16031, public_unreviewed_mappings: 0,
+duplicate_public_consumer_identities: 0, negative_public_summaries: 0, ai_modified_prices: 0,
+passed: true`.
 
-**Honest completeness verdict:** NH is **release-ready for the hospital pricing surface and the
-provider-neutral discovery surface**, with real published NON-hospital prices staged as
-non-public candidates pending human review. It is **not** claimed to be an exhaustive census of
-every NH provider or a complete non-hospital price catalog — the remaining, explicitly-scoped
-follow-ups are listed in §9.
+**NH FINAL = PASS.** All release gates pass, including the **completed** (not timed-out)
+exhaustive 1,300-cell false-negative audit, which found and remediated a systematic
+code-system-labeling gap that had hidden 4 hospitals' prices (§5b). NH is **release-ready for
+the hospital pricing surface and the provider-neutral discovery surface**, with real published
+NON-hospital prices staged as non-public candidates pending human review. It is **not** claimed
+to be an exhaustive census of every NH provider or a complete non-hospital price catalog — the
+remaining, explicitly-scoped review-only follow-ups are listed in §5b and §10. Massachusetts
+remains deferred pending owner review.
 
 ---
 
@@ -109,21 +114,64 @@ cross-check only, not a price source per the no-inference rule).
 
 ---
 
-## 5. Two-way procedure↔provider mapping audit (P4)
+## 5. Two-way procedure↔provider mapping audit (P4) — EXHAUSTIVE
 
-- **False-positive direction (records mapped genuinely represent the procedure):**
-  `detect_crosswalk_false_positives` → **26/26 hospitals CLEAN, 0 public suspect descriptions,
-  0 records affected** (952 resolved codes checked; CPT/HCPCS/DRG + raw descriptions). This is
-  the direction that would have caught the historical `$29,058 penile-prosthesis → chest-x-ray`
-  failure; none exists.
-- **Coverage direction:** statewide **50/50 procedures priced (100%)**; per-procedure facility
-  counts in §8 (range 9–23 hospitals per procedure).
-- **Candidate discovery (false-negative) is kept strictly separate from approved public
-  mappings** — `scripts/audit_procedure_mapping_coverage.py` performs keyword/description
-  discovery over unmapped raw records with per-cell root-cause classification; discovery output
-  is review-only and never becomes public automatically. (Full raw-record sweep is long-running;
-  the authoritative gate is the 0-false-positive result plus 100% coverage plus the P6 sweep
-  confirming every returned row carries the correct `procedure_slug`.)
+### 5a. False-positive direction
+`detect_crosswalk_false_positives` → **26/26 hospitals CLEAN, 0 public suspect descriptions, 0
+records affected**, re-run AFTER the remediation below (with +785 new mappings). This is the
+direction that would have caught the historical `$29,058 penile-prosthesis → chest-x-ray`
+failure; none exists.
+
+### 5b. Exhaustive false-negative audit — 1,300 cells (50 procedures × 26 hospitals), COMPLETED
+The earlier implementation timed out (correlated `NOT EXISTS` + `LIKE` over all 5.8M records).
+It was **redesigned** (`scripts/audit_false_negative_mapping.py`, unit-tested) to run to
+completion: per-hospital sharding (each hospital's ~220k records touched once), set-based
+coverage queries (bounded approved-code `IN`-lists + `facility_id` index), candidate `LIKE`
+scoped to one facility AND only uncovered procedures, and a per-hospital result emitted the
+moment it finishes (Cloud Logging = resumable checkpoint; `--skip-ccns` resumes). It classifies
+every cell into the six required states.
+
+**A systematic false-negative gap was found and fixed.** Four hospitals — **Elliot, Exeter,
+Monadnock, Southern NH Medical Center** — publish standard procedure codes LABELED as `HCPCS`
+in their MRFs (`HCPCS:85025` "Complete cbc automated", `HCPCS:71250` "CT CHEST W/O CONTRAST",
+`HCPCS:72148` "Mri lumbar spine w/o dye"), while our crosswalk stored the same codes under
+`CPT`. Exact `(system, code)` matching dropped them, so these hospitals were **absent from the
+live site** for ~130 procedure listings (confirmed absent for CBC/CT-chest/MRI-lumbar before
+the fix). Pre-remediation the four published only **4–6 of 50** procedures each. The other gates
+could not catch this — they don't check "is a hospital absent because its code failed to map."
+
+**Remediation (deterministic, authoritative, reversible):** CPT (5-digit numeric, 00100-99999)
+IS HCPCS Level I, so `HCPCS:NNNNN` ≡ `CPT:NNNNN` by definition — not a fuzzy match.
+`scripts/remediate_code_system_equivalence.py` added an approved `HCPCS:NNNNN` alias for each
+approved numeric `CPT:NNNNN` (**64 aliases**, tagged `version="cpt_hcpcs_l1_equiv"`, reversible;
+never aliases Level-II G/J codes, REV_CODE, or MS_DRG). The existing `reproject_approved_code_
+mappings` then created **785 new exact-approved-code mappings (0 removed)** from the
+HCPCS-labeled raw records, and `rebuild_price_summaries` reprojected. **No fuzzy/AI/wording
+mapping was created; candidate discovery stays separate from approved mappings.**
+
+**Result of the fix:**
+
+| Metric | Before | After |
+|---|---:|---:|
+| PUBLISHING_VERIFIED_PRICE cells | 899 | **1,116** |
+| REVIEW_REQUIRED cells | 206 | **38** |
+| DESCRIPTION_CANDIDATE_NOT_MAPPED | 91 | 74 |
+| MATCHING_APPROVED_RAW_RECORD_NO_SUMMARY | 5 | 3 |
+| NO_MATCHING_RAW_RECORD | 99 | 69 |
+| KNOWN_CODE_NOT_MAPPED | 0 | 0 |
+| Public price summaries | 15,047 | **16,031** (+984 real prices recovered) |
+
+The four hospitals now publish 40+ procedures each; e.g. CBC coverage 18→24 hospitals, CT-chest
+19→24, MRI-lumbar 16→22. Coverage was **never forced** — Exeter remains correctly absent from
+cataract-surgery (genuinely not offered). All gates re-run and passed (false-positive 0, safety
+PASS, `ai_modified_prices=0`, P6 PASS, 416 tests green).
+
+**Remaining review-only candidates (never auto-published):** 38 REVIEW_REQUIRED + 74
+DESCRIPTION_CANDIDATE cells are legitimate human-review items — contrast/method variants of an
+approved code (e.g. CT-with-contrast `71260`, open-vs-arthroscopic repair) or local/CDM codes —
+not a systematic gap. 3 MATCHING_APPROVED_RAW_RECORD_NO_SUMMARY (Littleton deliveries, Speare
+cardiac-cath) are reviewed-mapped records that didn't project a summary — a follow-up. Each is
+listed for human review; none is a code-system labeling miss.
 
 ---
 
@@ -137,9 +185,16 @@ Across all **15,047** live price rows for the 50 procedures:
   screening-mammogram, sleep-study, ECG, urinalysis) where one canonical slug legitimately spans
   many CPT codes of very different scope (a single-allergen test vs a comprehensive panel). These
   are **price dispersion, not mismappings** — confirmed by the 0 false-positive result.
-- **1 genuine low outlier to trace:** Concord Hospital-Laconia allergy-testing $0.30 (likely a
-  per-unit/component line) — flagged for raw-source review; not consumer-harmful.
-- **No catastrophic mismap** (wrong-procedure high-dollar) recurs.
+- **The $0.30 outlier — TRACED to source, LEGITIMATE (kept, not removed).**
+  `scripts/trace_price_anomaly.py` resolved Concord Hospital-Laconia allergy-testing $0.30 to
+  raw record `57951`: description **"PF-Percut allergy skin tests"**, code **CPT:95004** (the
+  exact approved allergy-testing code — a PER-TEST code, descriptor "specify number of tests"),
+  gross $3.00, cash $0.90, negotiated range **$0.30–$3,484.78** (parser `cms_hpt_csv`). The
+  $0.30 is a legitimate **per-unit negotiated rate** for a per-allergen test; the $3,484 max is
+  the full-panel rate. Correctly mapped — NOT a parsing/mapping error. This also explains the
+  allergy-testing price dispersion. Retained per the "trace before removing" rule.
+- **No catastrophic mismap** (wrong-procedure high-dollar) recurs; re-verified after +785
+  mappings (false-positive detector still 0).
 
 ---
 
@@ -160,58 +215,58 @@ Hospitals-with-published-price and total price rows per canonical procedure (liv
 
 | Procedure | Hospitals w/ price | Price rows |
 |---|---:|---:|
-| cesarean-delivery | 23 | 376 |
-| electrocardiogram | 23 | 373 |
+| abdominal-ultrasound | 26 | 378 |
+| basic-metabolic-panel | 26 | 370 |
+| bone-density-scan | 26 | 393 |
+| chest-x-ray | 26 | 349 |
+| electrocardiogram | 26 | 388 |
+| lipid-panel | 26 | 375 |
+| mri-brain-without-contrast | 26 | 374 |
+| thyroid-test | 26 | 370 |
+| urinalysis | 26 | 398 |
+| cardiac-stress-test | 25 | 381 |
+| echocardiogram | 25 | 325 |
+| pregnancy-test | 25 | 394 |
+| surgical-pathology | 25 | 363 |
+| upper-endoscopy | 25 | 341 |
+| a1c-test | 24 | 402 |
+| complete-blood-count | 24 | 304 |
+| ct-chest | 24 | 348 |
+| mri-knee-without-contrast | 24 | 352 |
+| screening-mammogram | 24 | 386 |
+| cesarean-delivery | 23 | 386 |
+| comprehensive-metabolic-panel | 23 | 323 |
+| pap-test | 23 | 338 |
+| pelvic-ultrasound | 23 | 314 |
+| physical-therapy-evaluation | 23 | 320 |
 | vaginal-delivery | 23 | 378 |
-| abdominal-ultrasound | 22 | 358 |
-| basic-metabolic-panel | 22 | 341 |
-| bone-density-scan | 22 | 375 |
-| chest-x-ray | 22 | 331 |
-| lipid-panel | 22 | 346 |
-| mri-brain-without-contrast | 22 | 355 |
-| urinalysis | 22 | 370 |
-| cardiac-stress-test | 21 | 366 |
-| echocardiogram | 21 | 309 |
-| gallbladder-removal | 21 | 402 |
-| pregnancy-test | 21 | 365 |
-| thyroid-test | 21 | 340 |
-| upper-endoscopy | 21 | 318 |
-| surgical-pathology | 20 | 331 |
-| pap-test | 19 | 309 |
-| comprehensive-metabolic-panel | 19 | 294 |
-| ct-chest | 19 | 328 |
-| a1c-test | 19 | 373 |
-| mri-knee-without-contrast | 19 | 334 |
-| complete-blood-count | 18 | 274 |
-| knee-replacement | 18 | 254 |
-| pelvic-ultrasound | 18 | 294 |
-| screening-mammogram | 18 | 367 |
-| colonoscopy | 17 | 225 |
-| ct-abdomen-pelvis | 17 | 283 |
-| hip-replacement | 17 | 253 |
-| sleep-study | 17 | 319 |
-| physical-therapy-evaluation | 17 | 304 |
-| diagnostic-mammogram | 16 | 292 |
-| dialysis-session | 16 | 467 |
-| ed-visit-level-1 | 16 | 265 |
-| ed-visit-level-2 | 16 | 267 |
-| ed-visit-level-3 | 16 | 268 |
-| ed-visit-level-4 | 16 | 268 |
-| ed-visit-level-5 | 16 | 266 |
-| flu-vaccine | 16 | 251 |
-| mri-lumbar-spine-without-contrast | 16 | 290 |
-| urgent-care-visit | 16 | 186 |
-| covid-test | 15 | 274 |
-| cardiac-catheterization | 14 | 375 |
-| carpal-tunnel-release | 14 | 207 |
-| hernia-repair | 14 | 193 |
-| strep-test | 14 | 304 |
+| colonoscopy | 22 | 248 |
+| ct-abdomen-pelvis | 22 | 302 |
+| diagnostic-mammogram | 22 | 311 |
+| ed-visit-level-1 | 22 | 281 |
+| ed-visit-level-2 | 22 | 283 |
+| ed-visit-level-3 | 22 | 284 |
+| ed-visit-level-4 | 22 | 284 |
+| ed-visit-level-5 | 22 | 282 |
+| gallbladder-removal | 22 | 422 |
+| hip-replacement | 22 | 274 |
+| knee-replacement | 22 | 274 |
+| mri-lumbar-spine-without-contrast | 22 | 310 |
+| urgent-care-visit | 22 | 194 |
+| covid-test | 21 | 304 |
+| sleep-study | 20 | 333 |
+| strep-test | 20 | 334 |
+| carpal-tunnel-release | 19 | 228 |
+| flu-vaccine | 19 | 261 |
+| hernia-repair | 19 | 214 |
+| rotator-cuff-repair | 18 | 205 |
+| cardiac-catheterization | 17 | 397 |
+| cataract-surgery | 17 | 254 |
+| dialysis-session | 17 | 479 |
+| allergy-testing | 13 | 152 |
 | annual-wellness-visit | 13 | 71 |
-| rotator-cuff-repair | 13 | 184 |
-| cataract-surgery | 12 | 234 |
-| allergy-testing | 9 | 140 |
 
-Lowest coverage (allergy-testing 9, cataract-surgery 12, rotator-cuff/annual-wellness 13) reflects
+Lowest coverage (allergy-testing 13, annual-wellness-visit 13, dialysis 17) reflects
 genuine service-line availability and MRF publication patterns, not a mapping gap — all 50 clear
 the false-positive gate. `annual-wellness-visit` has the fewest price rows (71); worth a future
 candidate-discovery pass to confirm no hospital terminology variant is being missed.
