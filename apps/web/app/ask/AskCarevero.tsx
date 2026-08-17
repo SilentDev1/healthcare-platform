@@ -7,7 +7,9 @@ import { FacilityImage } from "../components/FacilityImage";
 import { askMessages } from "../../lib/ask-i18n";
 import { localePath, type Locale } from "../../lib/i18n";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+// Same-origin Next.js proxy routes (server-side reach the API). This keeps every
+// request first-party: no CORS, works on any web origin and in any browser, and
+// never exposes the API URL to the client.
 
 /** Minimal shapes we consume (grounded results come from the deterministic search/price API). */
 interface ResolveResponse {
@@ -86,7 +88,7 @@ export function AskCarevero({ locale }: { locale: Locale }) {
       // 1) Medical / out-of-scope gate + canonical intent (server-side, deterministic-first).
       let resolve: ResolveResponse | null = null;
       try {
-        const r = await fetch(`${API_URL}/api/v1/ai/resolve`, {
+        const r = await fetch(`/api/ask/resolve`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: q, locale }),
@@ -110,7 +112,7 @@ export function AskCarevero({ locale }: { locale: Locale }) {
 
       // 2) Grounded results from the DETERMINISTIC search API (prices never come from the model).
       const search = await fetch(
-        `${API_URL}/api/v1/search?q=${encodeURIComponent(q)}&state=NH`,
+        `/api/ask/search?q=${encodeURIComponent(q)}&state=NH`,
       ).then((r) => (r.ok ? r.json() : { items: [], capability_locations: [] }));
       const items: SearchItem[] = search.items ?? [];
       const locations: SearchItem[] = search.capability_locations ?? [];
@@ -122,7 +124,7 @@ export function AskCarevero({ locale }: { locale: Locale }) {
       if (slug && procedures.length <= 2 && !slug.match(/^(laboratory|imaging|urgent_care|hospital|ambulatory_surgery|physical_therapy|rehabilitation|chiropractic|emergency_department|freestanding_emergency_department)$/)) {
         try {
           const p = await fetch(
-            `${API_URL}/api/v1/procedures/${slug}/prices?state=NH&page_size=4`,
+            `/api/ask/prices?slug=${encodeURIComponent(slug)}&state=NH&page_size=4`,
           ).then((r) => (r.ok ? r.json() : { items: [] }));
           if (p.items?.length) prices = { slug, rows: p.items.slice(0, 4) };
         } catch {
