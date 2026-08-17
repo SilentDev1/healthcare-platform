@@ -90,7 +90,10 @@ def run(session: Session, *, dry_run: bool) -> dict[str, Any]:
                 )
             ).scalars()
             for summ in rows:
-                if summ.included_component_scope is not None:
+                current = (summ.included_component_scope or "").strip().lower()
+                # Fill only the sentinel/blank scope; never overwrite a genuine
+                # recognized billing scope that is already set.
+                if current and current != "unknown":
                     result["already_scoped"] += 1
                     continue
                 summ.included_component_scope = scope

@@ -173,8 +173,11 @@ def ingest(
                         facility_location_id=loc.id,
                         procedure_id=procedure.id,
                         service_setting=setting,
-                        included_component_scope=normalize_component_scope(
-                            item.get("component_scope")
+                        # Non-nullable column (sentinel default "unknown"); persist a
+                        # recognized billing scope when the source has one, else the
+                        # sentinel — never NULL, never a fabricated comparable scope.
+                        included_component_scope=(
+                            normalize_component_scope(item.get("component_scope")) or "unknown"
                         ),
                         cash_price_min=Decimal(str(price)),
                         cash_price_max=Decimal(str(price)),
