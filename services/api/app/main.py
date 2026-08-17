@@ -526,7 +526,11 @@ def facilities_directory(
                 location_type=location.location_type if location else None,
                 region=location.region if location else None,
                 capabilities=caps_by_location.get(location.id, []) if location else [],
-                **media_fields(pick_media(media, facility.id, None)),
+                # Prefer a verified photo of the EXACT service location; fall back to a
+                # verified facility-level photo, else the neutral placeholder.
+                **media_fields(
+                    pick_media(media, facility.id, location.id if location else None)
+                ),
             )
         )
 
@@ -737,13 +741,16 @@ def get_facility(
         or facility.cms_certification_number is not None
         or (organization is not None and organization.organization_type == "hospital_system")
     )
+    primary_location = _primary_location(facility, None)
+    primary_location_id = primary_location.id if primary_location else None
     return FacilityResponse.model_validate(facility).model_copy(
         update={
             "capabilities": capabilities,
             "organization_name": organization.display_name if organization else None,
             "organization_type": organization.organization_type if organization else None,
             "is_hospital": is_hospital,
-            **media_fields(pick_media(media, facility.id, None)),
+            # Prefer a verified exact-location photo, then facility-level, then placeholder.
+            **media_fields(pick_media(media, facility.id, primary_location_id)),
         }
     )
 
