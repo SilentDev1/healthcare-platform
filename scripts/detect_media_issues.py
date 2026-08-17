@@ -148,13 +148,21 @@ def find_issues(session: Session) -> dict[str, list[dict[str, object]]]:
 def check_urls(media_urls: list[str]) -> list[str]:
     import httpx
 
+    # Use a real browser User-Agent: image hosts (notably Wikimedia's upload.wikimedia.org)
+    # 403 non-browser/datacenter agents, which would otherwise look like broken images even
+    # though consumer browsers load them fine.
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/126.0 Safari/537.36"
+        ),
+        "Accept": "image/avif,image/webp,image/*,*/*;q=0.8",
+    }
     broken: list[str] = []
-    with httpx.Client(timeout=15, follow_redirects=True) as http:
+    with httpx.Client(timeout=15, follow_redirects=True, headers=headers) as http:
         for url in media_urls:
             try:
-                r = http.head(url)
-                if r.status_code >= 400:
-                    r = http.get(url)  # some hosts reject HEAD
+                r = http.get(url)  # GET (many CDNs reject HEAD)
                 if r.status_code >= 400:
                     broken.append(f"{url} -> {r.status_code}")
             except Exception as exc:  # noqa: BLE001
