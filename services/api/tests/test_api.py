@@ -1,8 +1,9 @@
 import uuid
 from collections.abc import Generator
+from decimal import Decimal
 
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, update
+from sqlalchemy import create_engine, select, update
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -16,11 +17,16 @@ from packages.database import (
     FacilityQualityMeasureObservation,
     FacilitySourceObservation,
     ImportRun,
+    Procedure,
     QualityMeasureDefinition,
     SourceFile,
     UnmatchedSourceRecord,
 )
 from packages.database.models import ImportStatus, SourceStatus
+from packages.database.pricing_models import (
+    FacilityProcedurePriceSummary,
+    FacilityProcedurePriceSummarySource,
+)
 from packages.database.session import get_session
 from packages.search import rebuild_index
 from scripts.seed_procedure_catalog import seed_catalog
@@ -448,3 +454,88 @@ def test_rate_limit_rejects_abuse_without_affecting_health(monkeypatch: object) 
     assert first.status_code == 200
     assert second.status_code == 429
     assert client.get("/health").status_code == 200
+
+
+def test_comparison_is_provider_neutral_for_nonhospital_published_price() -> None:
+    """A non-hospital service location with a publishable, real-sourced provider price
+    (no HospitalPriceRecord observations) must appear in the comparison with its cash
+    price surfaced from the summary itself — qualifying on price publishability, not on
+    location_type == hospital. A sibling location without a summary stays unpriced."""
+    proc_slug = "abdominal-ultrasound"
+    with TestingSession.begin() as session:
+        procedure = session.scalar(select(Procedure).where(Procedure.slug == proc_slug))
+        assert procedure is not None
+        source = SourceFile(
+            source_name="Derry Imaging (published cash prices)",
+            source_url="https://www.derryimaging.example/cost-savings",
+            source_type="provider_published_price",
+            storage_path="provenance/derry",
+            checksum_sha256="c" * 64,
+            file_size=0,
+            parser_version="nonhospital-published-prices-manual",
+            status=SourceStatus.COMPLETED,
+        )
+        session.add(source)
+        session.flush()
+        facility = Facility(
+            legal_name="Derry Imaging",
+            display_name="Derry Imaging",
+            facility_type="Imaging Center",
+            active=True,
+            source_file_id=source.id,
+        )
+        priced = FacilityLocation(
+            address_line_1="10 Tsienneto Rd",
+            city="Derry",
+            state="NH",
+            postal_code="03038",
+            location_type="imaging_center",
+        )
+        unpriced = FacilityLocation(
+            address_line_1="1 Roulston Rd",
+            city="Windham",
+            state="NH",
+            postal_code="03087",
+            location_type="imaging_center",
+        )
+        facility.locations.append(priced)
+        facility.locations.append(unpriced)
+        session.add(facility)
+        session.flush()
+        summary = FacilityProcedurePriceSummary(
+            facility_id=facility.id,
+            facility_location_id=priced.id,
+            procedure_id=procedure.id,
+            service_setting="outpatient",
+            included_component_scope="global",
+            cash_price_min=Decimal("325"),
+            cash_price_max=Decimal("325"),
+            cash_price_median=Decimal("325"),
+            record_count=1,
+            source_file_id=source.id,
+            publication_status="publishable",
+            completeness_score=Decimal("1.0"),
+        )
+        session.add(summary)
+        session.flush()
+        session.add(
+            FacilityProcedurePriceSummarySource(
+                summary_id=summary.id, source_file_id=source.id, observation_count=1
+            )
+        )
+
+    body = client.get(f"/api/v1/procedures/{proc_slug}/comparison?state=NH").json()
+    derry = [item for item in body["items"] if item["facility_name"] == "Derry Imaging"]
+    priced_items = [item for item in derry if item["price_available"]]
+    assert len(priced_items) == 1
+    item = priced_items[0]
+    assert item["city"] == "Derry"
+    # Cash price surfaced from the summary (no observations), comparable as a complete
+    # global outpatient charge — never fabricated hospital/CMS fields.
+    assert Decimal(item["cash_price_min"]) == Decimal("325")
+    assert Decimal(item["cash_price_max"]) == Decimal("325")
+    assert item["primary_billing_scope"] == "global"
+    assert item["comparability_status"] == "directly_comparable"
+    assert item["cms_overall_rating"] is None
+    # The priced Derry location is counted among facilities-with-prices.
+    assert body["facilities_with_prices"] >= 1

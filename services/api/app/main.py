@@ -1961,9 +1961,49 @@ def procedure_comparison(
     if procedure is None:
         raise HTTPException(status_code=404, detail="procedure not found")
 
-    facility_ids = active_consumer_facility_ids(session, state_code)
+    # Provider-neutral comparison scope. Two tiers, combined:
+    #   1. The hospital consumer denominator (all active hospital locations in the
+    #      state) — shown priced or unpriced, EXACTLY as before.
+    #   2. Non-hospital service LOCATIONS that carry a publishable, real-sourced
+    #      price for THIS canonical procedure. A location qualifies because the
+    #      procedure is mapped and a publishable (non-file://) price summary exists
+    #      — which was itself availability-gated at promotion — NOT because
+    #      location_type == hospital. These appear ONLY at the specific priced
+    #      locations (an org-wide list price promoted only where the service is
+    #      offered), so a non-hospital location with no publishable price for this
+    #      procedure is never shown.
+    hospital_ids = set(active_consumer_facility_ids(session, state_code))
+    priced_rows = session.execute(
+        select(
+            FacilityProcedurePriceSummary.facility_id,
+            FacilityProcedurePriceSummary.facility_location_id,
+        )
+        .distinct()
+        .join(SourceFile, SourceFile.id == FacilityProcedurePriceSummary.source_file_id)
+        .join(
+            FacilityLocation,
+            FacilityLocation.id == FacilityProcedurePriceSummary.facility_location_id,
+        )
+        .join(Facility, Facility.id == FacilityProcedurePriceSummary.facility_id)
+        .where(
+            FacilityProcedurePriceSummary.procedure_id == procedure.id,
+            FacilityProcedurePriceSummary.publication_status == "publishable",
+            SourceFile.source_url.not_like("file://%"),
+            FacilityLocation.state == state_code.upper(),
+            FacilityLocation.active.is_(True),
+            Facility.active.is_(True),
+        )
+    ).all()
+    priced_location_ids = {loc_id for _fid, loc_id in priced_rows if loc_id is not None}
+    priced_facility_ids = {fid for fid, _loc_id in priced_rows}
+    # Union used by the price/observation/rating queries (a superset that safely
+    # includes the added non-hospital priced facilities; hospital scope unchanged).
+    facility_ids = hospital_ids | priced_facility_ids
+    location_scope: ColumnElement[bool] = FacilityLocation.facility_id.in_(hospital_ids)
+    if priced_location_ids:
+        location_scope = or_(location_scope, FacilityLocation.id.in_(priced_location_ids))
     location_filters: list[ColumnElement[bool]] = [
-        FacilityLocation.facility_id.in_(facility_ids),
+        location_scope,
         FacilityLocation.state == state_code.upper(),
         FacilityLocation.active.is_(True),
     ]
@@ -2132,8 +2172,13 @@ def procedure_comparison(
         cash_components = {observation.included_component_scope for observation, _ in cash_details}
         # Group published cash by (setting, billing scope) so a facility fee is
         # never min/maxed with a professional component into a misleading range.
-        cash_summary = summarize_cash_components(
-            [
+        # Hospital cash lives on per-record observations (cash_details). Non-hospital
+        # provider-published cash lives on the summary itself (no HospitalPriceRecord),
+        # so when there are no observation-level records, surface each summary's own
+        # cash price through the SAME comparability logic — keyed by its own setting
+        # and billing scope. Hospital behavior is unchanged (cash_details non-empty).
+        if cash_details:
+            cash_component_inputs: list[tuple[Any, str, str]] = [
                 (
                     observation.amount,
                     observation.service_setting,
@@ -2141,7 +2186,19 @@ def procedure_comparison(
                 )
                 for observation, _record in cash_details
             ]
-        )
+        else:
+            cash_component_inputs = [
+                (
+                    summary.cash_price_median
+                    if summary.cash_price_median is not None
+                    else summary.cash_price_min,
+                    summary.service_setting,
+                    summary.included_component_scope,
+                )
+                for summary, _source, _payer, _plan in all_summaries
+                if summary.cash_price_min is not None or summary.cash_price_median is not None
+            ]
+        cash_summary = summarize_cash_components(cash_component_inputs)
         cash_values = [
             value
             for summary, _source, _payer, _plan in all_summaries
