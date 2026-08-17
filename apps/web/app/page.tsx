@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AskEntry } from "./components/AskEntry";
 import { CareSearch } from "./components/CareSearch";
 import { ComparisonFacilityCard, CoverageNotice } from "./components/ui";
 import { InlineComparePanel } from "./components/CompareSelect";
@@ -70,6 +71,7 @@ export default async function Home() {
               ))}
             </div>
           </div>
+          <AskEntry locale={locale} variant="home" />
         </div>
       </main>
       {featured && featuredItems.length > 0 && (

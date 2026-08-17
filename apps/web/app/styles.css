@@ -4323,3 +4323,75 @@ body .comparison-toolbar .sort-form .button {
     display: none;
   }
 }
+
+/* ===== Ask Carevero ===== */
+.nav-ask { color: var(--brand); font-weight: 600; }
+.ask-entry {
+  margin-top: 1.25rem; padding: 1.1rem 1.15rem; border: 1px solid var(--line, #e5e9f0);
+  border-radius: 0.85rem; background: linear-gradient(180deg, #f7f9ff, #ffffff);
+}
+.ask-entry-heading { font-weight: 700; font-size: 1.02rem; color: var(--brand); margin: 0; }
+.ask-entry-sub { margin: 0.35rem 0 0.7rem; color: var(--muted, #4a5568); font-size: 0.9rem; line-height: 1.4; }
+.ask-entry-form { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.ask-entry-input, .ask-input {
+  flex: 1 1 260px; min-width: 0; padding: 0.7rem 0.85rem; border: 1px solid var(--line, #cbd5e1);
+  border-radius: 0.6rem; font-size: 0.95rem;
+}
+.ask-entry-cta, .ask-send {
+  padding: 0.7rem 1.1rem; border: none; border-radius: 0.6rem; background: var(--brand, #1c4ed8);
+  color: #fff; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.ask-entry-cta:disabled, .ask-send:disabled { opacity: 0.55; cursor: default; }
+.ask-entry-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.7rem; }
+
+.ask-page { max-width: 820px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+.ask-header h1 { margin: 0.2rem 0 0.35rem; }
+.ask-header .lede { color: var(--muted, #4a5568); }
+.ask-shell { margin-top: 1rem; }
+.ask-safety {
+  font-size: 0.82rem; color: #475569; background: #f1f5f9; border: 1px solid #e2e8f0;
+  border-radius: 0.6rem; padding: 0.6rem 0.8rem; margin: 0 0 1rem;
+}
+.ask-convo { display: flex; flex-direction: column; gap: 0.85rem; min-height: 220px; }
+.ask-starters { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.ask-chip, .ask-entry-chips .chip {
+  padding: 0.4rem 0.7rem; border: 1px solid var(--line, #cbd5e1); border-radius: 999px;
+  background: #fff; font-size: 0.85rem; cursor: pointer; color: var(--ink, #1f2937);
+}
+.ask-turn { border-radius: 0.75rem; padding: 0.7rem 0.9rem; }
+.ask-turn .ask-role { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; margin-bottom: 0.15rem; }
+.ask-user { background: var(--brand, #1c4ed8); color: #fff; align-self: flex-end; max-width: 85%; }
+.ask-user .ask-role { color: #dbeafe; }
+.ask-assistant { background: #f8fafc; border: 1px solid #eef2f7; align-self: flex-start; max-width: 92%; }
+.ask-medical { background: #fff7ed; border-color: #fed7aa; }
+.ask-out_of_scope, .ask-empty { background: #f1f5f9; }
+.ask-followup { margin-top: 0.4rem; color: #475569; font-size: 0.9rem; }
+.ask-loading-text::after { content: "…"; animation: askdots 1.2s steps(4, end) infinite; }
+.ask-label { font-size: 0.82rem; color: #475569; margin: 0.55rem 0 0.3rem; }
+.ask-cards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.ask-card {
+  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+  border: 1px solid #e8edf5; border-radius: 0.6rem; padding: 0.55rem 0.7rem; background: #fff;
+}
+.ask-card-loc { align-items: stretch; }
+.ask-card-body { display: flex; flex-direction: column; gap: 0.1rem; flex: 1 1 auto; min-width: 0; }
+.ask-card-name { font-weight: 600; color: var(--ink, #1f2937); }
+.ask-card-meta { font-size: 0.8rem; color: #64748b; }
+.ask-card-price { font-size: 0.85rem; color: #0f172a; font-weight: 600; }
+.ask-card-link, .ask-more {
+  margin-left: auto; color: var(--brand, #1c4ed8); font-weight: 600; font-size: 0.85rem; text-decoration: none; white-space: nowrap;
+}
+.ask-more { display: inline-block; margin-top: 0.4rem; }
+.ask-input-row { display: flex; gap: 0.5rem; margin-top: 1rem; }
+.ask-privacy { font-size: 0.75rem; color: #94a3b8; margin: 0.5rem 0 0; }
+.ask-inline-entry {
+  display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.8rem;
+  border: 1px solid var(--line, #cbd5e1); border-radius: 999px; background: #fff;
+  color: var(--brand, #1c4ed8); font-weight: 600; font-size: 0.85rem; cursor: pointer;
+}
+@keyframes askdots { to { opacity: 0.4; } }
+@media (max-width: 480px) {
+  .ask-entry-cta, .ask-send { flex: 1 1 100%; }
+  .ask-user, .ask-assistant { max-width: 100%; }
+  .ask-card-link, .ask-more { margin-left: 0; }
+}

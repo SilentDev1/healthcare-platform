@@ -6,6 +6,7 @@ import "./styles.css";
 import "leaflet/dist/leaflet.css";
 import { brand } from "../lib/brand";
 import { localePath } from "../lib/i18n";
+import { askMessages } from "../lib/ask-i18n";
 import { requestLocale, requestMessages } from "../lib/i18n-server";
 import { LanguageSelector } from "./components/LanguageSelector";
 export function seoRobots(
@@ -67,6 +68,9 @@ export default async function Layout({
             <Link href={localePath(locale, "/hospitals")}>{t.hospitals}</Link>
             <Link href={localePath(locale, "/procedures")}>{t.procedures}</Link>
             <Link href={localePath(locale, "/map")}>{t.map}</Link>
+            <Link className="nav-ask" href={localePath(locale, "/ask")}>
+              ✨ {askMessages[locale].navLabel}
+            </Link>
             <Link href={localePath(locale, "/how-it-works")}>
               {t.howItWorks}
             </Link>
