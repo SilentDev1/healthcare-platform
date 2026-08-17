@@ -1976,6 +1976,16 @@
       "status": "DEFERRED — exact current prices not verifiable with available tooling",
       "reason": "questhealth.com / ondemand.labcorp.com are JS e-commerce; WebFetch 404/JS-shell, WebSearch returns only third-party RANGES. Applicability complications found: DTC price EXCLUDES a $10-25 specimen-collection fee and 'varies by location' (per consumer sources) — so it is not a clean org-wide location-applicable cash price.",
       "next": "Browser-verify exact current per-test prices AND applicability (is the online DTC price the walk-in NH self-pay price?) before staging as candidate_review. Prior-sweep values (CBC $29, CMP $49, Lipid $59, A1C $39) are unconfirmed and NOT ingested."
+    },
+    "derry_imaging_promotion": {
+      "status": "PUBLISHED (evidence-gated) in production, 2026-08-17",
+      "promoted": 29,
+      "held_candidate": 6,
+      "scope": "Ultrasound at all 7 locations; CT at 5 (not Londonderry/Windham); MRI at 6 (not Windham) — gated by verified per-location modalities (LocationServiceAvailability, evidence=derryimaging.com).",
+      "gates": "false-positive detector 26/26 CLEAN 0 suspects; phase_4_7_safety PASS (missing_provenance=0, ai_modified_prices=0, negatives=0, duplicates=0, unreviewed_mappings=0); provenance links created (29).",
+      "consumer_visibility": "Directory shows Derry price_available=true (5/5/5/5/5/3/1 procs per location). /procedures/{slug}/prices includes Derry rows. GAP: /procedures/{slug}/comparison (procedure page) is scoped to active_consumer_facility_ids (hospitals only) -> Derry NOT shown there yet. NEXT: broaden comparison scope to non-hospital priced facilities (reviewed API change; must not alter the verified hospital comparison/26-26 baseline).",
+      "rollback": "gs://carevero-beta-sources-carecompare-development/verification/derry_promotion_rollback.json (29 promoted ids + 35 LSA ids).",
+      "coverage_delta": "priced facilities 26 -> 33 (+7 Derry Imaging); unpriced 122 -> 115."
     }
   }
 }
