@@ -27,6 +27,17 @@
         {"published_description": "MRI Brain", "canonical_slug": "mri-brain-without-contrast", "cash_price": 800, "component_scope": "global; contrast status not specified by provider", "mapping_confidence": "name_match_contrast_ambiguous"},
         {"published_description": "MRI Back (Lumbar)", "canonical_slug": "mri-lumbar-spine-without-contrast", "cash_price": 800, "component_scope": "global; contrast status not specified by provider", "mapping_confidence": "name_match_contrast_ambiguous"}
       ]
+    },
+    {
+      "organization": "Quest Diagnostics",
+      "source_url": "https://www.questhealth.com/product/comprehensive-metabolic-panel-cmp/10231M.html",
+      "source_format": "questhealth.com consumer product page (national direct-to-consumer; JS-rendered, read in-browser 2026-08-17)",
+      "retrieval_date": "2026-08-17",
+      "price_scope": "NATIONAL direct-to-consumer online-purchase price (questhealth.com), NOT location-specific and NOT ordinary walk-in cash billing — the test must be purchased through the DTC product, then collected at any Quest location. Staged org-wide as a NON-PUBLIC candidate only; the promotion step will not publish lab candidates (unknown imaging modality) and requires per-location service evidence.",
+      "service_setting": "outpatient",
+      "prices": [
+        {"published_description": "Comprehensive Metabolic Panel (CMP) — questhealth DTC", "canonical_slug": "comprehensive-metabolic-panel", "cash_price": 49, "component_scope": "questhealth DTC test price ONLY; EXCLUDES the $6.00 physician service fee (total to purchase $55.00); national online-purchase price, not location-specific", "mapping_confidence": "exact_name_dtc_national"}
+      ]
     }
   ]
 }
