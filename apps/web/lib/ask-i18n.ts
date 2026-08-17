@@ -16,6 +16,9 @@ export interface AskStrings {
   homeSubhead: string;
   homePlaceholder: string;
   homeCta: string;
+  // Secondary manual-search disclosure on the homepage hero
+  homeManualPrompt: string;
+  homeManualCta: string;
   // /ask page
   title: string;
   subtitle: string;
@@ -50,10 +53,11 @@ export const askMessages: Record<Locale, AskStrings> = {
   en: {
     navLabel: "Ask Carevero",
     homeHeading: "Ask Carevero",
-    homeSubhead:
-      "Not sure what to search for? Ask about healthcare prices, procedures, providers, published insurance-rate information, or how Carevero works.",
-    homePlaceholder: "Ask about a procedure, price, hospital, lab, or provider…",
+    homeSubhead: "What can Carevero help you find?",
+    homePlaceholder: "Ask about an MRI, blood test, procedure, provider, or price…",
     homeCta: "Ask Carevero",
+    homeManualPrompt: "Prefer to search manually?",
+    homeManualCta: "Search prices",
     title: "Ask Carevero",
     subtitle:
       "Get help finding and understanding Carevero’s healthcare price and provider information.",
@@ -62,11 +66,11 @@ export const askMessages: Record<Locale, AskStrings> = {
     placeholder: "Ask about a procedure, price, hospital, lab, or provider…",
     send: "Send",
     starters: [
-      "Where can I get an MRI near Nashua?",
       "Compare MRI prices",
-      "Which locations have prices for a CBC?",
-      "What does discounted cash price mean?",
       "Find labs near Nashua",
+      "Which locations have prices for a CBC?",
+      "Find urgent care near Nashua",
+      "What does discounted cash price mean?",
     ],
     loading: "Finding Carevero information…",
     medicalBoundary:
@@ -97,10 +101,11 @@ export const askMessages: Record<Locale, AskStrings> = {
   es: {
     navLabel: "Preguntar a Carevero",
     homeHeading: "Preguntar a Carevero",
-    homeSubhead:
-      "¿No sabe qué buscar? Pregunte sobre precios de atención médica, procedimientos, proveedores, tarifas de seguro publicadas o cómo funciona Carevero.",
-    homePlaceholder: "Pregunte por un procedimiento, precio, hospital, laboratorio o proveedor…",
+    homeSubhead: "¿Qué puede ayudarle a encontrar Carevero?",
+    homePlaceholder: "Pregunte por una resonancia, análisis de sangre, procedimiento, proveedor o precio…",
     homeCta: "Preguntar a Carevero",
+    homeManualPrompt: "¿Prefiere buscar manualmente?",
+    homeManualCta: "Buscar precios",
     title: "Preguntar a Carevero",
     subtitle:
       "Obtenga ayuda para encontrar y entender la información de precios y proveedores de Carevero.",
@@ -109,11 +114,11 @@ export const askMessages: Record<Locale, AskStrings> = {
     placeholder: "Pregunte por un procedimiento, precio, hospital, laboratorio o proveedor…",
     send: "Enviar",
     starters: [
-      "¿Dónde puedo hacerme una resonancia cerca de Nashua?",
-      "Comparar precios de resonancia",
-      "¿Qué lugares tienen precios para un hemograma (CBC)?",
-      "¿Qué significa precio en efectivo con descuento?",
+      "Comparar precios de MRI",
       "Buscar laboratorios cerca de Nashua",
+      "¿Qué lugares tienen precios para un hemograma (CBC)?",
+      "Buscar atención de urgencia cerca de Nashua",
+      "¿Qué significa precio en efectivo con descuento?",
     ],
     loading: "Buscando información de Carevero…",
     medicalBoundary:
@@ -143,10 +148,11 @@ export const askMessages: Record<Locale, AskStrings> = {
   vi: {
     navLabel: "Hỏi Carevero",
     homeHeading: "Hỏi Carevero",
-    homeSubhead:
-      "Không chắc nên tìm gì? Hãy hỏi về giá dịch vụ y tế, thủ thuật, nhà cung cấp, thông tin mức giá bảo hiểm đã công bố, hoặc cách Carevero hoạt động.",
-    homePlaceholder: "Hỏi về một thủ thuật, giá, bệnh viện, phòng xét nghiệm hoặc nhà cung cấp…",
+    homeSubhead: "Carevero có thể giúp bạn tìm gì?",
+    homePlaceholder: "Hỏi về MRI, xét nghiệm máu, thủ thuật, nhà cung cấp hoặc giá…",
     homeCta: "Hỏi Carevero",
+    homeManualPrompt: "Muốn tự tìm kiếm?",
+    homeManualCta: "Tìm giá",
     title: "Hỏi Carevero",
     subtitle:
       "Nhận trợ giúp tìm và hiểu thông tin về giá và nhà cung cấp dịch vụ y tế của Carevero.",
@@ -155,11 +161,11 @@ export const askMessages: Record<Locale, AskStrings> = {
     placeholder: "Hỏi về một thủ thuật, giá, bệnh viện, phòng xét nghiệm hoặc nhà cung cấp…",
     send: "Gửi",
     starters: [
-      "Tôi có thể chụp MRI ở đâu gần Nashua?",
       "So sánh giá MRI",
-      "Những địa điểm nào có giá cho xét nghiệm CBC?",
-      "Giá tiền mặt được giảm nghĩa là gì?",
       "Tìm phòng xét nghiệm gần Nashua",
+      "Những địa điểm nào có giá cho xét nghiệm CBC?",
+      "Tìm cơ sở cấp cứu nhanh gần Nashua",
+      "Giá tiền mặt được giảm nghĩa là gì?",
     ],
     loading: "Đang tìm thông tin Carevero…",
     medicalBoundary:
@@ -189,10 +195,11 @@ export const askMessages: Record<Locale, AskStrings> = {
   "zh-CN": {
     navLabel: "询问 Carevero",
     homeHeading: "询问 Carevero",
-    homeSubhead:
-      "不确定该搜索什么？可以询问医疗价格、项目、提供者、已公布的保险费率信息，或 Carevero 的使用方法。",
-    homePlaceholder: "询问某项目、价格、医院、化验室或提供者…",
+    homeSubhead: "Carevero 可以帮您找到什么？",
+    homePlaceholder: "询问 MRI、血液检查、项目、提供者或价格…",
     homeCta: "询问 Carevero",
+    homeManualPrompt: "想手动搜索？",
+    homeManualCta: "搜索价格",
     title: "询问 Carevero",
     subtitle: "获取帮助，查找并理解 Carevero 的医疗价格与提供者信息。",
     safety:
@@ -200,11 +207,11 @@ export const askMessages: Record<Locale, AskStrings> = {
     placeholder: "询问某项目、价格、医院、化验室或提供者…",
     send: "发送",
     starters: [
-      "在 Nashua 附近哪里可以做 MRI？",
       "比较 MRI 价格",
-      "哪些地点有 CBC（全血细胞计数）的价格？",
-      "折扣现金价是什么意思？",
       "查找 Nashua 附近的化验室",
+      "哪些地点有 CBC（全血细胞计数）的价格？",
+      "查找 Nashua 附近的紧急护理",
+      "折扣现金价是什么意思？",
     ],
     loading: "正在查找 Carevero 信息…",
     medicalBoundary:
@@ -230,10 +237,11 @@ export const askMessages: Record<Locale, AskStrings> = {
   "zh-TW": {
     navLabel: "詢問 Carevero",
     homeHeading: "詢問 Carevero",
-    homeSubhead:
-      "不確定該搜尋什麼？可以詢問醫療價格、項目、提供者、已公布的保險費率資訊，或 Carevero 的使用方式。",
-    homePlaceholder: "詢問某項目、價格、醫院、化驗室或提供者…",
+    homeSubhead: "Carevero 可以協助您找到什麼？",
+    homePlaceholder: "詢問 MRI、血液檢查、項目、提供者或價格…",
     homeCta: "詢問 Carevero",
+    homeManualPrompt: "想手動搜尋？",
+    homeManualCta: "搜尋價格",
     title: "詢問 Carevero",
     subtitle: "取得協助，尋找並瞭解 Carevero 的醫療價格與提供者資訊。",
     safety:
@@ -241,11 +249,11 @@ export const askMessages: Record<Locale, AskStrings> = {
     placeholder: "詢問某項目、價格、醫院、化驗室或提供者…",
     send: "傳送",
     starters: [
-      "在 Nashua 附近哪裡可以做 MRI？",
       "比較 MRI 價格",
-      "哪些地點有 CBC（全血細胞計數）的價格？",
-      "折扣現金價是什麼意思？",
       "尋找 Nashua 附近的化驗室",
+      "哪些地點有 CBC（全血細胞計數）的價格？",
+      "尋找 Nashua 附近的緊急護理",
+      "折扣現金價是什麼意思？",
     ],
     loading: "正在尋找 Carevero 資訊…",
     medicalBoundary:

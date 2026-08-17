@@ -4395,3 +4395,161 @@ body .comparison-toolbar .sort-form .button {
   .ask-user, .ask-assistant { max-width: 100%; }
   .ask-card-link, .ask-more { margin-left: 0; }
 }
+
+/* ===== Home hero: Ask Carevero primary, manual search secondary ===== */
+/* Consolidated, centered, low-height hero. Keeps the Carevero brand + gradient
+   background from .product-hero; overrides the old two-column search layout. */
+.home-hero {
+  padding-top: 2.6rem;
+  padding-bottom: 2.6rem;
+}
+.home-hero-inner {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  align-items: stretch;
+}
+.home-hero .hero-copy {
+  text-align: center;
+  padding-bottom: 0;
+}
+.home-hero h1 {
+  max-width: 100%;
+  margin: 0.4rem 0 0.85rem;
+  font-size: clamp(2.3rem, 4.3vw, 3.5rem);
+  line-height: 1.05;
+}
+.home-hero .lede {
+  max-width: 640px;
+  margin: 0 auto 1rem;
+}
+.home-hero .hero-assurance {
+  justify-content: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+}
+
+/* Primary panel — prominent but not oversized. */
+.home-hero .ask-entry {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 660px;
+  padding: 1.5rem 1.5rem 1.35rem;
+  border: 1px solid rgba(8, 118, 92, 0.2);
+  border-radius: 1.1rem;
+  background: #ffffff;
+  box-shadow:
+    0 20px 44px -26px rgba(8, 118, 92, 0.4),
+    0 2px 6px rgba(15, 23, 42, 0.05);
+  text-align: left;
+}
+.home-hero .ask-entry-heading {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.home-hero .ask-entry-sub {
+  margin: 0.3rem 0 0.95rem;
+  font-size: 1.2rem;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--ink, #1f2937);
+}
+.home-hero .ask-entry-input {
+  flex: 1 1 320px;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  border-radius: 0.7rem;
+  border: 1px solid #cbd5e1;
+}
+.home-hero .ask-entry-input:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+  border-color: var(--brand);
+}
+.home-hero .ask-entry-cta {
+  padding: 0.9rem 1.35rem;
+  font-size: 1rem;
+  border-radius: 0.7rem;
+  box-shadow: 0 8px 18px -10px rgba(8, 118, 92, 0.6);
+}
+.home-hero .ask-entry-cta:hover {
+  background: var(--brand-dark, #075744);
+}
+.home-hero .ask-entry-chips {
+  margin-top: 0.9rem;
+}
+
+/* Secondary manual-search disclosure. */
+.manual-search {
+  width: 100%;
+  max-width: 660px;
+  margin: 0.1rem auto 0;
+  text-align: center;
+}
+.manual-search-summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 0.45rem;
+  align-items: baseline;
+  justify-content: center;
+  padding: 0.5rem 0.4rem;
+  font-size: 0.92rem;
+  color: var(--muted, #4a5568);
+  border-radius: 0.6rem;
+}
+.manual-search-summary::-webkit-details-marker {
+  display: none;
+}
+.manual-search-summary:hover .manual-search-cta,
+.manual-search-summary:focus-visible .manual-search-cta {
+  text-decoration: underline;
+}
+.manual-search-summary:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.manual-search-cta {
+  color: var(--brand);
+  font-weight: 600;
+}
+.manual-search[open] .manual-search-summary {
+  margin-bottom: 0.7rem;
+}
+.manual-search-body {
+  text-align: left;
+  border: 1px solid var(--line, #e5e9f0);
+  border-radius: 1rem;
+  background: #ffffff;
+  padding: 1.2rem;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+.manual-search-body .popular {
+  margin-top: 1rem;
+}
+
+@media (max-width: 640px) {
+  .home-hero {
+    padding-top: 1.9rem;
+    padding-bottom: 1.9rem;
+  }
+  .home-hero .ask-entry {
+    padding: 1.2rem 1.1rem 1.15rem;
+    border-radius: 0.95rem;
+  }
+  .home-hero .ask-entry-sub {
+    font-size: 1.08rem;
+  }
+  .home-hero .ask-entry-cta {
+    flex: 1 1 100%;
+  }
+  .manual-search-body {
+    padding: 1rem;
+  }
+}

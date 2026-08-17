@@ -6,6 +6,7 @@ import { InlineComparePanel } from "./components/CompareSelect";
 import { apiGet } from "../lib/api";
 import type { ProcedureComparison } from "../lib/api";
 import { localePath, type Messages } from "../lib/i18n";
+import { askMessages } from "../lib/ask-i18n";
 import { requestLocale, requestMessages } from "../lib/i18n-server";
 
 interface Coverage {
@@ -39,10 +40,11 @@ export default async function Home() {
   } catch {}
   const featuredItems =
     featured?.items?.filter((item) => item.price_available).slice(0, 4) ?? [];
+  const ask = askMessages[locale] ?? askMessages.en;
   return (
     <>
-      <main className="hero product-hero">
-        <div className="hero-grid">
+      <main className="hero product-hero home-hero">
+        <div className="home-hero-inner">
           <div className="hero-copy">
             <p className="eyebrow">{t.eyebrow}</p>
             <h1>
@@ -54,24 +56,34 @@ export default async function Home() {
               {t.noAccount} <i aria-hidden="true">•</i> {t.publishedData}
             </p>
           </div>
-        </div>
-        <div className="hero-search-panel">
-          <CareSearch showInsurance locale={locale} />
-          <div className="popular">
-            <strong>{t.popular}</strong>
-            <div className="popular-links">
-              {popular.map(({ q, key }) => (
-                <Link
-                  className="chip"
-                  key={q}
-                  href={`${localePath(locale, "/search")}?q=${encodeURIComponent(q)}`}
-                >
-                  {t[key]}
-                </Link>
-              ))}
-            </div>
-          </div>
+
+          {/* Primary entry point: Ask Carevero (a friendly interface over verified data). */}
           <AskEntry locale={locale} variant="home" />
+
+          {/* Secondary: the existing deterministic Procedure / Location / rate search. */}
+          <details className="manual-search">
+            <summary className="manual-search-summary">
+              <span className="manual-search-prompt">{ask.homeManualPrompt}</span>
+              <span className="manual-search-cta">{ask.homeManualCta} →</span>
+            </summary>
+            <div className="manual-search-body">
+              <CareSearch showInsurance locale={locale} />
+              <div className="popular">
+                <strong>{t.popular}</strong>
+                <div className="popular-links">
+                  {popular.map(({ q, key }) => (
+                    <Link
+                      className="chip"
+                      key={q}
+                      href={`${localePath(locale, "/search")}?q=${encodeURIComponent(q)}`}
+                    >
+                      {t[key]}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </details>
         </div>
       </main>
       {featured && featuredItems.length > 0 && (
