@@ -55,6 +55,7 @@ from packages.geo import resolve_origin
 from packages.markets import consumer_visible_markets
 from packages.search import resolve_search, search
 from packages.search.location_capabilities import match_capability, resolve_capability_locations
+from packages.search.resolution import strip_consumer_noise
 from services.api.app.comparison_insights import annotate as annotate_comparison
 from services.api.app.comparison_insights import summarize_cash_components
 from services.api.app.coverage import consumer_pricing_status, pricing_status_matches
@@ -1284,7 +1285,14 @@ def unified_search(
     canonical_capability: str | None = None
     capability_location_items: list[dict[str, object]] = []
     if entity_type is None:
+        # Match on the raw query first; if that names no capability, retry on the
+        # self-pay/intent-stripped term so "where can I get labs without insurance"
+        # still surfaces verified lab locations. Real data only.
         matched_capability = match_capability(q)
+        if not matched_capability:
+            cleaned = strip_consumer_noise(q)
+            if cleaned and cleaned != q.casefold().strip():
+                matched_capability = match_capability(cleaned)
         if matched_capability:
             capability_locations = resolve_capability_locations(
                 session, matched_capability, state=state_code, limit=page_size
@@ -1306,6 +1314,7 @@ def unified_search(
         ai_fallback_eligible=resolution.ai_fallback_eligible if resolution else False,
         canonical_category_slug=(resolution.canonical_category_slug if resolution else None),
         location_text=resolution.location_text if resolution else None,
+        payment_context=(resolution.payment_context if resolution else None),
         canonical_capability=canonical_capability,
         capability_locations=capability_location_items,
     )

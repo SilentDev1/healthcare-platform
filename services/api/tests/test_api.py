@@ -539,3 +539,21 @@ def test_comparison_is_provider_neutral_for_nonhospital_published_price() -> Non
     assert item["cms_overall_rating"] is None
     # The priced Derry location is counted among facilities-with-prices.
     assert body["facilities_with_prices"] >= 1
+
+
+def test_search_resolves_self_pay_lab_intent() -> None:
+    # P0 regression: the reported production defect. The full natural sentence must
+    # resolve to the Laboratory category (never "no match") and expose self-pay context.
+    resp = client.get(
+        "/api/v1/search",
+        params={"q": "I need a blood test without insurance", "locale": "en"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["intent_type"] == "category"
+    assert body["canonical_category_slug"] == "laboratory"
+    assert body["payment_context"] == "self_pay"
+    assert body["total"] >= 1
+    # A bare procedure/category query carries no payment context.
+    plain = client.get("/api/v1/search", params={"q": "mri brain", "locale": "en"}).json()
+    assert plain["payment_context"] is None

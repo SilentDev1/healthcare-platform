@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import StrEnum
 
 import structlog
@@ -45,6 +45,100 @@ def _strip_lead_in(query: str) -> str:
     return stripped if len(stripped) >= 2 else query
 
 
+# --- Deterministic self-pay / uninsured intent -----------------------------
+# Recognizing payment context lets a natural consumer question ("I need a blood
+# test without insurance") resolve to the SAME procedure/category as the bare
+# term, and signals a preference for published cash / self-pay pricing. This is
+# pure string logic — never an LLM, never medical.
+_PAYMENT_PHRASES: tuple[str, ...] = (
+    "without any insurance",
+    "without insurance",
+    "with no insurance",
+    "no health insurance",
+    "no insurance",
+    "dont have insurance",
+    "do not have insurance",
+    "don't have insurance",
+    "paying out of pocket",
+    "pay out of pocket",
+    "out of pocket",
+    "out-of-pocket",
+    "self pay",
+    "self-pay",
+    "paying cash",
+    "pay cash",
+    "cash price",
+    "cash pay",
+    "pay for myself",
+    "pay myself",
+    "private pay",
+    "discounted cash",
+    "if i pay cash",
+)
+_PAYMENT_PHRASES_SORTED: tuple[str, ...] = tuple(
+    sorted(_PAYMENT_PHRASES, key=len, reverse=True)
+)
+# Single-token self-pay signals (checked whole-word).
+_PAYMENT_TOKENS: frozenset[str] = frozenset(
+    {"uninsured", "selfpay", "copay", "cash", "self"}
+)
+# Generic conversational / intent filler that is NEVER part of a canonical
+# procedure or category name or alias. Deliberately conservative: no token here
+# appears in any canonical label/alias (checked against the catalog — e.g. NOT
+# "test", "care", "visit", "scan", "blood", "panel", "therapy", "physical").
+_NOISE_TOKENS: frozenset[str] = frozenset(
+    {
+        "i", "we", "im", "id", "am", "need", "needing", "want", "wanting",
+        "looking", "look", "for", "get", "getting", "got", "find", "finding",
+        "a", "an", "the", "some", "any", "my", "me", "please", "help", "how",
+        "much", "is", "are", "does", "do", "can", "could", "would", "where",
+        "what", "whats", "which", "who", "to", "of", "on", "at", "and", "or",
+        "cost", "costs", "priced", "pricing", "compare", "comparison", "show",
+        "list", "cheapest", "cheap", "affordable", "without", "with", "no", "not",
+        "dont", "insurance", "pay", "paying", "paid", "out", "pocket", "private",
+    }
+) | _PAYMENT_TOKENS
+
+
+def detect_payment_context(query: str) -> str | None:
+    """Return "self_pay" when the query expresses uninsured / cash-pay intent."""
+    normalized = " ".join(query.casefold().split())
+    if any(phrase in normalized for phrase in _PAYMENT_PHRASES):
+        return "self_pay"
+    tokens = set(re.split(r"[^\w]+", normalized))
+    if tokens & _PAYMENT_TOKENS:
+        return "self_pay"
+    return None
+
+
+def strip_consumer_noise(query: str) -> str:
+    """Remove payment-context phrases and generic intent filler from anywhere in
+    the query, leaving the resolvable procedure/category term. Never touches
+    CJK (space-free) queries. Returns "" when nothing but noise remains."""
+    normalized = " ".join(query.casefold().split())
+    for phrase in _PAYMENT_PHRASES_SORTED:
+        normalized = normalized.replace(phrase, " ")
+    kept = [
+        token
+        for token in re.split(r"\s+", normalized)
+        if token and token not in _NOISE_TOKENS
+    ]
+    return " ".join(kept).strip()
+
+
+def _consumer_query_variants(query: str) -> list[str]:
+    """Ordered, de-duplicated cleaned variants to retry resolution with when the
+    raw query does not resolve. Most-specific transform first."""
+    variants: list[str] = []
+    seen = {query.casefold().strip()}
+    for candidate in (_strip_lead_in(query), strip_consumer_noise(query)):
+        key = candidate.casefold().strip()
+        if candidate and len(candidate) >= 2 and key not in seen:
+            seen.add(key)
+            variants.append(candidate)
+    return variants
+
+
 _MEDICAL_BOUNDARY_PREFIX = {
     "en": "Carevero can compare prices once you know which imaging test was ordered. ",
     "es": "Carevero puede comparar precios cuando sepa qué estudio por imágenes se indicó. ",
@@ -80,6 +174,7 @@ class SearchResolution:
     ai_fallback_eligible: bool = False
     canonical_category_slug: str | None = None
     location_text: str | None = None
+    payment_context: str | None = None
 
 
 def _is_location_match(query: str, result: SearchResult) -> bool:
@@ -103,7 +198,37 @@ def resolve_search(
     category: str | None = None,
     locale: str = "en",
 ) -> SearchResolution:
-    """Resolve known intents and define the canonical-validation boundary for AI."""
+    """Resolve known intents and define the canonical-validation boundary for AI.
+
+    Thin wrapper that attaches deterministic self-pay/uninsured payment context
+    (which never changes WHICH results resolve — only signals a cash-price
+    preference) to the core resolution.
+    """
+    resolution = _resolve_search_core(
+        session,
+        query,
+        state=state,
+        city=city,
+        postal_code=postal_code,
+        category=category,
+        locale=locale,
+    )
+    payment_context = detect_payment_context(query)
+    if payment_context and resolution.payment_context is None:
+        resolution = replace(resolution, payment_context=payment_context)
+    return resolution
+
+
+def _resolve_search_core(
+    session: Session,
+    query: str,
+    *,
+    state: str | None = None,
+    city: str | None = None,
+    postal_code: str | None = None,
+    category: str | None = None,
+    locale: str = "en",
+) -> SearchResolution:
     effective_query = query
     location_text = None
     location_match = re.fullmatch(r"(.+?)\s+(?:near|in)\s+([A-Za-z .'-]{2,80})", query, re.I)
@@ -211,14 +336,14 @@ def resolve_search(
         resolution = SearchResolution(SearchIntentType.PROCEDURE, results, True)
         _record(resolution)
         return resolution
-    # Fallback: a natural sentence ("I need a blood test") did not resolve — retry once
-    # with consumer lead-in phrases removed, but only accept a confident (non-unknown)
-    # deterministic result. This never overrides an already-resolving query.
-    stripped = _strip_lead_in(query)
-    if stripped != query:
+    # Fallback: a natural sentence ("I need a blood test without insurance") did not
+    # resolve — retry with consumer lead-in phrases AND self-pay/uninsured/intent
+    # filler removed, accepting only a confident (non-unknown) deterministic result.
+    # This never overrides an already-resolving query (the raw query was tried above).
+    for variant in _consumer_query_variants(query):
         retry = resolve_search(
             session,
-            stripped,
+            variant,
             state=state,
             city=city,
             postal_code=postal_code,

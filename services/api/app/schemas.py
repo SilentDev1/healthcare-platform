@@ -320,6 +320,9 @@ class SearchPage(PageMetadata):
     ai_fallback_eligible: bool = False
     canonical_category_slug: str | None = None
     location_text: str | None = None
+    # Deterministic self-pay / uninsured intent detected in the query ("self_pay" or
+    # None). Signals a preference for published cash / self-pay pricing; never an LLM.
+    payment_context: str | None = None
     # Provider-neutral capability resolution (a SEPARATE result group, not mixed into
     # `items`). `canonical_capability` is set only when the query names a capability AND
     # verified locations actually hold it — never fabricated for absent provider types.

@@ -205,3 +205,71 @@ def test_true_nonsense_still_returns_no_results(session: Session) -> None:
     r = resolve_search(session, "xqzptnw")
     assert r.intent_type.value == "unknown"
     assert r.results == []
+
+
+# --- P0: self-pay / uninsured natural-language intent (deterministic) --------
+# Reproduces the reported production defect: "I need a blood test without
+# insurance" returned "didn't find a match". These must resolve to the
+# Laboratory category (never 0 results) and never require an LLM.
+SELF_PAY_CATEGORY_CASES = [
+    "I need a blood test without insurance",
+    "I need blood work",
+    "blood test cash price",
+    "where can I get labs",
+    "I need lab work",
+    "blood test no insurance",
+    "uninsured and need blood work",
+    "self pay blood test",
+    "how much is blood work if I pay cash",
+    "blood work out of pocket",
+]
+
+
+@pytest.mark.parametrize("query", SELF_PAY_CATEGORY_CASES)
+def test_self_pay_lab_queries_resolve_to_laboratory(session: Session, query: str) -> None:
+    r = resolve_search(session, query)
+    assert r.intent_type.value == "category", f"{query!r} -> {r.intent_type.value}"
+    assert r.canonical_category_slug == "laboratory"
+    assert r.results, f"{query!r} returned 0 results"
+
+
+SELF_PAY_PROCEDURE_CASES = [
+    "how much is a CBC without insurance",
+    "CBC cash price",
+    "I need a CBC without insurance",
+    "cmp self pay",
+    "MRI without insurance",
+    "cheapest MRI cash price",
+]
+
+
+@pytest.mark.parametrize("query", SELF_PAY_PROCEDURE_CASES)
+def test_self_pay_procedure_queries_resolve(session: Session, query: str) -> None:
+    r = resolve_search(session, query)
+    assert r.intent_type.value in {"procedure", "category"}, f"{query!r} -> {r.intent_type.value}"
+    assert r.results, f"{query!r} returned 0 results"
+
+
+PAYMENT_CONTEXT_CASES = [
+    ("I need a blood test without insurance", "self_pay"),
+    ("CBC cash price", "self_pay"),
+    ("uninsured and need blood work", "self_pay"),
+    ("self pay MRI", "self_pay"),
+    ("MRI out of pocket", "self_pay"),
+    ("MRI brain", None),
+    ("blood test", None),
+    ("colonoscopy", None),
+]
+
+
+@pytest.mark.parametrize("query,expected", PAYMENT_CONTEXT_CASES)
+def test_payment_context_detection(session: Session, query: str, expected: str | None) -> None:
+    r = resolve_search(session, query)
+    assert r.payment_context == expected, f"{query!r} -> {r.payment_context}"
+
+
+def test_self_pay_intent_never_medical_scan_bypass(session: Session) -> None:
+    # Stripping payment/intent words must not turn an ambiguous knee scan into a
+    # silent MRI assumption — the clarification boundary is preserved.
+    r = resolve_search(session, "knee scan without insurance")
+    assert r.intent_type.value in {"ambiguous", "category"}
