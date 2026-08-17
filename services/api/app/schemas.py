@@ -98,6 +98,18 @@ class DirectoryCapabilityOption(BaseModel):
     location_count: int
 
 
+class DirectoryRegionOption(BaseModel):
+    """A sub-state region the consumer can filter by, with how many locations are in it.
+
+    Derived from real `FacilityLocation.region` data (state-scoped). Empty for states
+    that have not populated region yet (e.g. NH today) — the UI then offers only
+    "All regions". Ready for Massachusetts without another directory redesign.
+    """
+
+    region: str
+    location_count: int
+
+
 class FacilityDirectoryResponse(BaseModel):
     items: list[DirectoryFacilityItem]
     page: int = Field(ge=1)
@@ -109,6 +121,8 @@ class FacilityDirectoryResponse(BaseModel):
     # Capability options across the consumer-visible data, for a provider-type filter
     # derived from real data (never a hardcoded list of unavailable types).
     capabilities: list[DirectoryCapabilityOption] = Field(default_factory=list)
+    # Sub-state region options derived from real data (empty until a state populates them).
+    regions: list[DirectoryRegionOption] = Field(default_factory=list)
 
 
 class StatusResponse(BaseModel):

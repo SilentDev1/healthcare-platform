@@ -311,6 +311,37 @@ def test_price_available_filter_does_not_hide_unpriced_by_default() -> None:
     assert {i.display_name for i in priced_only.items} == {"Concord Hospital"}
 
 
+def test_price_available_false_returns_only_unpriced() -> None:
+    session = _engine()
+    _seed_provider_neutral(session)
+
+    unpriced = _dir(session, state_code="NH", price_available=False)
+    assert {i.display_name for i in unpriced.items} == {"Quest Diagnostics — Nashua"}
+    assert all(i.published_procedure_count == 0 for i in unpriced.items)
+
+
+def test_sort_name_desc_reverses_order() -> None:
+    session = _engine()
+    _seed_provider_neutral(session)
+
+    asc = [i.display_name for i in _dir(session, state_code="NH", sort="name").items]
+    desc = [i.display_name for i in _dir(session, state_code="NH", sort="name_desc").items]
+    assert desc == list(reversed(asc))
+
+
+def test_regions_present_and_empty_when_no_region_data() -> None:
+    session = _engine()
+    _seed_provider_neutral(session)
+
+    resp = _dir(session, state_code="NH")
+    # NH has no populated region/subregion — regions is present (additive) but empty,
+    # so the UI offers only "All regions". Ready for MA without another redesign.
+    assert resp.regions == []
+    # A region filter is accepted and simply matches nothing when regions are unset.
+    filtered = _dir(session, state_code="NH", region="Greater Boston")
+    assert filtered.total == 0
+
+
 def test_directory_500_facilities_six_states_scale() -> None:
     session = _engine()
     _seed(session, 500, ["NH", "MA", "ME", "VT", "RI", "CT"])

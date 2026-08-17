@@ -74,6 +74,7 @@ from services.api.app.schemas import (
     DataHealthPage,
     DirectoryCapabilityOption,
     DirectoryFacilityItem,
+    DirectoryRegionOption,
     DirectoryStateOption,
     FacilityDirectoryResponse,
     FacilityHealthPage,
@@ -328,8 +329,9 @@ def facilities_directory(
     pricing_status: Annotated[str | None, Query(max_length=40)] = None,
     facility_type: Annotated[str | None, Query(max_length=120)] = None,
     capability: Annotated[str | None, Query(max_length=60)] = None,
+    region: Annotated[str | None, Query(max_length=80)] = None,
     price_available: Annotated[bool | None, Query()] = None,
-    sort: Annotated[str, Query(pattern="^(name|city|pricing)$")] = "name",
+    sort: Annotated[str, Query(pattern="^(name|name_desc|city|pricing)$")] = "name",
 ) -> FacilityDirectoryResponse:
     """Reusable, multi-state provider-neutral service-location directory. State is
     data (the dropdown derives from the consumer-visible market registry), not
@@ -361,6 +363,10 @@ def facilities_directory(
     ]
     if normalized_state:
         filters.append(FacilityLocation.state == normalized_state)
+    if region:
+        # Sub-state geography (populated for MA etc.; NULL for NH today, so this is a
+        # no-op there). Matches facilities with an active location in the region.
+        filters.append(FacilityLocation.region == region.strip())
     if city:
         filters.append(FacilityLocation.city.ilike(f"%{city.strip()}%"))
     if facility_type:
@@ -403,9 +409,12 @@ def facilities_directory(
         )
         filters.append(Facility.id.in_(capability_facility_ids))
     # Price-availability filter: intentionally NEVER hides unpriced locations by
-    # default; only when the consumer explicitly asks for published-price locations.
+    # default (price_available is None). Only when the consumer explicitly asks for
+    # published-price locations, or explicitly for not-yet-priced ones.
     if price_available is True:
         filters.append(pcount >= 1)
+    elif price_available is False:
+        filters.append(pcount <= 0)
 
     base_from = (
         select(Facility.id)
@@ -427,6 +436,8 @@ def facilities_directory(
         order = [func.min(FacilityLocation.city), Facility.display_name]
     elif sort == "pricing":
         order = [pcount.desc(), Facility.display_name]
+    elif sort == "name_desc":
+        order = [Facility.display_name.desc(), Facility.id]
     else:
         order = [Facility.display_name, Facility.id]
     page_rows = session.execute(
@@ -593,6 +604,30 @@ def facilities_directory(
         )
     ]
 
+    # Region options derived from real data (state-scoped, non-null). Empty until a
+    # state populates FacilityLocation.region (NH today) — the UI then offers only
+    # "All regions". Additive and ready for Massachusetts.
+    region_state = [FacilityLocation.state == normalized_state] if normalized_state else []
+    regions = [
+        DirectoryRegionOption(region=str(value), location_count=int(cnt))
+        for value, cnt in session.execute(
+            select(
+                FacilityLocation.region,
+                func.count(func.distinct(FacilityLocation.id)),
+            )
+            .select_from(Facility)
+            .join(FacilityLocation, FacilityLocation.facility_id == Facility.id)
+            .where(
+                Facility.active.is_(True),
+                FacilityLocation.active.is_(True),
+                FacilityLocation.region.is_not(None),
+                *region_state,
+            )
+            .group_by(FacilityLocation.region)
+            .order_by(FacilityLocation.region)
+        )
+    ]
+
     return FacilityDirectoryResponse(
         items=items,
         page=page,
@@ -602,6 +637,7 @@ def facilities_directory(
         states=states,
         facility_types=facility_types,
         capabilities=capabilities,
+        regions=regions,
     )
 
 
@@ -611,6 +647,7 @@ def facilities_map_data(
     pricing_status: Annotated[str | None, Query(max_length=30)] = None,
     state_code: Annotated[str, Query(alias="state", min_length=2, max_length=2)] = "NH",
     capability: Annotated[str | None, Query(max_length=60)] = None,
+    region: Annotated[str | None, Query(max_length=80)] = None,
 ) -> MapDataResponse:
     # Priced consumer hospitals (unchanged scope) PLUS provider-neutral locations that
     # hold a non-hospital capability (labs, urgent care, ...) — so verified non-hospital
@@ -639,6 +676,7 @@ def facilities_map_data(
             FacilityLocation.active.is_(True),
             FacilityLocation.latitude.is_not(None),
             FacilityLocation.longitude.is_not(None),
+            *([FacilityLocation.region == region.strip()] if region else []),
         )
         .order_by(Facility.display_name)
     ).all()
