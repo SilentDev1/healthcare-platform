@@ -54,6 +54,16 @@ from packages.database import (
 _STOPWORDS = {"the", "of", "and", "inc", "llc", "new", "hampshire", "nh", "at", "in"}
 _TOKEN = re.compile(r"[a-z0-9]+")
 
+# Tokens that signal the file is NOT a real photo of the operating facility (scanned documents,
+# maps, records, proposed/other-facility material). Any hit disqualifies the candidate — this
+# strengthens verification (a generic placeholder is better than a wrong/non-building image).
+_DISQUALIFIERS = {
+    "records", "record", "census", "report", "annual", "proposed", "construction", "military",
+    "naval", "army", "transcript", "vital", "account", "map", "atlas", "seal", "logo", "coat",
+    "arms", "document", "manuscript", "register", "directory", "almshouse", "asylum", "ruins",
+    "historical", "demolished", "former", "postcard", "engraving", "lithograph", "drawing",
+}
+
 
 @dataclass(frozen=True)
 class Target:
@@ -96,6 +106,9 @@ def verify_identity(
     # WORD-BOUNDARY token matching (never substring): "derry" must not match inside
     # "londonderry", and generic prose must not partial-match a brand token.
     hay_tokens = set(_TOKEN.findall(haystack))
+    disq = hay_tokens & _DISQUALIFIERS
+    if disq:
+        return False, f"disqualified:{'+'.join(sorted(disq))}"
     city_tok = city.lower().strip()
     city_parts = set(_TOKEN.findall(city_tok))
     if city_parts and not city_parts.issubset(hay_tokens):
