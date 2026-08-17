@@ -53,10 +53,10 @@ export const askMessages: Record<Locale, AskStrings> = {
   en: {
     navLabel: "Ask Carevero",
     homeHeading: "Ask Carevero",
-    homeSubhead: "What can Carevero help you find?",
+    homeSubhead: "What are you looking for?",
     homePlaceholder: "Ask about an MRI, blood test, procedure, provider, or price…",
     homeCta: "Ask Carevero",
-    homeManualPrompt: "Prefer to search manually?",
+    homeManualPrompt: "Rather search manually?",
     homeManualCta: "Search prices",
     title: "Ask Carevero",
     subtitle:
@@ -101,7 +101,7 @@ export const askMessages: Record<Locale, AskStrings> = {
   es: {
     navLabel: "Preguntar a Carevero",
     homeHeading: "Preguntar a Carevero",
-    homeSubhead: "¿Qué puede ayudarle a encontrar Carevero?",
+    homeSubhead: "¿Qué está buscando?",
     homePlaceholder: "Pregunte por una resonancia, análisis de sangre, procedimiento, proveedor o precio…",
     homeCta: "Preguntar a Carevero",
     homeManualPrompt: "¿Prefiere buscar manualmente?",
@@ -148,7 +148,7 @@ export const askMessages: Record<Locale, AskStrings> = {
   vi: {
     navLabel: "Hỏi Carevero",
     homeHeading: "Hỏi Carevero",
-    homeSubhead: "Carevero có thể giúp bạn tìm gì?",
+    homeSubhead: "Bạn đang tìm gì?",
     homePlaceholder: "Hỏi về MRI, xét nghiệm máu, thủ thuật, nhà cung cấp hoặc giá…",
     homeCta: "Hỏi Carevero",
     homeManualPrompt: "Muốn tự tìm kiếm?",
@@ -195,7 +195,7 @@ export const askMessages: Record<Locale, AskStrings> = {
   "zh-CN": {
     navLabel: "询问 Carevero",
     homeHeading: "询问 Carevero",
-    homeSubhead: "Carevero 可以帮您找到什么？",
+    homeSubhead: "您在找什么？",
     homePlaceholder: "询问 MRI、血液检查、项目、提供者或价格…",
     homeCta: "询问 Carevero",
     homeManualPrompt: "想手动搜索？",
@@ -237,7 +237,7 @@ export const askMessages: Record<Locale, AskStrings> = {
   "zh-TW": {
     navLabel: "詢問 Carevero",
     homeHeading: "詢問 Carevero",
-    homeSubhead: "Carevero 可以協助您找到什麼？",
+    homeSubhead: "您在找什麼？",
     homePlaceholder: "詢問 MRI、血液檢查、項目、提供者或價格…",
     homeCta: "詢問 Carevero",
     homeManualPrompt: "想手動搜尋？",
