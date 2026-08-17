@@ -191,16 +191,18 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "PUBLIC_CASH_SCHEDULE_FOUND",
+          "GOV_SOURCE_NH_HEALTHCOST",
+          "SERVICE_AVAILABILITY_NOT_SPECIFIC_ENOUGH"
         ],
-        "public_pricing_source": null,
-        "source_url": null,
-        "source_type": null,
-        "applicability": null,
+        "public_pricing_source": "ConvenientMD self-pay FAQ ($175 base visit, $265 cap; labs billed separately) + NH HealthCost provider page",
+        "source_url": "https://convenientmd.com/urgent-care/faqs/ ; https://nhhealthcost.nh.gov/provider/convenient-md/costs/medical",
+        "source_type": "PROVIDER_CASH_SCHEDULE (visit-level) + GOV_ESTIMATED_CHARGE",
+        "applicability": "org-wide (all NH clinics) for the visit fee; NH HealthCost is per-provider per-procedure",
         "ingestion_status": "pending",
         "mapping_status": "pending",
         "qa_status": "pending",
-        "blocker": null
+        "blocker": "Visit fee is not a canonical per-CPT procedure; NH HealthCost is a claims-derived estimate (new price_type)."
       }
     },
     {
@@ -340,16 +342,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "PUBLIC_CASH_SCHEDULE_FOUND",
+          "SOURCE_REQUIRES_NEW_COLLECTOR"
         ],
-        "public_pricing_source": null,
-        "source_url": null,
-        "source_type": null,
-        "applicability": null,
+        "public_pricing_source": "questhealth.com direct-to-consumer self-pay test pricing (national e-commerce)",
+        "source_url": "https://www.questhealth.com/",
+        "source_type": "PROVIDER_CASH_SCHEDULE (national DTC)",
+        "applicability": "org-wide/national (order online, drawn at any NH Patient Service Center) — NOT proven per-draw-station",
         "ingestion_status": "pending",
         "mapping_status": "pending",
         "qa_status": "pending",
-        "blocker": null
+        "blocker": "JS e-commerce; national price; consumer bundles need mapping to canonical CBC/CMP/lipid/A1C/TSH/UA; applicability is org-wide not location-specific."
       }
     },
     {
@@ -575,16 +578,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "PUBLIC_CASH_SCHEDULE_FOUND",
+          "SOURCE_REQUIRES_NEW_COLLECTOR"
         ],
-        "public_pricing_source": null,
-        "source_url": null,
-        "source_type": null,
-        "applicability": null,
+        "public_pricing_source": "Labcorp OnDemand consumer self-pay test pricing (national e-commerce)",
+        "source_url": "https://www.ondemand.labcorp.com/",
+        "source_type": "PROVIDER_CASH_SCHEDULE (national DTC)",
+        "applicability": "org-wide/national — same model as Quest",
         "ingestion_status": "pending",
         "mapping_status": "pending",
         "qa_status": "pending",
-        "blocker": null
+        "blocker": "Same as Quest: national DTC price, JS site, bundle→canonical mapping, org-wide applicability."
       }
     },
     {
@@ -661,16 +665,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "GOV_SOURCE_NH_HEALTHCOST",
+          "SOURCE_REQUIRES_PATIENT_DATA"
         ],
-        "public_pricing_source": null,
-        "source_url": null,
-        "source_type": null,
-        "applicability": null,
+        "public_pricing_source": "NH HealthCost provider page (~20 imaging procedures, $144-$5141 estimated charge). Provider site only offers a custom quote (no fixed public cash list).",
+        "source_url": "https://nhhealthcost.nh.gov/provider/derry-imaging-center/costs/medical",
+        "source_type": "GOV_ESTIMATED_CHARGE",
+        "applicability": "per-provider per-procedure (claims-derived), no CPT codes, HTML only",
         "ingestion_status": "pending",
         "mapping_status": "pending",
         "qa_status": "pending",
-        "blocker": null
+        "blocker": "Own-site price is custom-quote (patient data); NH HealthCost needs a collector + description mapping + new price_type."
       }
     },
     {
@@ -838,16 +843,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "AFFILIATED_HOSPITAL_SOURCE_FOUND",
+          "NEEDS_DB_LINKAGE_CHECK"
         ],
-        "public_pricing_source": null,
-        "source_url": null,
-        "source_type": null,
-        "applicability": null,
+        "public_pricing_source": "Parent hospital MRF (Wentworth-Douglass is a priced NH hospital) may contain applicable pricing for affiliated PT/urgent-care locations",
+        "source_url": "(existing Carevero raw hospital MRF)",
+        "source_type": "HOSPITAL_MRF (affiliated)",
+        "applicability": "MUST verify per location via MRF location/NPI/service-location identifiers before association",
         "ingestion_status": "pending",
         "mapping_status": "pending",
         "qa_status": "pending",
-        "blocker": null
+        "blocker": "Requires DB read of raw hospital price records to test location linkage (Phase 12)."
       }
     },
     {
@@ -1193,16 +1199,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "AFFILIATED_HOSPITAL_SOURCE_FOUND",
+          "NEEDS_DB_LINKAGE_CHECK"
         ],
-        "public_pricing_source": null,
-        "source_url": null,
-        "source_type": null,
-        "applicability": null,
+        "public_pricing_source": "Parent hospital MRF (Elliot is a priced NH hospital) may contain applicable urgent-care pricing",
+        "source_url": "(existing Carevero raw hospital MRF)",
+        "source_type": "HOSPITAL_MRF (affiliated)",
+        "applicability": "verify per location via MRF identifiers",
         "ingestion_status": "pending",
         "mapping_status": "pending",
         "qa_status": "pending",
-        "blocker": null
+        "blocker": "Requires DB read of raw hospital price records (Phase 12)."
       }
     },
     {
@@ -1243,16 +1250,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "PUBLIC_PRICE_SOURCE_FOUND",
+          "SERVICE_AVAILABILITY_NOT_SPECIFIC_ENOUGH"
         ],
-        "public_pricing_source": null,
-        "source_url": null,
-        "source_type": null,
-        "applicability": null,
+        "public_pricing_source": "The Joint publishes single-visit + membership/package pricing on thejoint.com",
+        "source_url": "https://www.thejoint.com/",
+        "source_type": "PROVIDER_PRICE_MENU",
+        "applicability": "org-wide single-visit cash price defensible; membership/package != per-procedure",
         "ingestion_status": "pending",
         "mapping_status": "pending",
         "qa_status": "pending",
-        "blocker": null
+        "blocker": "Single adjustment cash price may map; membership must NOT be converted to procedure price."
       }
     },
     {
@@ -1932,5 +1940,12 @@
         "blocker": null
       }
     }
-  ]
+  ],
+  "strategic_findings": {
+    "primary_source": "NH HealthCost (nhhealthcost.nh.gov) — NH state government price transparency, per-provider per-procedure ESTIMATED CHARGE from the NH Comprehensive Healthcare Information System (claims, quarterly). Covers non-hospital providers broadly (imaging + urgent care confirmed on-site).",
+    "price_type": "gov_estimated_charge (claims-derived; NOT the provider's own cash price) — distinct price_type; requires comparability guarding vs hospital MRF cash/negotiated.",
+    "machine_readable": "No CSV/JSON/API on provider pages (HTML); needs a reviewed collector + robots/terms check (do not bypass protections).",
+    "mapping": "No CPT codes on NH HealthCost — description-based deterministic mapping to canonical procedures, evidence-backed, false-positive detector after each batch.",
+    "why_not_ingested_this_turn": "New authoritative source + new price_type + comparability design is a reviewed batch; rushing risks the mandate's 'schema decision that risks corrupting production pricing' + unsafe comparisons. Flagged for owner-reviewed design as the primary next batch."
+  }
 }
