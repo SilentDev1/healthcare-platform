@@ -93,9 +93,16 @@ _NOISE_TOKENS: frozenset[str] = frozenset(
         "a", "an", "the", "some", "any", "my", "me", "please", "help", "how",
         "much", "is", "are", "does", "do", "can", "could", "would", "where",
         "what", "whats", "which", "who", "to", "of", "on", "at", "and", "or",
-        "cost", "costs", "priced", "pricing", "compare", "comparison", "show",
-        "list", "cheapest", "cheap", "affordable", "without", "with", "no", "not",
-        "dont", "insurance", "pay", "paying", "paid", "out", "pocket", "private",
+        "near", "around", "cost", "costs", "price", "prices", "priced", "pricing",
+        "compare", "comparison", "show", "list", "cheapest", "cheap", "affordable",
+        "without", "with", "no", "not", "dont", "insurance", "pay", "paying",
+        "paid", "out", "pocket", "private",
+        # Generic provider-type suffixes — never part of a canonical procedure or
+        # category NAME (the categories are "imaging"/"laboratory", not "imaging
+        # center"); stripping them lets "find imaging centers" reach "imaging".
+        "center", "centers", "centre", "centres", "clinic", "clinics", "facility",
+        "facilities", "provider", "providers", "office", "offices", "place",
+        "places", "location", "locations",
     }
 ) | _PAYMENT_TOKENS
 

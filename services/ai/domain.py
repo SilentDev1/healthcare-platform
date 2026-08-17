@@ -144,6 +144,13 @@ _INJECTION = _compile(
     r"system prompt",
     r"reveal your (prompt|instruction|system|rule)",
     r"lottery number",
+    # Price-fabrication attempts — Carevero only ever shows verified published
+    # prices; asking it to invent/fake/change a price is an injection, refused
+    # before any LLM/formatter runs (defense-in-depth with the grounding guard,
+    # which independently prevents any AI-authored price).
+    r"\b(invent|fabricate|make up|made.?up|fake|falsify|lie about)\b"
+    r".{0,30}\b(price|prices|cost|costs|rate|rates|amount|quote)\b",
+    r"\b(pretend|make up|invent)\b.{0,25}\bthe (price|cost|rate)\b.{0,15}\bis\b",
     # ES / VI / ZH injection phrasings
     r"ignora (todas|las|las anteriores)",
     r"olvida (tus|las) instruc",

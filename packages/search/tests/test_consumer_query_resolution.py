@@ -273,3 +273,21 @@ def test_self_pay_intent_never_medical_scan_bypass(session: Session) -> None:
     # silent MRI assumption — the clarification boundary is preserved.
     r = resolve_search(session, "knee scan without insurance")
     assert r.intent_type.value in {"ambiguous", "category"}
+
+
+# Natural provider-type / comparison phrasings must resolve (never "unknown").
+NAV_MUST_RESOLVE = [
+    "Compare MRI prices",
+    "Find imaging centers",
+    "imaging center",
+    "find a lab clinic",
+    "MRI prices",
+    "compare colonoscopy prices",
+]
+
+
+@pytest.mark.parametrize("query", NAV_MUST_RESOLVE)
+def test_natural_navigation_never_unknown(session: Session, query: str) -> None:
+    r = resolve_search(session, query)
+    assert r.intent_type.value != "unknown", f"{query!r} -> unknown"
+    assert r.results, f"{query!r} returned 0 results"
