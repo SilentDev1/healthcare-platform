@@ -1960,6 +1960,22 @@
       "ran": "production Cloud Run job (carevero-beta-price-audit), read-only, 2026-08-17",
       "result": "0 evidence-backed candidates across 122 unpriced locations (DIRECT_LOCATION_LINK=0, SAME_FACILITY_SIBLING=0, ORG_AFFILIATION=0). priced_locations=29.",
       "conclusion": "No pricing for affiliated non-hospital locations exists in imported hospital MRF data (separate billing entities). No recovery win; 122 require external published-price acquisition. Result: docs/affiliated_mrf_linkage_audit_result.json"
+    },
+    "derry_imaging_candidate_ingest": {
+      "status": "STAGED as candidate_review (NON-PUBLIC) in production, 2026-08-17",
+      "rows": 35,
+      "locations": 7,
+      "procedures": 5,
+      "unmatched": 0,
+      "prices": "Ultrasound Abdomen $325, CT Chest $450, CT Abd/Pelvis $1135, MRI Brain $800, MRI Lumbar $800 (re-verified 2026-08-17 vs derryimaging cost-savings page)",
+      "source_file_id": "9575f013-d5d6-450d-affb-7218693d0034",
+      "rollback": "DELETE FROM facility_procedure_price_summaries WHERE source_file_id='9575f013-d5d6-450d-affb-7218693d0034' AND publication_status='candidate_review'; then optionally delete that source_files row. Additive/reversible; touches no publishable/hospital data.",
+      "consumer_impact": "NONE — non-public; baseline held 26/26·50/50; Derry price_available stays false until human-review promotion (with fp-detector+safety audit)."
+    },
+    "quest_labcorp_dtc": {
+      "status": "DEFERRED — exact current prices not verifiable with available tooling",
+      "reason": "questhealth.com / ondemand.labcorp.com are JS e-commerce; WebFetch 404/JS-shell, WebSearch returns only third-party RANGES. Applicability complications found: DTC price EXCLUDES a $10-25 specimen-collection fee and 'varies by location' (per consumer sources) — so it is not a clean org-wide location-applicable cash price.",
+      "next": "Browser-verify exact current per-test prices AND applicability (is the online DTC price the walk-in NH self-pay price?) before staging as candidate_review. Prior-sweep values (CBC $29, CMP $49, Lipid $59, A1C $39) are unconfirmed and NOT ingested."
     }
   }
 }
