@@ -26,6 +26,12 @@ const FILLER = new Set([
   "cerca", "de", "la", "el", "los", "las", "comparar",
   // vi
   "giá", "bao", "nhiêu", "ở", "gần", "tôi", "so", "sánh", "chỗ", "nào", "của",
+  // NH geography — procedures aren't region-scoped, so a lingering city/state
+  // token makes the AND-based keyword match return nothing. Region scoping is
+  // applied on the price endpoint, not here.
+  "nh", "new", "hampshire", "nashua", "manchester", "concord", "lebanon",
+  "portsmouth", "dover", "derry", "keene", "berlin", "laconia", "rochester",
+  "salem", "merrimack", "bedford", "hooksett", "littleton", "exeter", "milford",
   // zh handled by leaving CJK tokens intact
 ]);
 
