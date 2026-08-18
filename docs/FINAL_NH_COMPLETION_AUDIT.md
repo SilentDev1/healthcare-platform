@@ -17,7 +17,11 @@ Authoritative NH completion record. Last updated: 2026-08-18 (combined Codex-UI 
 
 ## Pricing coverage
 - Total service locations: **148** · Hospitals **26/26**.
-- Published-price locations: **33** (26 hospitals + 7 Derry Imaging).
+- Published-price locations: **34** (26 hospitals + 7 Derry Imaging + 1 New Hampshire Open MRI).
+  Non-hospital: Derry Imaging (US/CT/MRI, 29 prices) + **New Hampshire Open MRI** (3 non-contrast
+  MRI @ $1,099 global, West Lebanon). DTC labs (CBC/CMP/lipid/TSH/A1C/VitaminD/PSA) via `/dtc-options`.
+- **Data-integrity fix:** `rebuild_price_summaries` now preserves `provider_published_price`
+  summaries (regression test added) — it previously wiped Derry/NH-Open-MRI on every rebuild.
 - Verified-service / no published price: the remainder (labs, urgent care, PT, ASC, chiropractic, ED) — shown honestly as price-unavailable.
 - Candidate-only (NON-PUBLIC): Quest **56** rows.
 
