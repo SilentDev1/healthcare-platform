@@ -11,14 +11,30 @@ loosely-related existing slug (that would be a false-positive mapping).
 
 ## Candidates
 
-### 1. Hemoglobin A1c (HbA1c) — blood test
-- **Evidence:** Quest questhealth.com HbA1c product `496M`, list **$39.00** (+$6 physician
-  fee), retrieved 2026-08-17. LabCorp OnDemand also sells HbA1c (pending re-verify).
-- **Why a gap:** the catalog has `complete-blood-count`, `comprehensive-metabolic-panel`,
-  `basic-metabolic-panel`, `lipid-panel`, `thyroid-test`, `urinalysis` — but **no HbA1c**.
-  Search has synonyms `a1c`/`hba1c` only. HbA1c ≠ any existing panel; do not fold it in.
-- **Proposed slug:** `hemoglobin-a1c` (CPT 83036). Consumer name "Hemoglobin A1c (HbA1c)".
-- **Blocker classification:** `NO_CANONICAL_PROCEDURE`.
+### 1. Hemoglobin A1c (HbA1c) — blood test — **RECOMMENDED ADD (reviewed 2026-08-18)**
+- **Evidence:** Quest questhealth.com HbA1c `496M` list **$39.00** (+ required $6 fee = $45 total,
+  2026-08-17); **LabCorp OnDemand** `diabetes-risk-hbA1c-test` **$39.00** all-inclusive (verified
+  2026-08-18). Both national DTC self-pay products exist and are verified.
+- **Reviewed analysis (passes canonical-review rules):**
+  - *Specificity:* unambiguous — a single analyte with one standard code, **CPT 83036**
+    (HbA1c; 83037 is the point-of-care variant). Not a panel, not overlapping with CMP/BMP.
+  - *Consumer usefulness:* high — diabetes monitoring is a top consumer lab search; both major
+    labs sell it DTC. Distinct from the ambiguous "diabetes test" query (which stays a
+    clarification between HbA1c and glucose — see candidate #7).
+  - *Data support:* verified DTC prices from two organizations; hospital MRFs commonly publish
+    83036, so hospital coverage is likely once mapped.
+- **Recommendation:** ADD as canonical, deliberately, via the reviewed baseline-change sequence
+  below. This is the strongest candidate (clean code + real dual-source data).
+- **Exact implementation (deliberate — changes the 50/50 baseline to 51/51):**
+  1. `scripts/seed_procedure_catalog.py`: add `hemoglobin-a1c` (consumer_name "Hemoglobin A1c
+     (HbA1c)", category `laboratory`, CPT 83036, aliases a1c/hba1c/"diabetes blood test").
+  2. Update every **50-count assertion** to 51 explicitly (search: `50/50`, tests asserting
+     procedure totals, any release-gate constant) — never silently redefine the baseline.
+  3. Reseed catalog + `scripts.rebuild_search_index` (job); map hospital 83036 rows via the normal
+     approved-mapping flow; run fp-detector + `phase_4_7_safety`.
+  4. Add HbA1c to `data/nh_dtc_lab_options.json` (Quest $45 total incl. fee; LabCorp $39) so the
+     DTC section renders it automatically.
+- **Until executed:** `NO_CANONICAL_PROCEDURE` (do not force-map).
 
 ### 2. Urgent-care visit (flat self-pay)
 - **Evidence (documented earlier):** ConvenientMD flat urgent-care visit ~$175 (cap ~$265);
