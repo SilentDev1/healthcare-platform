@@ -1812,19 +1812,19 @@
       ],
       "disposition": {
         "reason_codes": [
-          "VERIFIED_PUBLIC_SELF_PAY_PRICE",
-          "MAPPABLE_CANONICAL_PROCEDURES",
+          "NO_PUBLIC_PRICE",
+          "SOURCE_MISATTRIBUTED_OUT_OF_STATE",
           "NEEDS_REVIEW"
         ],
-        "public_pricing_source": "The Orthopaedic Surgery Center self-pay price list. ALL-INCLUSIVE charge (facility fee + surgeon fee + anesthesiologist fee) per procedure. Mappable to canonical Carevero procedures: Carpal Tunnel Release $4,859 -> carpal-tunnel-release; Open Shoulder Cuff Repair $7,950 -> rotator-cuff-repair; Total Knee Replacement (W/O implant) $19,361 -> knee-replacement; Total Hip Arthroplasty (W/O implant) $21,424 -> hip-replacement.",
-        "source_url": "https://theorthosurgerycenter.com/price-list/",
-        "source_type": "provider_published_self_pay_price_list",
+        "public_pricing_source": "CORRECTION (2026-08-18): theorthosurgerycenter.com is 'The Orthopaedic Surgery Center' in YOUNGSTOWN, OHIO (phone area code 330; site states Youngstown/Ohio) \u2014 a same-named but DIFFERENT facility, NOT the NH 'Orthopaedic Surgery Center \u2014 Concord' in the Carevero directory. Its all-inclusive self-pay list ($4,859 carpal tunnel, $7,950 rotator cuff, etc.) does NOT apply to the NH ASC and must not be ingested. No verified NH provider-published cash price list was found for the NH Concord facility.",
+        "source_url": "https://theorthosurgerycenter.com/price-list/ (OHIO facility \u2014 not applicable to NH)",
+        "source_type": "none_provider_published_for_nh",
         "retrieval_date": "2026-08-18",
-        "applicability": "organization/location published self-pay list (Windham, NH ASC)",
-        "ingestion_status": "candidate_ready_needs_comparability_review",
-        "mapping_status": "exact-name mappable for carpal-tunnel-release + rotator-cuff-repair (clean, complete all-inclusive); knee-replacement + hip-replacement are all-inclusive BUT EXCLUDE implant cost (partial scope)",
-        "qa_status": "pending",
-        "blocker": "Comparability: the all-inclusive bundle (facility+surgeon+anesthesia) is a DIFFERENT component scope than hospital MRF facility/professional splits, so on ingest it must be stored included_component_scope='bundled' and NOT ranked directly against hospital facility-only prices. Joint replacements are 'W/O implant cost' = partial scope (implant excluded). Safe next step: stage the 2 clean complete lines (carpal tunnel, rotator cuff) as candidate_review with bundled scope via the Derry-style nh_nonhospital_published_prices pipeline; hold the W/O-implant joint lines as partial until an implant-inclusive figure is available."
+        "applicability": null,
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "Same-name out-of-state misattribution caught by provenance check (OH area code). No NH provider-published price for the NH Concord ASC. Disposition: NO_PUBLIC_PRICE. If revisited, verify the NH Concord facility's OWN official pricing (do not reuse the Ohio site)."
       }
     },
     {
@@ -1984,10 +1984,10 @@
       ],
       "outcomes": {
         "urgent_care": "ConvenientMD (~$175 visit) + ClearChoiceMD ($160 visit) \u2014 VERIFIED self-pay VISIT fees, but NO canonical 'urgent-care visit' procedure (documented gap) + PACKAGE_NOT_PROCEDURE; unmappable. Blocked on canonical-catalog decision.",
-        "asc_opportunity": "The Orthopaedic Surgery Center publishes a real all-inclusive self-pay list mappable to canonical carpal-tunnel-release ($4,859) + rotator-cuff-repair ($7,950) [clean] and knee/hip replacement [W/O implant = partial]. Candidate-ready; needs bundled-scope comparability review before staging. First non-hospital SURGICAL pricing opportunity.",
+        "asc_opportunity": "CORRECTED: theorthosurgerycenter.com is a YOUNGSTOWN, OHIO facility (same name, different provider), NOT the NH Concord ASC \u2014 provenance check (OH area code 330) caught the misattribution before any ingestion. No verified NH provider-published ASC surgical price found. All 6 NH ASCs = NO_PUBLIC_PRICE.",
         "asc_no_price": "Bedford / Minimally Invasive / Nashua / Novamed / Portsmouth ASCs \u2014 NO_PUBLIC_PRICE (no provider-published cash schedule; NH HealthCost is claims-derived, excluded)."
       },
-      "next_independent_step": "Deliberate Derry-style ingestion of The Orthopaedic Surgery Center carpal-tunnel-release ($4,859) + rotator-cuff-repair ($7,950) as candidate_review with included_component_scope='bundled' (all-inclusive facility+surgeon+anesthesia), clearly labelled distinct from hospital facility prices; then per-location availability + deliberate promotion. Hold W/O-implant joint replacements as partial."
+      "next_independent_step": "No safe NH ASC ingestion (the apparent surgical price list was an out-of-state same-name facility). Next: continue the ledger to remaining imaging / PT-rehab / chiropractic organizations, or verify the NH Concord orthopaedic ASC's OWN official pricing if one exists."
     }
   },
   "track_b_results": {
