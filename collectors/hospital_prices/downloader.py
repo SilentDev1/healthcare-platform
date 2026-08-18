@@ -4,6 +4,7 @@ import json
 import logging
 import re
 import shutil
+import ssl
 import time
 import zipfile
 from dataclasses import dataclass
@@ -18,6 +19,23 @@ from sqlalchemy.orm import Session
 from collectors.hospital_prices.config import HospitalPriceSettings, hospital_price_settings
 from packages.database import FacilityPriceSource, SourceFile
 from packages.database.models import SourceStatus
+
+
+def _download_ssl_context() -> ssl.SSLContext:
+    """TLS context for public MRF downloads.
+
+    Some authoritative hospital web servers (e.g. bidmc.org) still require legacy TLS
+    renegotiation, which OpenSSL 3 disables by default — the download otherwise fails with
+    ``UNSAFE_LEGACY_RENEGOTIATION_DISABLED``. We opt that back in for MRF fetches only.
+    Certificate verification and hostname checking remain ON; this affects renegotiation,
+    not trust. These files are public standard-charges data, so the relaxation is bounded.
+    """
+    ctx = ssl.create_default_context()
+    ctx.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0x4)
+    return ctx
+
+
+_DOWNLOAD_SSL_CONTEXT = _download_ssl_context()
 
 logger = logging.getLogger(__name__)
 
@@ -422,6 +440,7 @@ def download_price_source(
                     timeout=timeout,
                     follow_redirects=True,
                     max_redirects=settings.hospital_price_max_redirects,
+                    verify=_DOWNLOAD_SSL_CONTEXT,
                 ) as client,
                 client.stream("GET", price_source.machine_readable_file_url) as response,
             ):

@@ -456,10 +456,15 @@ def import_price_source(
                         PriceServiceCode(
                             hospital_price_record_id=rec_uuid,
                             code_system=system,
-                            code=resolved_code,
+                            # code/raw_code are String(100). Some vendor CDM/local "codes"
+                            # are long concatenated description blobs (e.g. Craneware exports)
+                            # that overflow the column. Cap at the column width — canonical
+                            # billing codes (CPT/HCPCS/MS-DRG) are short and never truncated,
+                            # so procedure mapping is unaffected; only junk local codes get cut.
+                            code=resolved_code[:100],
                             modifier=str(row["modifier"]) if row["modifier"] else None,
                             raw_code_type=str(row["code_type"]),
-                            raw_code=code,
+                            raw_code=code[:100],
                         )
                     )
                     summary.codes += 1

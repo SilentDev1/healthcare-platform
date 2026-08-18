@@ -6,8 +6,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class HospitalPriceSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-    hospital_price_max_bytes: int = Field(750_000_000, gt=0)
-    hospital_price_max_expanded_bytes: int = Field(1_500_000_000, gt=0)
+    # Raw on-disk download cap. Raised to 3 GB so large academic-system MRFs (e.g. UMass
+    # Memorial, other multi-hundred-MB CSV/JSON files) are not rejected before parsing;
+    # streamed with a bounded digest so memory stays flat regardless of file size.
+    hospital_price_max_bytes: int = Field(3_000_000_000, gt=0)
+    hospital_price_max_expanded_bytes: int = Field(4_000_000_000, gt=0)
     # Ceiling for archives parsed by streaming member bytes on demand (never
     # materialized on disk). Larger than the on-disk cap because streaming keeps
     # memory bounded; still a hard backstop against zip bombs / runaway files.
