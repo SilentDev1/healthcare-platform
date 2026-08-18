@@ -330,6 +330,35 @@ class SearchPage(PageMetadata):
     capability_locations: list[SearchResultResponse] = Field(default_factory=list)
 
 
+class DtcOption(BaseModel):
+    """One verified national direct-to-consumer (DTC) self-pay lab option.
+
+    Organization/product-level — NOT a per-location published price and NOT a
+    personalized estimate. `total` already includes any required fee.
+    """
+
+    organization: str
+    product: str
+    total: Decimal
+    currency: str = "USD"
+    components: str
+    fee_included: bool
+    source_url: str
+    retrieved: str
+    scope: str = "national_dtc"
+    note: str | None = None
+
+
+class DtcOptionsResponse(BaseModel):
+    """DTC self-pay options for a procedure — a SEPARATE surface from the
+    per-location hospital comparison. Empty `options` when none are verified."""
+
+    procedure_slug: str
+    procedure_name: str
+    disclaimer: str
+    options: list[DtcOption] = Field(default_factory=list)
+
+
 class ProcedureCategoryResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID

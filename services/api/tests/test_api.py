@@ -557,3 +557,24 @@ def test_search_resolves_self_pay_lab_intent() -> None:
     # A bare procedure/category query carries no payment context.
     plain = client.get("/api/v1/search", params={"q": "mri brain", "locale": "en"}).json()
     assert plain["payment_context"] is None
+
+
+def test_dtc_options_endpoint_serves_verified_lab_options() -> None:
+    # Lab procedure returns verified org/product-level DTC options (never per-location).
+    resp = client.get("/api/v1/procedures/complete-blood-count/dtc-options")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["procedure_slug"] == "complete-blood-count"
+    assert body["disclaimer"]
+    orgs = {o["organization"] for o in body["options"]}
+    assert {"Quest Diagnostics", "Labcorp OnDemand"} <= orgs
+    for opt in body["options"]:
+        assert opt["scope"] == "national_dtc"
+        assert opt["fee_included"] is True
+        assert Decimal(opt["total"]) > 0
+    # A non-lab procedure has no DTC options (empty, not an error).
+    imaging = client.get("/api/v1/procedures/mri-brain-without-contrast/dtc-options")
+    assert imaging.status_code == 200
+    assert imaging.json()["options"] == []
+    # Unknown procedure → 404.
+    assert client.get("/api/v1/procedures/not-a-real-procedure/dtc-options").status_code == 404

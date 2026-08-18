@@ -1,0 +1,31 @@
+{
+  "_meta": {
+    "description": "VERIFIED national direct-to-consumer (DTC) self-pay lab options, organization/product-level (NOT location-specific). Served read-only by /api/v1/procedures/{slug}/dtc-options as a SEPARATE surface from the per-location hospital comparison. These must be presented as national online-purchase prices (buy online, collect a specimen at a provider location) — never as a per-location published price and never as a personalized out-of-pocket estimate. Only canonical procedures that exist in the 50/50 catalog are keyed here; HbA1c is intentionally absent (no canonical procedure).",
+    "disclaimer": "National direct-to-consumer self-pay price. You purchase online, then have a specimen collected at a provider location. This is a published product price, not a personalized estimate, and not specific to any single location.",
+    "sources": {
+      "quest": "questhealth.com — test price PLUS a required $6.00 physician service fee (fee included in total).",
+      "labcorp": "ondemand.labcorp.com — all-inclusive price (independent-provider order included; no separate fee)."
+    }
+  },
+  "options_by_procedure": {
+    "complete-blood-count": [
+      {"organization": "Labcorp OnDemand", "product": "Complete Blood Count (CBC)", "total": 29.00, "components": "All-inclusive (independent-provider order included).", "fee_included": true, "source_url": "https://www.ondemand.labcorp.com/content/labcorp-ondemand/us/en/lab-tests/complete-blood-count", "retrieved": "2026-08-18", "scope": "national_dtc"},
+      {"organization": "Quest Diagnostics", "product": "Complete Blood Count (CBC)", "total": 35.00, "components": "Test $29.00 + required $6.00 physician service fee.", "fee_included": true, "source_url": "https://www.questhealth.com/product/complete-blood-count-cbc/6399M.html", "retrieved": "2026-08-17", "scope": "national_dtc"}
+    ],
+    "comprehensive-metabolic-panel": [
+      {"organization": "Labcorp OnDemand", "product": "Comprehensive Metabolic Panel (CMP)", "total": 49.00, "components": "All-inclusive (independent-provider order included).", "fee_included": true, "source_url": "https://www.ondemand.labcorp.com/content/labcorp-ondemand/us/en/lab-tests/comprehensive-metabolic-panel", "retrieved": "2026-08-18", "scope": "national_dtc"},
+      {"organization": "Quest Diagnostics", "product": "Comprehensive Metabolic Panel (CMP)", "total": 55.00, "components": "Test $49.00 + required $6.00 physician service fee.", "fee_included": true, "source_url": "https://www.questhealth.com/product/comprehensive-metabolic-panel-cmp/10231M.html", "retrieved": "2026-08-17", "scope": "national_dtc"}
+    ],
+    "lipid-panel": [
+      {"organization": "Labcorp OnDemand", "product": "Cholesterol and Lipid Panel", "total": 59.00, "components": "All-inclusive (independent-provider order included).", "fee_included": true, "source_url": "https://www.ondemand.labcorp.com/content/labcorp-ondemand/us/en/lab-tests/cholesterol-test-lipid-panel", "retrieved": "2026-08-18", "scope": "national_dtc"},
+      {"organization": "Quest Diagnostics", "product": "Lipid Panel", "total": 65.00, "components": "Test $59.00 + required $6.00 physician service fee.", "fee_included": true, "source_url": "https://www.questhealth.com/product/cholesterol-lipid-panel/94355M.html", "retrieved": "2026-08-17", "scope": "national_dtc"}
+    ],
+    "thyroid-test": [
+      {"organization": "Labcorp OnDemand", "product": "Thyroid Stimulating Hormone (TSH)", "total": 49.00, "components": "All-inclusive (independent-provider order included).", "fee_included": true, "source_url": "https://www.ondemand.labcorp.com/content/labcorp-ondemand/us/en/lab-tests/thyroid-stimulating-hormone-tsh-test", "retrieved": "2026-08-18", "scope": "national_dtc", "note": "TSH-only product; confirm scope vs the canonical thyroid test."},
+      {"organization": "Quest Diagnostics", "product": "Thyroid Stimulating Hormone (TSH)", "total": 55.00, "components": "Test $49.00 + required $6.00 physician service fee.", "fee_included": true, "source_url": "https://www.questhealth.com/product/thyroid-tsh-function-test/36127M.html", "retrieved": "2026-08-17", "scope": "national_dtc", "note": "TSH-only product; confirm scope vs the canonical thyroid test."}
+    ],
+    "urinalysis": [
+      {"organization": "Quest Diagnostics", "product": "Urinalysis (UTI)", "total": 46.00, "components": "Test $40.00 + required $6.00 physician service fee.", "fee_included": true, "source_url": "https://www.questhealth.com/product/urinalysis-urinary-tract-infection-uti-test/5463M.html", "retrieved": "2026-08-17", "scope": "national_dtc", "note": "UTI-framed product; confirm scope vs routine urinalysis."}
+    ]
+  }
+}

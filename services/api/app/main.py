@@ -1,7 +1,10 @@
+import json
 import time
 import uuid
 from collections import defaultdict, deque
 from collections.abc import Awaitable, Callable
+from functools import lru_cache
+from pathlib import Path
 from typing import Annotated, Any, cast
 
 import structlog
@@ -77,6 +80,8 @@ from services.api.app.schemas import (
     DirectoryFacilityItem,
     DirectoryRegionOption,
     DirectoryStateOption,
+    DtcOption,
+    DtcOptionsResponse,
     FacilityDirectoryResponse,
     FacilityHealthPage,
     FacilityPage,
@@ -2438,6 +2443,58 @@ def procedure_comparison(
         service_locations=len(items),
         origin_resolved=origin is not None,
         items=items,
+    )
+
+
+_DTC_OPTIONS_PATH = (
+    Path(__file__).resolve().parents[3] / "data" / "nh_dtc_lab_options.json"
+)
+
+
+@lru_cache(maxsize=1)
+def _dtc_options_data() -> dict[str, Any]:
+    """Load verified DTC self-pay lab options (org/product-level reference data).
+
+    Read-only, shipped file, no DB. Returns an empty structure if the file is
+    absent so the endpoint degrades gracefully rather than erroring.
+    """
+    try:
+        return cast("dict[str, Any]", json.loads(_DTC_OPTIONS_PATH.read_text()))
+    except (OSError, ValueError):
+        return {"_meta": {"disclaimer": ""}, "options_by_procedure": {}}
+
+
+@app.get(
+    "/api/v1/procedures/{slug}/dtc-options",
+    response_model=DtcOptionsResponse,
+    tags=["pricing"],
+)
+def procedure_dtc_options(
+    slug: str,
+    session: Annotated[Session, Depends(get_session)],
+) -> DtcOptionsResponse:
+    """Verified national direct-to-consumer (DTC) self-pay options for a procedure.
+
+    A SEPARATE surface from the per-location hospital comparison: these are
+    organization/product-level national prices (buy online, collect a specimen at
+    a provider location), never per-location published prices and never
+    personalized estimates. Only verified options are returned; `options` is empty
+    when none exist for the procedure (e.g. non-lab procedures).
+    """
+    procedure = session.scalar(
+        select(Procedure).where(Procedure.slug == slug, Procedure.active.is_(True))
+    )
+    if procedure is None:
+        raise HTTPException(status_code=404, detail="procedure not found")
+    data = _dtc_options_data()
+    raw_options = data.get("options_by_procedure", {}).get(slug, [])
+    disclaimer = str(data.get("_meta", {}).get("disclaimer", ""))
+    options = [DtcOption(**option) for option in raw_options]
+    return DtcOptionsResponse(
+        procedure_slug=procedure.slug,
+        procedure_name=procedure.consumer_name,
+        disclaimer=disclaimer,
+        options=options,
     )
 
 
