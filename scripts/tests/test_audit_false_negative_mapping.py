@@ -1,8 +1,8 @@
 """False-negative audit: per-cell classification into the six required categories."""
 
 from __future__ import annotations
-# ruff: noqa: E501
 
+# ruff: noqa: E501
 import uuid
 from datetime import UTC, datetime
 

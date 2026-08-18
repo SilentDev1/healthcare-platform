@@ -73,7 +73,7 @@ def test_wrong_building_with_city_but_no_brand_token_rejected() -> None:
     # NOT verify as Portsmouth Regional Hospital — disqualified as a non-building document even
     # though it shares "portsmouth" + "hospital".
     ok, reason = verify_identity(
-        _cand("File:Format B PROPOSED CONSTRUCTION, MILITARY HEALTH CARE FACILITY, Portsmouth Naval Hospital.jpg"),
+        _cand("File:Format B PROPOSED CONSTRUCTION, MILITARY HEALTH CARE FACILITY, Portsmouth Naval Hospital.jpg"),  # noqa: E501
         facility_name="PORTSMOUTH REGIONAL HOSPITAL", org_name=None, city="Portsmouth",
     )
     assert not ok and reason.startswith("disqualified")

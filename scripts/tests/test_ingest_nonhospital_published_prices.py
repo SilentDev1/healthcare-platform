@@ -54,7 +54,7 @@ def _fixture(session: Session) -> None:
         session.add(f)
         session.flush()
         session.add(FacilityLocation(
-            facility_id=f.id, location_name=f"DI {i}", location_type="service_location", active=True,
+            facility_id=f.id, location_name=f"DI {i}", location_type="service_location", active=True,  # noqa: E501
             address_line_1=f"{i} Main St", city="Derry", state="NH",
             postal_code="03038"))
     cat = ProcedureCategory(slug="imaging", name="Imaging", description="d", sort_order=0)

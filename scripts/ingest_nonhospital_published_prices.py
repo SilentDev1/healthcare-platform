@@ -24,6 +24,7 @@ Run: python -m scripts.ingest_nonhospital_published_prices [--dry-run]
 
 from __future__ import annotations
 
+# ruff: noqa: E501
 import argparse
 import hashlib
 import json

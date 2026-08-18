@@ -41,7 +41,7 @@ SHARED = [
      "facility_type": "Physical Therapy Clinic", "display_name": "WDH Rehab — Lee",
      "address": "65 Calef Hwy", "city": "Lee", "postal_code": "03861",
      "phone": "1", "source_url": "https://x/pt"},
-    {"capability": "laboratory", "organization": "Quest Diagnostics", "organization_type": "independent_lab",
+    {"capability": "laboratory", "organization": "Quest Diagnostics", "organization_type": "independent_lab",  # noqa: E501
      "facility_type": "Independent Laboratory", "display_name": "Quest — Pelham",
      "address": "49 Atwood Road", "city": "Pelham", "postal_code": "03076",
      "phone": "1", "source_url": "https://x/lab"},
@@ -70,7 +70,7 @@ def test_org_reused_by_canonical_name() -> None:
     session.commit()
     ingest(session, records=SHARED)
     quests = list(
-        session.scalars(select(Organization).where(Organization.canonical_name == "Quest Diagnostics"))
+        session.scalars(select(Organization).where(Organization.canonical_name == "Quest Diagnostics"))  # noqa: E501
     )
     assert len(quests) == 1
 
