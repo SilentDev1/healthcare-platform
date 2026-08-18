@@ -2109,6 +2109,72 @@ th {
   }
 }
 
+/* Consumer conversation surface. These overrides intentionally keep the shared
+   entry-point styles above while giving /ask its own product-grade layout. */
+.ask-page { max-width: 900px; padding: clamp(1.25rem, 3vw, 2.5rem) 1rem 3rem; }
+.ask-header { text-align: center; max-width: 680px; margin: 0 auto; }
+.ask-header h1 { color: #102449; font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -.035em; }
+.ask-header .lede { margin: .5rem auto 0; font-size: 1.05rem; line-height: 1.55; }
+.ask-shell { margin-top: 1.4rem; background: #f7f9fc; border: 1px solid #e1e7f0; border-radius: 1.25rem; box-shadow: 0 18px 45px rgba(25, 48, 85, .08); overflow: clip; }
+.ask-safety { margin: 0; border: 0; border-bottom: 1px solid #e5eaf2; border-radius: 0; background: #f1f5fb; padding: .65rem 1rem; text-align: center; }
+.ask-convo { padding: clamp(1rem, 3vw, 1.75rem); min-height: 320px; max-height: 64vh; overflow-y: auto; gap: 1rem; scroll-padding-bottom: 1rem; }
+.ask-welcome { margin: auto; width: 100%; max-width: 680px; text-align: center; padding: 1.5rem 0; }
+.ask-welcome h2 { margin: 0; color: #14284b; font-size: 1.3rem; }
+.ask-welcome > p { margin: .35rem 0 1rem; color: #5b6b82; }
+.ask-starters { justify-content: center; }
+.ask-chip { min-height: 42px; padding: .55rem .85rem; border-color: #ccd7e7; color: #153e78; font-weight: 600; transition: border-color .15s, background .15s, transform .15s; }
+.ask-chip:hover { background: #edf4ff; border-color: #7aa4df; transform: translateY(-1px); }
+.ask-chip:focus-visible, .ask-result-card a:focus-visible, .ask-safe-actions a:focus-visible, .ask-compare-all:focus-visible, .ask-input:focus-visible, .ask-send:focus-visible { outline: 3px solid #f6b94a; outline-offset: 2px; }
+.ask-turn { padding: .8rem 1rem; line-height: 1.5; }
+.ask-turn p { margin: 0; }
+.ask-turn .ask-role { color: #61728b; font-weight: 800; letter-spacing: .08em; margin-bottom: .3rem; }
+.ask-user { background: #1559b7; color: #fff; border-bottom-right-radius: .2rem; max-width: min(78%, 620px); box-shadow: 0 5px 15px rgba(21, 89, 183, .16); }
+.ask-user, .ask-user p, .ask-user a { color: #fff !important; }
+.ask-user .ask-role { color: #e7f0ff !important; }
+.ask-user ::selection { background: #fff; color: #0b3d80; }
+.ask-assistant { background: #fff; border-color: #dce4ef; color: #14213d; border-bottom-left-radius: .2rem; max-width: min(94%, 760px); box-shadow: 0 4px 14px rgba(28, 46, 74, .05); }
+.ask-response-text { font-size: .98rem; }
+.ask-medical { border-left: 4px solid #d97706; background: #fffaf1; }
+.ask-explanation { border-left: 4px solid #3977c2; }
+.ask-context { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .7rem; }
+.ask-context-chip { display: inline-flex; align-items: center; min-height: 28px; padding: .25rem .6rem; border-radius: 999px; background: #eaf1fb; color: #244b7d; font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.ask-context-pay { background: #e5f6ed; color: #17633b; }
+.ask-payment-note { margin-top: .5rem !important; color: #496079; font-size: .84rem; }
+.ask-result-list { list-style: none; margin: .85rem 0 0; padding: 0; display: grid; gap: .6rem; }
+.ask-result-card { display: flex; align-items: center; gap: .8rem; min-width: 0; padding: .8rem; background: #fbfcfe; border: 1px solid #dfe6f0; border-radius: .75rem; }
+.ask-result-card > div:not(.facility-thumb) { min-width: 0; flex: 1; }
+.ask-result-card h3 { margin: 0; color: #14284b; font-size: .95rem; line-height: 1.3; }
+.ask-result-card p { margin: .2rem 0 0; color: #607086; font-size: .8rem; }
+.ask-result-card a, .ask-compare-all { color: #1255aa; font-size: .84rem; font-weight: 750; text-decoration: none; white-space: nowrap; }
+.ask-result-card a:hover, .ask-compare-all:hover { text-decoration: underline; }
+.ask-result-body { display: flex; flex-direction: column; }
+.ask-no-price { margin-top: .35rem; color: #68788d; font-size: .76rem; }
+.ask-price { display: flex; flex-direction: column; color: #153f76 !important; font-size: 1.12rem !important; font-weight: 800; }
+.ask-price span { color: #607086; font-size: .7rem; font-weight: 600; }
+.ask-scope { font-size: .72rem !important; }
+.ask-compare-all { display: inline-block; margin-top: .75rem; }
+.ask-safe-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
+.ask-safe-actions a { padding: .45rem .7rem; border: 1px solid #bdcce0; border-radius: .5rem; color: #174f96; font-size: .82rem; font-weight: 700; text-decoration: none; background: #fff; }
+.ask-composer-wrap { position: sticky; bottom: 0; padding: .8rem 1rem .7rem; border-top: 1px solid #dfe5ee; background: rgba(255,255,255,.96); backdrop-filter: blur(10px); }
+.ask-input-row { margin: 0; padding: .25rem; gap: .35rem; border: 1px solid #b9c6d8; border-radius: .8rem; background: #fff; box-shadow: 0 3px 12px rgba(25, 48, 85, .06); }
+.ask-input { border: 0; min-height: 46px; padding: .65rem .7rem; background: transparent; }
+.ask-input:focus { outline: 0; }
+.ask-send { min-height: 44px; border-radius: .6rem; display: inline-flex; align-items: center; gap: .45rem; }
+.ask-privacy { margin: .4rem .25rem 0; color: #69788c; }
+@media (max-width: 600px) {
+  .ask-page { padding: 1rem .65rem 1.5rem; }
+  .ask-header { padding-inline: .35rem; }
+  .ask-shell { border-radius: 1rem; }
+  .ask-convo { min-height: 300px; max-height: 62vh; padding: .85rem; }
+  .ask-user { max-width: 88%; }
+  .ask-assistant { max-width: 100%; }
+  .ask-result-card { align-items: flex-start; flex-wrap: wrap; }
+  .ask-result-card a { width: 100%; min-height: 40px; display: flex; align-items: center; }
+  .ask-input-row { flex-wrap: nowrap; }
+  .ask-send { flex: 0 0 auto; padding-inline: .85rem; }
+  .ask-privacy { line-height: 1.35; }
+}
+
 /* Phase 4.3 consumer comparison experience */
 @media (min-width: 801px) {
   .steps {

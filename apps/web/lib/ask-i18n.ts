@@ -63,14 +63,14 @@ export const askMessages: Record<Locale, AskStrings> = {
       "Get help finding and understanding Carevero’s healthcare price and provider information.",
     safety:
       "Carevero helps you find and understand healthcare pricing and provider information. It does not provide medical advice, diagnosis, or treatment recommendations.",
-    placeholder: "Ask about a procedure, price, hospital, lab, or provider…",
+    placeholder: "Ask about a procedure, provider, location, or published price…",
     send: "Send",
     starters: [
       "Compare MRI prices",
       "Find labs near Nashua",
-      "Which locations have prices for a CBC?",
-      "Find urgent care near Nashua",
-      "What does discounted cash price mean?",
+      "Blood test without insurance",
+      "Find urgent care",
+      "What does cash price mean?",
     ],
     loading: "Finding Carevero information…",
     medicalBoundary:
