@@ -15,6 +15,10 @@ drifts toward diagnosis/treatment/triage is rejected outright.
   `payment_context`. Deterministic, medical gate untouched. (LIVE, `carevero-beta-api-00059-bek`.)
 - **LabCorp OnDemand verified** (2026-08-18): all-inclusive DTC prices captured; Quest-vs-LabCorp
   comparison recorded (`NH_LAB_PRICE_ARCHITECTURE.md`).
+- **DTC lab price surface — LIVE** (API `00060-tir` + Web `00062-qud`): `GET /api/v1/procedures/{slug}/dtc-options`
+  serves verified org/product-level Quest/LabCorp self-pay totals; a distinct "Direct-to-consumer
+  self-pay options" section on the comparison page renders them (prominent in `?pay=self`), separate
+  from the per-location comparison, with component breakdown + source details. No fake location prices.
 - **Natural-language robustness**: payment/intent/provider-type noise stripping ("Compare MRI
   prices", "Find imaging centers", "self pay MRI near Concord") + spelling variants
   ("xray", "thyroid test"). Live false-no-match on a 77-query sweep dropped to documented
