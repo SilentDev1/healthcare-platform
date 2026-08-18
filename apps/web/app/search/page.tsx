@@ -8,6 +8,7 @@ import type { SearchResult } from "../../lib/api";
 import { capabilityLabel, localePath, messages } from "../../lib/i18n";
 import { useLocale } from "../components/useLocale";
 import { SearchCategoryResults } from "./SearchCategoryResults";
+import { SearchDiscovery } from "./SearchDiscovery";
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 const SEARCH_TIMEOUT_MS = 10_000;
 
@@ -19,6 +20,7 @@ function SearchContent() {
   const q = params.get("q") ?? "";
   const location = params.get("location") ?? "";
   const payer = params.get("payer") ?? "";
+  const pay = params.get("pay") ?? "";
   const [items, setItems] = useState<SearchResult[]>([]);
   const [capabilityLocations, setCapabilityLocations] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(q.length >= 2);
@@ -62,6 +64,7 @@ function SearchContent() {
           const priceParams = new URLSearchParams();
           if (location) priceParams.set("location", location);
           if (payer) priceParams.set("payer", payer);
+          if (pay) priceParams.set("pay", pay);
           const query = priceParams.size ? `?${priceParams}` : "";
           router.replace(
             localePath(
@@ -85,7 +88,7 @@ function SearchContent() {
       clearTimeout(timeout);
       controller.abort();
     };
-  }, [q, location, payer, requestNonce, router, locale, t.searchClarificationTitle]);
+  }, [q, location, payer, pay, requestNonce, router, locale, t.searchClarificationTitle]);
   // Drop empty categories (0 procedures) that only matched via description text — they
   // would render a confusing "0 procedures" header with no cards.
   const visibleItems = items.filter(
@@ -121,6 +124,7 @@ function SearchContent() {
   const priceParams = new URLSearchParams();
   if (location) priceParams.set("location", location);
   if (payer) priceParams.set("payer", payer);
+  if (pay) priceParams.set("pay", pay);
   const procedureQuery = priceParams.size ? `?${priceParams}` : "";
   return (
     <main>
@@ -140,6 +144,7 @@ function SearchContent() {
         initialPayer={payer}
         locale={locale}
       />
+      {!q ? <SearchDiscovery locale={locale} messages={t} /> : null}
       {q && (
         <div className="toolbar">
           <strong>
@@ -184,6 +189,7 @@ function SearchContent() {
             payer={payer}
             compareLabel={t.searchCompareCta}
             detailsLabel={t.viewDetails}
+            pay={pay}
           />
         </section>
       ) : category ? (
@@ -204,11 +210,12 @@ function SearchContent() {
                 payer={payer}
                 compareLabel={t.searchCompareCta}
                 detailsLabel={t.viewDetails}
+                pay={pay}
               />
             </div>
           )}
         </>
-      ) : (
+      ) : q ? (
         <SearchCards
           items={withoutFacilities(visibleItems)}
           locale={locale}
@@ -216,8 +223,9 @@ function SearchContent() {
           payer={payer}
           compareLabel={t.searchCompareCta}
           detailsLabel={t.viewDetails}
+          pay={pay}
         />
-      )}
+      ) : null}
       {!loading && !error && hasCapabilityGroup && (
         <section className="search-locations-group">
           <h2>{t.searchLocationsGroup}</h2>
@@ -256,6 +264,7 @@ function SearchCards({
   payer,
   compareLabel,
   detailsLabel,
+  pay = "",
 }: {
   items: SearchResult[];
   locale: ReturnType<typeof useLocale>;
@@ -263,6 +272,7 @@ function SearchCards({
   payer: string;
   compareLabel: string;
   detailsLabel: string;
+  pay?: string;
 }) {
   return (
     <div className="cards">
@@ -272,7 +282,7 @@ function SearchCards({
               key={`${item.entity_type}-${item.entity_id}`}
             >
               <span className="badge neutral">
-                {item.entity_type.replaceAll("_", " ")}
+                {item.entity_type === "facility" ? "Provider" : item.entity_type === "procedure" ? "Procedure" : "Care category"}
               </span>
               <h2>{item.title}</h2>
               <p>{item.subtitle}</p>
@@ -285,7 +295,7 @@ function SearchCards({
                     : item.entity_type === "procedure"
                       ? localePath(
                           locale,
-                          `/procedures/${item.metadata.slug}/prices?location=${encodeURIComponent(location)}${payer ? `&payer=${encodeURIComponent(payer)}` : ""}`,
+                          `/procedures/${item.metadata.slug}/prices?location=${encodeURIComponent(location)}${payer ? `&payer=${encodeURIComponent(payer)}` : ""}${pay ? `&pay=${encodeURIComponent(pay)}` : ""}`,
                         )
                       : localePath(
                           locale,

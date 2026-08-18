@@ -27,7 +27,7 @@ describe("Home", () => {
     expect(screen.getByText("What are you looking for?")).toBeInTheDocument();
     // Manual search remains an obvious secondary CTA.
     expect(
-      screen.getByRole("link", { name: /Search prices/ }),
+      screen.getByRole("button", { name: /Search prices/ }),
     ).toBeInTheDocument();
     // New England expansion messaging (region-forward, not NH-only).
     expect(

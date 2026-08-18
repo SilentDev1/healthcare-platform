@@ -11,6 +11,7 @@ import { askMessages } from "../../../../lib/ask-i18n";
 import { localePath } from "../../../../lib/i18n";
 import { requestLocale, requestMessages } from "../../../../lib/i18n-server";
 import { PopularSearches } from "../../../components/PopularSearches";
+import { ExperienceTrigger } from "../../../components/GlobalExperience";
 
 export default async function ProcedurePrices({
   params,
@@ -51,11 +52,16 @@ export default async function ProcedurePrices({
     dtc = null;
   }
   const selfPayFirst = filters.pay === "self";
+  const paymentHref = (pay?: string) => {
+    const next = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) if (value && key !== "pay") next.set(key, value);
+    if (pay) next.set("pay", pay);
+    return localePath(locale, `${basePath}${next.size ? `?${next}` : ""}`);
+  };
   const dtcSection = dtc ? (
     <DtcOptions data={dtc} messages={messages} locale={locale} />
   ) : null;
 
-  const payerName = undefined;
   return (
     <main>
       <PopularSearches
@@ -77,34 +83,15 @@ export default async function ProcedurePrices({
         <span>{messages.comparePrices}</span>
       </nav>
       <div style={{ margin: "0.25rem 0 0.75rem" }}>
-        <Link
-          className="ask-inline-entry"
-          href={`${localePath(locale, "/ask")}?q=${encodeURIComponent(
-            `${procedure.consumer_name} prices in NH`,
-          )}`}
-        >
+        <ExperienceTrigger kind="ask" query={`${procedure.consumer_name} prices in NH`} className="ask-inline-entry">
           ✨ {askMessages[locale].navLabel}
-        </Link>
+        </ExperienceTrigger>
       </div>
       <div className="page-heading comparison-heading">
-        <p className="eyebrow">{messages.compareServiceLocations}</p>
         <h1>{procedure.consumer_name}</h1>
-        <p className="lede">
-          {messages.ledeSummary.replace("{region}", launchRegion.name)}
-        </p>
+        <p className="lede">{procedure.short_description || messages.ledeSummary.replace("{region}", launchRegion.name)}</p>
       </div>
-      <dl className="decision-context" aria-label={messages.comparisonContext}>
-        <div>
-          <dt>{messages.location}</dt>
-          <dd>{filters.location || launchRegion.name}</dd>
-        </div>
-        <div>
-          <dt>{messages.coverage}</dt>
-          <dd>
-            {payerName ?? `${messages.selfPay} · ${messages.chooseInsurance}`}
-          </dd>
-        </div>
-      </dl>
+      <section className="payment-mode" aria-labelledby="payment-mode-heading"><h2 id="payment-mode-heading">{messages.coverage}</h2><div><Link className={selfPayFirst ? "is-active" : ""} href={paymentHref("self")}>{messages.selfPay} / {messages.selfPayTitle}</Link><Link className={!selfPayFirst ? "is-active" : ""} href={paymentHref()}>{messages.chooseInsurance}</Link></div><p>{filters.location || launchRegion.name}</p></section>
       {selfPayFirst ? dtcSection : null}
       <ProcedureResults
         slug={slug}

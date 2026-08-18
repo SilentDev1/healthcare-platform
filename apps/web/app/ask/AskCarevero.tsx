@@ -41,7 +41,7 @@ function PriceCard({ row, locale, selfPay, unavailable }: { row: PriceRow; local
   return <li className="ask-result-card ask-price-card"><div className="ask-result-body"><h3>{row.facility_name}</h3><p>{[row.location_name, row.city, row.location_type?.replaceAll("_", " ")].filter(Boolean).join(" · ")}</p>{shown ? <p className="ask-price"><span>{cash && (selfPay || !negotiated) ? "Published cash/self-pay price" : "Published price"}</span>{shown}</p> : <span className="ask-no-price">{unavailable}</span>}{row.included_component_scope ? <p className="ask-scope">{row.included_component_scope}</p> : null}</div><Link href={localePath(locale, `/hospitals/${row.facility_id}`)} aria-label={`View price details for ${row.facility_name}`}>View details</Link></li>;
 }
 
-export function AskCarevero({ locale }: { locale: Locale }) {
+export function AskCarevero({ locale, initialQuery = "", context }: { locale: Locale; initialQuery?: string; context?: { pathname?: string } }) {
   const t = askMessages[locale] ?? askMessages.en, params = useSearchParams();
   const [turns, setTurns] = useState<Turn[]>([]), [input, setInput] = useState(""), [busy, setBusy] = useState(false);
   const endRef = useRef<HTMLDivElement>(null), started = useRef(false);
@@ -78,8 +78,11 @@ export function AskCarevero({ locale }: { locale: Locale }) {
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    const q = params.get("q");
+    const q = initialQuery || params.get("q");
     if (q) queueMicrotask(() => void ask(q));
+    // Context plumbing is intentionally identifiers-only. The current Ask API does
+    // not yet accept this field, so it is not used to fabricate contextual answers.
+    void context;
     // Deep-link initialization is intentionally run once; subsequent turns are user-driven.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

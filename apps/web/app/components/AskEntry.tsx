@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { askMessages } from "../../lib/ask-i18n";
-import { localePath, type Locale } from "../../lib/i18n";
+import { type Locale } from "../../lib/i18n";
+import { OPEN_ASK } from "./GlobalExperience";
 
 /**
  * "Ask Carevero" entry point. Compact by design — it is a gateway to the dedicated /ask page,
@@ -25,12 +25,11 @@ export function AskEntry({
   inlineLabel?: string;
 }) {
   const t = askMessages[locale] ?? askMessages.en;
-  const router = useRouter();
   const [value, setValue] = useState("");
 
   function go(q: string) {
     const query = q.trim();
-    router.push(`${localePath(locale, "/ask")}${query ? `?q=${encodeURIComponent(query)}` : ""}`);
+    window.dispatchEvent(new CustomEvent(OPEN_ASK, { detail: { query } }));
   }
 
   if (variant === "inline") {

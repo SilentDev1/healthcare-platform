@@ -10,6 +10,7 @@ import { askMessages } from "../lib/ask-i18n";
 import { directoryMessages } from "../lib/directory-i18n";
 import { requestLocale, requestMessages } from "../lib/i18n-server";
 import { LanguageSelector } from "./components/LanguageSelector";
+import { ExperienceTrigger, GlobalExperience } from "./components/GlobalExperience";
 export function seoRobots(
   indexingEnabled = process.env.SEO_INDEXING_ENABLED,
 ): Metadata["robots"] {
@@ -71,9 +72,9 @@ export default async function Layout({
             </Link>
             <Link href={localePath(locale, "/procedures")}>{t.procedures}</Link>
             <Link href={localePath(locale, "/map")}>{t.map}</Link>
-            <Link className="nav-ask" href={localePath(locale, "/ask")}>
+            <ExperienceTrigger kind="ask" className="nav-ask nav-button">
               ✨ {askMessages[locale].navLabel}
-            </Link>
+            </ExperienceTrigger>
             <Link href={localePath(locale, "/how-it-works")}>
               {t.howItWorks}
             </Link>
@@ -82,6 +83,7 @@ export default async function Layout({
             </Suspense>
           </nav>
         </header>
+        <GlobalExperience locale={locale} />
         <div id="main-content">{children}</div>
         <footer className="footer">
           <div className="footer-inner">

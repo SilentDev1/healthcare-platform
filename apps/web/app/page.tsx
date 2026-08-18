@@ -8,6 +8,7 @@ import { localePath } from "../lib/i18n";
 import { askMessages } from "../lib/ask-i18n";
 import { homeMessages } from "../lib/home-i18n";
 import { requestLocale, requestMessages } from "../lib/i18n-server";
+import { ExperienceTrigger } from "./components/GlobalExperience";
 
 interface Coverage {
   nh_facilities: number;
@@ -48,12 +49,12 @@ export default async function Home() {
             {/* Secondary, but clearly visible: the existing deterministic price search. */}
             <div className="ne-manual">
               <span className="ne-manual-prompt">{ask.homeManualPrompt}</span>
-              <Link
+              <ExperienceTrigger
+                kind="search"
                 className="button secondary ne-manual-cta"
-                href={localePath(locale, "/search")}
               >
                 {ask.homeManualCta} →
-              </Link>
+              </ExperienceTrigger>
             </div>
 
             <ul className="ne-trust" aria-label={t.publishedData}>

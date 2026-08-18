@@ -6,15 +6,14 @@ import {
 } from "../../lib/api";
 import {
   ComparisonFacilityCard,
-  CoverageNotice,
   EmptyState,
   ErrorState,
-  FilterPanel,
   PricingDisclaimer,
 } from "./ui";
-import { CompareTray, InlineComparePanel } from "./CompareSelect";
+import { CompareTray } from "./CompareSelect";
 import { launchRegion } from "../../lib/brand";
 import { localePath, type Locale, type Messages } from "../../lib/i18n";
+import { experienceMessages } from "../../lib/experience-i18n";
 
 export interface ProcedureResultsFilters {
   location?: string;
@@ -28,6 +27,7 @@ export interface ProcedureResultsFilters {
   sort?: string;
   /** "self" = self-pay/uninsured mode: lead with published cash prices. */
   pay?: string;
+  view?: string;
 }
 
 function sortItems(items: ProcedureComparisonItem[], sort: string | undefined) {
@@ -169,7 +169,7 @@ export async function ProcedureResults({
   ).length;
 
   const filterForm = (
-    <form className="filter-form">
+    <form className="filter-form persistent-filter-form">
       <div className="filter-group">
         <label htmlFor="location">{messages.yourLocation}</label>
         <input
@@ -257,6 +257,7 @@ export async function ProcedureResults({
         </select>
       </div>
       {filters.sort && <input type="hidden" name="sort" value={filters.sort} />}
+      {filters.pay && <input type="hidden" name="pay" value={filters.pay} />}
       <button className="button" type="submit">
         {messages.applyFilters}
       </button>
@@ -268,8 +269,8 @@ export async function ProcedureResults({
 
   const hospitalsWithPricesLabel =
     data.facilities_with_prices === 1
-      ? messages.hospitalsWithPricesOne
-      : messages.hospitalsWithPricesOther.replace(
+      ? experienceMessages[locale].providerOne
+      : experienceMessages[locale].providerMany.replace(
           "{count}",
           String(data.facilities_with_prices),
         );
@@ -311,19 +312,8 @@ export async function ProcedureResults({
             ).replace("{count}", String(activeFilterCount))}`
           : ""}
       </p>
-      <CoverageNotice messages={messages}>
-        {filters.payer && data.facilities_with_prices === 0
-          ? messages.coverageNoRateForPayer.replace(
-              "{payer}",
-              payerName ?? messages.thisPayer,
-            )
-          : messages.priceCoverageBody.replace(
-              "{withPrices}",
-              String(data.facilities_with_prices),
-            )}
-      </CoverageNotice>
-      <div className="results-controls">
-        <FilterPanel messages={messages}>{filterForm}</FilterPanel>
+      <div className="results-controls sticky-results-controls">
+        {filterForm}
         <form className="results-sort-form">
           {Object.entries(filters)
             .filter(([key, value]) => key !== "sort" && key !== "radius" && value)
@@ -353,7 +343,7 @@ export async function ProcedureResults({
           <button className="button secondary">{messages.apply}</button>
         </form>
       </div>
-      <div className="marketplace-results-layout">
+      <div className="marketplace-results-layout single-column-results">
         <section className="result-list" aria-label={messages.facilityResults}>
           {items.length === 0 ? (
             <EmptyState title={messages.noHospitalsMatch}>
@@ -365,7 +355,7 @@ export async function ProcedureResults({
               </div>
             </EmptyState>
           ) : (
-            items.map((item) => (
+            items.slice(0, filters.view === "all" ? items.length : 5).map((item) => (
               <ComparisonFacilityCard
                 key={`${item.facility_id}-${item.facility_location_id}`}
                 item={item}
@@ -380,15 +370,12 @@ export async function ProcedureResults({
             ))
           )}
         </section>
-        <InlineComparePanel
-          procedureSlug={slug}
-          procedureName={procedureName}
-          items={items}
-          payer={filters.payer}
-          plan={filters.plan}
-          locale={locale}
-        />
       </div>
+      {items.length > 5 && filters.view !== "all" ? (
+        <div className="see-all-results">
+          <Link className="button secondary" href={buildResultsHref({ view: "all" })}>{experienceMessages[locale].seeAll.replace("{count}", String(items.length))}</Link>
+        </div>
+      ) : null}
       <PricingDisclaimer messages={messages} />
       <CompareTray
         procedureSlug={slug}
