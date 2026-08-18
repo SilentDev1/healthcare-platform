@@ -3,13 +3,42 @@
     "description": "REAL, provider-published non-hospital CASH prices for NH, captured from official provider price pages during a 2026-08-16 research sweep. These are ingested as NON-PUBLIC candidate_review rows (publication_status != 'publishable') so nothing reaches consumers automatically — promotion to public requires human review, exactly like hospital mapping approvals. Prices are transcribed verbatim from the cited source; none is inferred or estimated. Missing prices stay 'price not available' (never $0).",
     "policy": "Candidate discovery is separate from approved public mappings. Mapping a provider's published line item to a canonical Carevero procedure is a human-review step; the canonical_slug here is a PROPOSED exact-name match, not an approved public mapping.",
     "sources_researched_but_not_yet_built": {
-      "labcorp_ondemand": "ondemand.labcorp.com/products — fixed consumer self-pay prices (CBC $29, Lipid $59, HbA1c $39, PSA $69) — national, buildable",
-      "questhealth": "questhealth.com product pages — CBC $29, CMP $49, Vitamin D $75 — national, buildable",
+      "labcorp_ondemand": "VERIFIED 2026-08-18 — see _dtc_reference.labcorp_ondemand (all-inclusive; CBC $29, CMP $49, Lipid $59, TSH $49, HbA1c $39). Org-level DTC; not per-location.",
+      "questhealth": "VERIFIED 2026-08-17 — see _dtc_reference.quest_diagnostics (test + required $6 fee). Staged candidate_review; not promoted per-location.",
       "the_joint_chiropractic": "thejoint.com/plans-pricing — single visit $55, new-patient $29 — buildable (no canonical chiropractic procedure yet)",
       "convenientmd": "convenientmd.com/urgent-care/faqs — flat urgent-care visit $175 (cap $265) + occ-health PDF",
       "clearchoicemd": "ccmdcenters.com/prompt-pay — flat self-pay urgent-care visit $160",
       "excluded_estimated_only": "Shields (calculator only), Bedford/Nashua/Concord ASCs (phone quote only), NH HealthCost (claims-ESTIMATED medians — reference only, not provider-published)"
     }
+  },
+  "_dtc_reference": {
+    "description": "VERIFIED national direct-to-consumer (DTC) self-pay lab prices, organization/product-level (NOT location-specific). This is REFERENCE data only — the ingest does not read this key, so these never become per-location publishable prices. Publishing DTC labs to consumers requires a dedicated org-level DTC price surface (see docs/NH_LAB_PRICE_ARCHITECTURE.md); until then Quest candidates stay candidate_review and LabCorp is not ingested. Do NOT expand these into 14 per-location prices.",
+    "quest_diagnostics": {
+      "source": "questhealth.com product pages",
+      "retrieval_date": "2026-08-17",
+      "fee_model": "test price + REQUIRED $6.00 physician service fee = purchase total",
+      "products": [
+        {"test": "CBC", "canonical_slug": "complete-blood-count", "test_price": 29.00, "physician_fee": 6.00, "total": 35.00, "sku": "6399M"},
+        {"test": "CMP", "canonical_slug": "comprehensive-metabolic-panel", "test_price": 49.00, "physician_fee": 6.00, "total": 55.00, "sku": "10231M"},
+        {"test": "Lipid Panel", "canonical_slug": "lipid-panel", "test_price": 59.00, "physician_fee": 6.00, "total": 65.00, "sku": "94355M"},
+        {"test": "TSH", "canonical_slug": "thyroid-test", "test_price": 49.00, "physician_fee": 6.00, "total": 55.00, "sku": "36127M", "mapping_note": "product is TSH-only; confirm vs canonical thyroid-test scope"},
+        {"test": "Urinalysis (UTI)", "canonical_slug": "urinalysis", "test_price": 40.00, "physician_fee": 6.00, "total": 46.00, "sku": "5463M", "mapping_note": "UTI-framed; confirm vs routine urinalysis"},
+        {"test": "HbA1c", "canonical_slug": null, "test_price": 39.00, "physician_fee": 6.00, "total": 45.00, "sku": "496M", "blocker": "NO_CANONICAL_PROCEDURE", "promo_note": "list $39; a transient 10%-off promo showed $35.10 — do not store the promo as a stable price"}
+      ]
+    },
+    "labcorp_ondemand": {
+      "source": "ondemand.labcorp.com",
+      "retrieval_date": "2026-08-18",
+      "fee_model": "ALL-INCLUSIVE — displayed price includes the independent-provider order; NO separate physician fee (unlike Quest)",
+      "products": [
+        {"test": "CBC", "canonical_slug": "complete-blood-count", "total": 29.00, "product": "complete-blood-count"},
+        {"test": "CMP", "canonical_slug": "comprehensive-metabolic-panel", "total": 49.00, "product": "comprehensive-metabolic-panel"},
+        {"test": "Lipid Panel", "canonical_slug": "lipid-panel", "total": 59.00, "product": "cholesterol-test-lipid-panel"},
+        {"test": "TSH", "canonical_slug": "thyroid-test", "total": 49.00, "product": "thyroid-stimulating-hormone-tsh-test", "mapping_note": "confirm vs canonical thyroid-test scope"},
+        {"test": "HbA1c", "canonical_slug": null, "total": 39.00, "product": "diabetes-risk-hbA1c-test", "blocker": "NO_CANONICAL_PROCEDURE"}
+      ]
+    },
+    "consumer_insight": "LabCorp OnDemand is cheaper than Quest on every comparable test (no separate $6 fee): CBC 29 vs 35, CMP 49 vs 55, Lipid 59 vs 65, TSH 49 vs 55, HbA1c 39 vs 45."
   },
   "organizations": [
     {
