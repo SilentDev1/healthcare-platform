@@ -6,11 +6,10 @@ import "./styles.css";
 import "leaflet/dist/leaflet.css";
 import { brand } from "../lib/brand";
 import { localePath } from "../lib/i18n";
-import { askMessages } from "../lib/ask-i18n";
-import { directoryMessages } from "../lib/directory-i18n";
+import { navigationMessages } from "../lib/navigation-i18n";
 import { requestLocale, requestMessages } from "../lib/i18n-server";
-import { LanguageSelector } from "./components/LanguageSelector";
-import { ExperienceTrigger, GlobalExperience } from "./components/GlobalExperience";
+import { GlobalExperience } from "./components/GlobalExperience";
+import { NavigationHeader } from "./components/NavigationHeader";
 export function seoRobots(
   indexingEnabled = process.env.SEO_INDEXING_ENABLED,
 ): Metadata["robots"] {
@@ -43,6 +42,7 @@ export default async function Layout({
     process.env.FEEDBACK_ENABLED === "true" && feedbackEmail;
   const locale = await requestLocale();
   const t = await requestMessages();
+  const nav = navigationMessages[locale];
   return (
     <html lang={locale} data-scroll-behavior="smooth">
       <body>
@@ -63,28 +63,9 @@ export default async function Layout({
               <span className="beta-badge">{t.privateBetaBadge}</span>
             )}
           </Link>
-          <nav aria-label={t.mainNavigation}>
-            <ExperienceTrigger
-              kind="search"
-              className="nav-primary nav-button"
-            >
-              {t.findPrices}
-            </ExperienceTrigger>
-            <Link href={localePath(locale, "/providers")}>
-              {directoryMessages[locale].navLabel}
-            </Link>
-            <Link href={localePath(locale, "/procedures")}>{t.procedures}</Link>
-            <Link href={localePath(locale, "/map")}>{t.map}</Link>
-            <ExperienceTrigger kind="ask" className="nav-ask nav-button">
-              ✨ {askMessages[locale].navLabel}
-            </ExperienceTrigger>
-            <Link href={localePath(locale, "/how-it-works")}>
-              {t.howItWorks}
-            </Link>
-            <Suspense fallback={null}>
-              <LanguageSelector locale={locale} label={t.language} />
-            </Suspense>
-          </nav>
+          <Suspense fallback={null}>
+            <NavigationHeader locale={locale} languageLabel={t.language} />
+          </Suspense>
         </header>
         <GlobalExperience locale={locale} />
         <div id="main-content">{children}</div>
@@ -94,17 +75,15 @@ export default async function Layout({
               <strong>{brand.name}</strong>
               <p>{brand.tagline}</p>
               <nav aria-label={t.footerNavigation}>
-                <Link href={localePath(locale, "/about-data")}>
-                  {t.aboutData}
+                <Link href={localePath(locale, "/search")}>{nav.findCare}</Link>
+                <Link href={localePath(locale, "/providers")}>
+                  {nav.providers}
                 </Link>
                 <Link href={localePath(locale, "/how-it-works")}>
-                  {t.howItWorks}
+                  {nav.howItWorks}
                 </Link>
-                <Link href={localePath(locale, "/providers")}>
-                  {directoryMessages[locale].navLabel}
-                </Link>
-                <Link href={localePath(locale, "/procedures")}>
-                  {t.procedures}
+                <Link href={localePath(locale, "/about-data")}>
+                  {nav.aboutData}
                 </Link>
                 <Link href={localePath(locale, "/privacy")}>{t.privacy}</Link>
                 <Link href={localePath(locale, "/terms")}>{t.terms}</Link>

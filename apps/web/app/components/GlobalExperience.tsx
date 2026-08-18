@@ -12,8 +12,8 @@ const AskCarevero = dynamic(() => import("../ask/AskCarevero").then((m) => m.Ask
 export const OPEN_SEARCH = "carevero:open-search";
 export const OPEN_ASK = "carevero:open-ask";
 
-export function ExperienceTrigger({ kind, className, children, query }: { kind: "search" | "ask"; className?: string; children: React.ReactNode; query?: string }) {
-  return <button type="button" className={className} onClick={(event) => window.dispatchEvent(new CustomEvent(kind === "search" ? OPEN_SEARCH : OPEN_ASK, { detail: { query }, bubbles: true }))}>{children}</button>;
+export function ExperienceTrigger({ kind, className, children, query, onTrigger }: { kind: "search" | "ask"; className?: string; children: React.ReactNode; query?: string; onTrigger?: () => void }) {
+  return <button type="button" className={className} onClick={() => { onTrigger?.(); window.dispatchEvent(new CustomEvent(kind === "search" ? OPEN_SEARCH : OPEN_ASK, { detail: { query }, bubbles: true })); }}>{children}</button>;
 }
 
 export function GlobalExperience({ locale }: { locale: Locale }) {

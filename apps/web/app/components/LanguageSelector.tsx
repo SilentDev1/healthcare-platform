@@ -6,9 +6,11 @@ import { localeNames, locales, type Locale } from "../../lib/i18n";
 export function LanguageSelector({
   locale,
   label,
+  compact = false,
 }: {
   locale: Locale;
   label: string;
+  compact?: boolean;
 }) {
   const pathname = usePathname();
   const params = useSearchParams();
@@ -32,8 +34,13 @@ export function LanguageSelector({
   }
 
   return (
-    <label className="language-selector">
+    <label className={`language-selector${compact ? " is-compact" : ""}`}>
       <span className="sr-only">{label}</span>
+      {compact && (
+        <span className="language-code" aria-hidden="true">
+          🌐 {locale === "en" ? "EN" : locale.toUpperCase()} ⌄
+        </span>
+      )}
       <select
         aria-label={label}
         value={locale}
