@@ -26,6 +26,8 @@ export interface ProcedureResultsFilters {
   availability?: string;
   rating?: string;
   sort?: string;
+  /** "self" = self-pay/uninsured mode: lead with published cash prices. */
+  pay?: string;
 }
 
 function sortItems(items: ProcedureComparisonItem[], sort: string | undefined) {
@@ -139,7 +141,20 @@ export async function ProcedureResults({
       return false;
     return true;
   });
-  items = sortItems(items, filters.sort);
+  // Self-pay / uninsured mode: default to cash-lowest ordering (an explicit sort
+  // still wins). This only reorders — it never hides providers and never relabels
+  // a negotiated rate as a cash price.
+  const selfPay = filters.pay === "self";
+  const effectiveSort = selfPay && !filters.sort ? "cash" : filters.sort;
+  items = sortItems(items, effectiveSort);
+  const buildResultsHref = (overrides: Record<string, string | undefined>) => {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries({ ...filters, ...overrides })) {
+      if (value) params.set(key, String(value));
+    }
+    const qs = params.toString();
+    return localePath(locale, qs ? `${basePath}?${qs}` : basePath);
+  };
   const facilityTypes = Array.from(
     new Set(data.items.map((item) => item.facility_type).filter(Boolean)),
   ).sort() as string[];
@@ -272,6 +287,21 @@ export async function ProcedureResults({
         <p className="eyebrow">{messages.pricesNearYou}</p>
         <h2>{hospitalsWithPricesLabel}</h2>
       </div>
+      <div className={`selfpay-banner${selfPay ? " is-active" : ""}`}>
+        <div>
+          <strong>{messages.selfPayTitle}</strong>{" "}
+          <span>{selfPay ? messages.selfPayBody : messages.selfPayPrompt}</span>
+        </div>
+        {selfPay ? (
+          <Link className="text-link" href={buildResultsHref({ pay: undefined })}>
+            {messages.selfPayShowAll}
+          </Link>
+        ) : (
+          <Link className="button secondary" href={buildResultsHref({ pay: "self" })}>
+            {messages.selfPayShowCash}
+          </Link>
+        )}
+      </div>
       <p className="results-count">
         <span className="results-secondary">{matchingLocationsLabel}</span>
         {activeFilterCount
@@ -312,7 +342,7 @@ export async function ProcedureResults({
           </label>
           <label className="control-field">
             <span>{messages.sortLabel}</span>
-            <select name="sort" defaultValue={filters.sort ?? "recommended"}>
+            <select name="sort" defaultValue={effectiveSort ?? "recommended"}>
               <option value="recommended">{messages.sortRecommended}</option>
               <option value="distance">{messages.nearestFirst}</option>
               <option value="cash">{messages.sortLowestCash}</option>
