@@ -1,11 +1,12 @@
 # Carevero NH — Final Completion Audit
 
-Authoritative NH completion record. Last updated: 2026-08-18.
+Authoritative NH completion record. Last updated: 2026-08-18 (combined Codex-UI release).
 
 ## Production (live)
-- **API:** `carevero-beta-api-00059-bek` (100%) — provider-neutral comparison, `payment_context`, search synonyms.
-- **Web:** `carevero-beta-web-00061-qoy` (100%) — **self-pay UX live** (rollback `00048-t6w`).
-- **Job image:** `job:post-selfpay`. **Main:** `cbae7f1`+ (this batch adds LabCorp verification + self-pay deploy). **Migration:** `0015`.
+- **API:** `carevero-beta-api-00064-hap` (100%) — provider-neutral comparison, `payment_context`, DTC-options endpoint, 52-procedure catalog, hardened medical gate (rollback `00062-quy`).
+- **Web:** `carevero-beta-web-00063-tih` (100%) — Codex consumer-nav redesign (Find care ▾ / Ask drawer / Quick Search) + self-pay UX + DTC lab section (rollback `00062-qud`).
+- **Job image:** `job:psa`. **Main:** `8eebe19` (backend + all Codex UI, clean fast-forward). **Migration:** `0015`.
+- **Canonical procedures: 52** — the original 50 intact + `vitamin-d-test` (#51, CPT 82306) + `psa-test` (#52, CPT 84153). HbA1c is `a1c-test` (never duplicated).
 
 ## What works (live, verified)
 - **Provider-neutral comparison** — non-hospital published prices appear at applicable locations; Derry Imaging $325 ultrasound ranks cheapest of 26 directly-comparable; hospital behavior unchanged.
@@ -26,7 +27,7 @@ Authoritative NH completion record. Last updated: 2026-08-18.
 - **Decision:** both are national **org/product-level** DTC prices. Publishing them per-location would fabricate the "14 fake location prices" the directive forbids, so they stay `candidate_review` (NON-PUBLIC). Consumer publication requires an **org-level DTC price surface** (next feature). See `NH_LAB_PRICE_ARCHITECTURE.md`.
 
 ## Canonical catalog
-- Existing: **50/50** (intact). Gaps documented (proposal only): HbA1c, urgent-care visit, PT eval/session, chiropractic, **vitamin D**, **PSA**, ambiguous "diabetes test". See `NH_CANONICAL_PROCEDURE_GAPS.md`.
+- **52 canonical procedures** — original **50 intact** + Vitamin D (#51) + PSA (#52), both added deliberately with exact-code mappings (fp-detector CLEAN). HbA1c already existed as `a1c-test`. Remaining gaps (proposal only): urgent-care visit, PT eval/session, chiropractic, ambiguous "diabetes test". See `NH_CANONICAL_PROCEDURE_GAPS.md`.
 
 ## Safety (post-deploy, 2026-08-18)
 - `phase_4_7_safety` **PASS**: 26 hospitals, negatives 0, missing-provenance 0, unreviewed-mappings 0, duplicate-identities 0, **ai_modified_prices 0**.
