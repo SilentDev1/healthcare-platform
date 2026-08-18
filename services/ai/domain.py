@@ -229,6 +229,17 @@ _MEDICAL_ADVICE = _compile(
     r"\bdo i need (a |an |to get )?(surgery|an? operation|a? ?scan|an? ?mri|a? ?ct|an? ?x-?ray|an? ?ultrasound|a? ?biopsy|stitches|antibiotics|a? ?test|bloodwork|imaging)\b",
     r"\b(mri|ct|cat scan|x-?ray|ultrasound|scan) or (a |an |the )?(mri|ct|cat scan|x-?ray|ultrasound|scan)\b",
     r"\bwhat (test|scan|imaging) (tells|shows|checks|detects)\b",
+    # Necessity / test-selection for a NAMED test (a lab name may sit between the
+    # verb and "test", e.g. "do I need a vitamin D test?", "should I get a PSA test").
+    # "do I need"/"should I get" signals medical necessity, distinct from pricing
+    # ("how much is a vitamin D test", "where can I get one") which never use it.
+    r"\b(do i (really |actually )?need|should i (get|have|do|be tested|get tested))\b"
+    r".{0,28}\b(test|panel|screening|blood ?work|lab work|scan|mri|ct|x-?ray|ultrasound|biopsy|checked|screened)\b",
+    # Necessity for a bare NAMED test/procedure (no trailing "test" word), e.g.
+    # "do I need a CBC?", "should I get a PSA", "do I need vitamin D".
+    r"\b(do i (really |actually )?need|should i get)\b (a |an )?"
+    r"(cbc|cmp|bmp|psa|a1c|hba1c|tsh|lipid panel|vitamin d|metabolic panel|blood count|"
+    r"thyroid test|urinalysis|colonoscopy|mammogram|endoscopy|biopsy)\b",
     # --- treatment ---
     r"\bhow (do|should|can) i (treat|cure|fix|heal|get rid of|manage|relieve|deal with)\b",
     r"\bwhat (can i (do|take)|should i do|treatment|cure|remedy) (to|for)\b",
