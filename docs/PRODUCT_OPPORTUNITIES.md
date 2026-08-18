@@ -4,11 +4,17 @@ Date: 2026-08-17. Companion to `CONSUMER_SEARCH_DEMAND_RESEARCH.md`. Every item 
 one test: **does it help a consumer FIND, UNDERSTAND, or COMPARE Carevero data?** Anything that
 drifts toward diagnosis/treatment/triage is rejected outright.
 
-## BUILT TONIGHT (2026-08-17)
+## BUILT + DEPLOYED (2026-08-17 → 2026-08-18)
 
+- **Self-pay comparison UX — LIVE** (`carevero-beta-web-00061-qoy`): "Paying without insurance?"
+  banner on `/procedures/{slug}/prices` + `?pay=self` cash-first mode (reorders only, never hides
+  providers, never relabels a negotiated rate as cash); AskCarevero deep-links comparison with
+  `?pay=self` when self-pay is detected. i18n×5, browser-verified.
 - **Self-pay / uninsured intent recognition** (P0): "I need a blood test without insurance" now
   resolves to the Laboratory category with `payment_context=self_pay`; `/api/v1/search` exposes
   `payment_context`. Deterministic, medical gate untouched. (LIVE, `carevero-beta-api-00059-bek`.)
+- **LabCorp OnDemand verified** (2026-08-18): all-inclusive DTC prices captured; Quest-vs-LabCorp
+  comparison recorded (`NH_LAB_PRICE_ARCHITECTURE.md`).
 - **Natural-language robustness**: payment/intent/provider-type noise stripping ("Compare MRI
   prices", "Find imaging centers", "self pay MRI near Concord") + spelling variants
   ("xray", "thyroid test"). Live false-no-match on a 77-query sweep dropped to documented
