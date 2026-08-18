@@ -1,0 +1,853 @@
+{
+  "_meta": {
+    "source": "CMS Hospital General Information",
+    "dataset_id": "xubh-q36u",
+    "endpoint": "https://data.cms.gov/provider-data/api/1/datastore/query/xubh-q36u/0 (conditions: state=MA)",
+    "retrieval_date": "2026-08-18",
+    "state": "MA",
+    "row_count": 84,
+    "note": "Authoritative CMS Medicare-certified hospital list for MA. Snapshot cached for reproducible verification of the MA foundation denominator. Identity only \u2014 no pricing. CMS lags facility closures: closed hospitals may still appear as 'Acute Care Hospitals' here and are excluded in ma_hospitals_seed.json via Mass.gov/MHA cross-check."
+  },
+  "hospitals": [
+    {
+      "facility_id": "220001",
+      "facility_name": "UMASS MEMORIAL HEALTHALLIANCE HOSPITALS",
+      "citytown": "LEOMINSTER",
+      "zip_code": "01453",
+      "countyparish": "WORCESTER",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Other",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220002",
+      "facility_name": "MOUNT AUBURN HOSPITAL",
+      "citytown": "CAMBRIDGE",
+      "zip_code": "02138",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220008",
+      "facility_name": "STURDY MEMORIAL HOSPITAL",
+      "citytown": "ATTLEBORO",
+      "zip_code": "02703",
+      "countyparish": "BRISTOL",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Other",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220010",
+      "facility_name": "MERRIMACK HEALTH LAWRENCE HOSPITAL",
+      "citytown": "LAWRENCE",
+      "zip_code": "01841",
+      "countyparish": "ESSEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220011",
+      "facility_name": "CAMBRIDGE HEALTH ALLIANCE",
+      "citytown": "CAMBRIDGE",
+      "zip_code": "02139",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Government - Local",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220012",
+      "facility_name": "CAPE COD HOSPITAL",
+      "citytown": "HYANNIS",
+      "zip_code": "02601",
+      "countyparish": "BARNSTABLE",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220015",
+      "facility_name": "COOLEY DICKINSON HOSPITAL INC,THE",
+      "citytown": "NORTHAMPTON",
+      "zip_code": "01061",
+      "countyparish": "HAMPSHIRE",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220016",
+      "facility_name": "BAYSTATE FRANKLIN MEDICAL CENTER",
+      "citytown": "GREENFIELD",
+      "zip_code": "01301",
+      "countyparish": "FRANKLIN",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220017",
+      "facility_name": "CARNEY HOSPITAL",
+      "citytown": "BOSTON",
+      "zip_code": "02124",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220019",
+      "facility_name": "UMASS MEMORIAL HEALTH - HARRINGTON HOSPITAL",
+      "citytown": "SOUTHBRIDGE",
+      "zip_code": "01550",
+      "countyparish": "WORCESTER",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "22001F",
+      "facility_name": "BEDFORD VA MEDICAL CENTER",
+      "citytown": "BEDFORD",
+      "zip_code": "01730",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Acute Care - Veterans Administration",
+      "hospital_ownership": "Veterans Health Administration",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "220020",
+      "facility_name": "SAINT ANNE'S HOSPITAL",
+      "citytown": "FALL RIVER",
+      "zip_code": "02721",
+      "countyparish": "BRISTOL",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220024",
+      "facility_name": "HOLYOKE MEDICAL CENTER",
+      "citytown": "HOLYOKE",
+      "zip_code": "01040",
+      "countyparish": "HAMPDEN",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220029",
+      "facility_name": "ANNA JAQUES HOSPITAL",
+      "citytown": "NEWBURYPORT",
+      "zip_code": "01950",
+      "countyparish": "ESSEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220030",
+      "facility_name": "BAYSTATE WING HOSPITAL",
+      "citytown": "PALMER",
+      "zip_code": "01069",
+      "countyparish": "HAMPDEN",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Other",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220031",
+      "facility_name": "BOSTON MEDICAL CENTER",
+      "citytown": "BOSTON",
+      "zip_code": "02118",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220033",
+      "facility_name": "NORTHEAST HOSPITAL CORPORATION",
+      "citytown": "BEVERLY",
+      "zip_code": "01915",
+      "countyparish": "ESSEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220035",
+      "facility_name": "NORTH SHORE MEDICAL CENTER -",
+      "citytown": "SALEM",
+      "zip_code": "01970",
+      "countyparish": "ESSEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220036",
+      "facility_name": "BOSTON MEDICAL CENTER-BRIGHTON",
+      "citytown": "BRIGHTON",
+      "zip_code": "02135",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220046",
+      "facility_name": "BERKSHIRE MEDICAL CENTER",
+      "citytown": "PITTSFIELD",
+      "zip_code": "01201",
+      "countyparish": "BERKSHIRE",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Other",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220049",
+      "facility_name": "MARLBOROUGH HOSPITAL",
+      "citytown": "MARLBOROUGH",
+      "zip_code": "01752",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220052",
+      "facility_name": "SIGNATURE HEALTHCARE BROCKTON HOSPITAL",
+      "citytown": "BROCKTON",
+      "zip_code": "02302",
+      "countyparish": "PLYMOUTH",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Other",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220060",
+      "facility_name": "BETH ISRAEL DEACONESS HOSPITAL PLYMOUTH",
+      "citytown": "PLYMOUTH",
+      "zip_code": "02360",
+      "countyparish": "PLYMOUTH",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220062",
+      "facility_name": "ADCARE HOSPITAL OF WORCESTER INC",
+      "citytown": "WORCESTER",
+      "zip_code": "01605",
+      "countyparish": "WORCESTER",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "220063",
+      "facility_name": "LOWELL GENERAL HOSPITAL",
+      "citytown": "LOWELL",
+      "zip_code": "01854",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220065",
+      "facility_name": "BAYSTATE NOBLE HOSPITAL",
+      "citytown": "WESTFIELD",
+      "zip_code": "01086",
+      "countyparish": "HAMPDEN",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220066",
+      "facility_name": "MERCY MEDICAL CTR",
+      "citytown": "SPRINGFIELD",
+      "zip_code": "01104",
+      "countyparish": "HAMPDEN",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220070",
+      "facility_name": "MELROSEWAKEFIELD HEALTHCARE",
+      "citytown": "MELROSE",
+      "zip_code": "02176",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220071",
+      "facility_name": "MASSACHUSETTS GENERAL HOSPITAL",
+      "citytown": "BOSTON",
+      "zip_code": "02114",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220073",
+      "facility_name": "BROWN UNIVERSITY HEALTH MORTON HOSPITAL",
+      "citytown": "TAUNTON",
+      "zip_code": "02780",
+      "countyparish": "BRISTOL",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220074",
+      "facility_name": "SOUTHCOAST HOSPITALS GROUP",
+      "citytown": "FALL RIVER",
+      "zip_code": "02720",
+      "countyparish": "BRISTOL",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220075",
+      "facility_name": "MASSACHUSETTS EYE AND EAR INFIRMARY -",
+      "citytown": "BOSTON",
+      "zip_code": "02114",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220077",
+      "facility_name": "BAYSTATE MEDICAL CENTER",
+      "citytown": "SPRINGFIELD",
+      "zip_code": "01199",
+      "countyparish": "HAMPDEN",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220080",
+      "facility_name": "HOLY FAMILY HOSPITAL",
+      "citytown": "METHUEN",
+      "zip_code": "01844",
+      "countyparish": "ESSEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220083",
+      "facility_name": "BETH ISRAEL DEACONESS HOSPITAL - NEEDHAM",
+      "citytown": "NEEDHAM",
+      "zip_code": "02494",
+      "countyparish": "NORFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220084",
+      "facility_name": "EMERSON HOSPITAL -",
+      "citytown": "W CONCORD",
+      "zip_code": "01742",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220086",
+      "facility_name": "BETH ISRAEL DEACONESS MEDICAL CENTER",
+      "citytown": "BOSTON",
+      "zip_code": "02215",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220088",
+      "facility_name": "NEW ENGLAND BAPTIST HOSPITAL",
+      "citytown": "BOSTON",
+      "zip_code": "02120",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "220090",
+      "facility_name": "MILFORD REGIONAL MEDICAL CENTER",
+      "citytown": "MILFORD",
+      "zip_code": "01757",
+      "countyparish": "WORCESTER",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Other",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220095",
+      "facility_name": "HEYWOOD HOSPITAL -",
+      "citytown": "GARDNER",
+      "zip_code": "01440",
+      "countyparish": "WORCESTER",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220098",
+      "facility_name": "NASHOBA VALLEY MEDICAL CENTER",
+      "citytown": "AYER",
+      "zip_code": "01432",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "22009F",
+      "facility_name": "NORTHAMPTON VA MEDICAL CENTER",
+      "citytown": "LEEDS",
+      "zip_code": "01053",
+      "countyparish": "HAMPSHIRE",
+      "hospital_type": "Acute Care - Veterans Administration",
+      "hospital_ownership": "Veterans Health Administration",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "220100",
+      "facility_name": "SOUTH SHORE HOSPITAL",
+      "citytown": "SOUTH WEYMOUTH",
+      "zip_code": "02190",
+      "countyparish": "NORFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220101",
+      "facility_name": "NEWTON-WELLESLEY HOSPITAL",
+      "citytown": "NEWTON",
+      "zip_code": "02462",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220105",
+      "facility_name": "WINCHESTER HOSPITAL",
+      "citytown": "WINCHESTER",
+      "zip_code": "01890",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220108",
+      "facility_name": "BETH ISRAEL DEACONESS HOSPITAL - MILTON",
+      "citytown": "MILTON",
+      "zip_code": "02186",
+      "countyparish": "NORFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Government - Federal",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "22010F",
+      "facility_name": "VA BOSTON HEALTHCARE SYSTEM - JAMAICA PLAIN",
+      "citytown": "JAMAICA PLAIN",
+      "zip_code": "02130",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Acute Care - Veterans Administration",
+      "hospital_ownership": "Veterans Health Administration",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220110",
+      "facility_name": "BRIGHAM AND WOMEN'S HOSPITAL",
+      "citytown": "BOSTON",
+      "zip_code": "02115",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220111",
+      "facility_name": "GOOD SAMARITAN MEDICAL CENTER",
+      "citytown": "BROCKTON",
+      "zip_code": "02301",
+      "countyparish": "PLYMOUTH",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220116",
+      "facility_name": "TUFTS MEDICAL CENTER",
+      "citytown": "BOSTON",
+      "zip_code": "02111",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220119",
+      "facility_name": "BRIGHAM AND WOMEN FAULKNER HOSPITAL",
+      "citytown": "JAMAICA PLAIN",
+      "zip_code": "02130",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220126",
+      "facility_name": "NORWOOD HOSPITAL",
+      "citytown": "NORWOOD",
+      "zip_code": "02062",
+      "countyparish": "NORFOLK",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220135",
+      "facility_name": "FALMOUTH HOSPITAL",
+      "citytown": "FALMOUTH",
+      "zip_code": "02540",
+      "countyparish": "BARNSTABLE",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220163",
+      "facility_name": "UMASS MEMORIAL MEDICAL CENTER/UNIVERSITY CAMPUS",
+      "citytown": "WORCESTER",
+      "zip_code": "01655",
+      "countyparish": "WORCESTER",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220171",
+      "facility_name": "LAHEY HOSPITAL & MEDICAL CENTER, BURLINGTON",
+      "citytown": "BURLINGTON",
+      "zip_code": "01803",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220175",
+      "facility_name": "METROWEST MEDICAL CENTER",
+      "citytown": "FRAMINGHAM",
+      "zip_code": "01701",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220176",
+      "facility_name": "ST VINCENT HOSPITAL",
+      "citytown": "WORCESTER",
+      "zip_code": "01608",
+      "countyparish": "WORCESTER",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "220177",
+      "facility_name": "NANTUCKET COTTAGE HOSPITAL",
+      "citytown": "NANTUCKET",
+      "zip_code": "02554",
+      "countyparish": "NANTUCKET",
+      "hospital_type": "Acute Care Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "221300",
+      "facility_name": "MARTHA'S VINEYARD HOSPITAL INC",
+      "citytown": "OAK BLUFFS",
+      "zip_code": "02557",
+      "countyparish": "DUKES",
+      "hospital_type": "Critical Access Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "221302",
+      "facility_name": "FAIRVIEW HOSPITAL",
+      "citytown": "GREAT BARRINGTON",
+      "zip_code": "01230",
+      "countyparish": "BERKSHIRE",
+      "hospital_type": "Critical Access Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "221303",
+      "facility_name": "ATHOL MEMORIAL HOSPITAL",
+      "citytown": "ATHOL",
+      "zip_code": "01331",
+      "countyparish": "WORCESTER",
+      "hospital_type": "Critical Access Hospitals",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "221304",
+      "facility_name": "NORTH ADAMS REGIONAL HOSPITAL CORPORATION",
+      "citytown": "NORTH ADAMS",
+      "zip_code": "01247",
+      "countyparish": "BERKSHIRE",
+      "hospital_type": "Critical Access Hospitals",
+      "hospital_ownership": "Government - Federal",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "223300",
+      "facility_name": "FRANCISCAN CHILDREN'S HOSPITAL & REHAB CENTER",
+      "citytown": "BRIGHTON",
+      "zip_code": "02135",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Childrens",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "223302",
+      "facility_name": "BOSTON CHILDREN'S HOSPITAL",
+      "citytown": "BOSTON",
+      "zip_code": "02115",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Childrens",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "223304",
+      "facility_name": "THE SHRINERS' HOSPITAL FOR CHILDREN - BOSTON",
+      "citytown": "BOSTON",
+      "zip_code": "02114",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Childrens",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224001",
+      "facility_name": "TAUNTON STATE HOSPITAL",
+      "citytown": "TAUNTON",
+      "zip_code": "02780",
+      "countyparish": "BRISTOL",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Government - State",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224007",
+      "facility_name": "MCLEAN HOSPITAL CORPORATION",
+      "citytown": "BELMONT",
+      "zip_code": "02478",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Voluntary non-profit - Private",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224013",
+      "facility_name": "ARBOUR HOSPITAL",
+      "citytown": "BOSTON",
+      "zip_code": "02130",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224018",
+      "facility_name": "ARBOUR HUMAN RESOURCE INSTITUTE",
+      "citytown": "BROOKLINE",
+      "zip_code": "02446",
+      "countyparish": "NORFOLK",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224021",
+      "facility_name": "ARBOUR-FULLER HOSPITAL",
+      "citytown": "SOUTH ATTLEBORO",
+      "zip_code": "02703",
+      "countyparish": "BRISTOL",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224022",
+      "facility_name": "BOURNEWOOD HOSPITAL",
+      "citytown": "BROOKLINE",
+      "zip_code": "02467",
+      "countyparish": "MIDDLESEX",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224023",
+      "facility_name": "WESTWOOD PEMBROKE HEALTH SYSTEMS",
+      "citytown": "WESTWOOD",
+      "zip_code": "02090",
+      "countyparish": "NORFOLK",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "Yes"
+    },
+    {
+      "facility_id": "224028",
+      "facility_name": "DR JOHN C CORRIGAN MENTAL HEALTH CENTER",
+      "citytown": "FALL RIVER",
+      "zip_code": "02720",
+      "countyparish": "BRISTOL",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Government - State",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224031",
+      "facility_name": "CAPE COD & ISLANDS COMMUNITY MENTAL HEALTH CENTER",
+      "citytown": "POCASSET",
+      "zip_code": "02559",
+      "countyparish": "BARNSTABLE",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Government - State",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224032",
+      "facility_name": "WORCESTER RECOVERY CENTER AND HOSPITAL",
+      "citytown": "WORCESTER",
+      "zip_code": "01604",
+      "countyparish": "WORCESTER",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Government - State",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224038",
+      "facility_name": "WALDEN BEHAVIORAL CARE, LLC",
+      "citytown": "DEDHAM",
+      "zip_code": "02026",
+      "countyparish": "NORFOLK",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Government - Federal",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224039",
+      "facility_name": "WHITTIER PAVILION",
+      "citytown": "HAVERHILL",
+      "zip_code": "01830",
+      "countyparish": "ESSEX",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224040",
+      "facility_name": "DR SOLOMON CARTER FULLER MENTAL HEALTH CENTER",
+      "citytown": "BOSTON",
+      "zip_code": "02118",
+      "countyparish": "SUFFOLK",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Government - State",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224041",
+      "facility_name": "SOUTHCOAST BEHAVIORAL HEALTH",
+      "citytown": "DARTMOUTH",
+      "zip_code": "02747",
+      "countyparish": "BRISTOL",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224043",
+      "facility_name": "TARAVISTA BEHAVIORAL HEALTH CENTER",
+      "citytown": "DEVENS",
+      "zip_code": "01434",
+      "countyparish": "WORCESTER",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224044",
+      "facility_name": "WESTBOROUGH BEHAVIORAL HEALTHCARE HOSPITAL LLC",
+      "citytown": "WESTBOROUGH",
+      "zip_code": "01581",
+      "countyparish": "WORCESTER",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224045",
+      "facility_name": "HOSPITAL FOR BEHAVIORAL MEDICINE",
+      "citytown": "WORCESTER",
+      "zip_code": "01606",
+      "countyparish": "WORCESTER",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224046",
+      "facility_name": "MIRAVISTA BEHAVIORAL HEALTH CENTER",
+      "citytown": "HOLYOKE",
+      "zip_code": "01040",
+      "countyparish": "HAMPDEN",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "No"
+    },
+    {
+      "facility_id": "224047",
+      "facility_name": "VALLEY SPRINGS BEHAVIORAL HEALTH HOSPITAL",
+      "citytown": "HOLYOKE",
+      "zip_code": "01040",
+      "countyparish": "HAMPDEN",
+      "hospital_type": "Psychiatric",
+      "hospital_ownership": "Proprietary",
+      "emergency_services": "No"
+    }
+  ]
+}

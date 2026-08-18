@@ -1,0 +1,75 @@
+{
+  "_meta": {
+    "description": "Authoritative Massachusetts regional taxonomy for the Carevero MA foundation. 10 consumer-facing regions covering all 14 MA counties. Nine counties map 1:1 to a region (county-based, unambiguous). The five eastern metro counties (Suffolk, Middlesex, Essex, Norfolk, Plymouth) subdivide into metro regions by municipality; a per-county default plus an explicit city gazetteer resolves them. This taxonomy is IDENTITY/geography only — no pricing, nothing consumer-published. Validated against the CMS Hospital General Information snapshot (data/ma_cms_hospital_snapshot.json, dataset xubh-q36u, retrieved 2026-08-18) via scripts/verify_ma_foundation.py: every hospital in the denominator resolves to its assigned region from (county, city).",
+    "retrieval_date": "2026-08-18",
+    "regions": [
+      "Greater Boston",
+      "North Shore",
+      "Merrimack Valley",
+      "MetroWest",
+      "South Shore",
+      "Southeastern MA / South Coast",
+      "Central Massachusetts",
+      "Pioneer Valley",
+      "Berkshires",
+      "Cape Cod & Islands"
+    ]
+  },
+  "municipal_overrides": {
+    "_note": "Cross-boundary municipal exceptions checked BEFORE county rules. MA municipality names are unique statewide, so a bare city key is unambiguous. Milford is in Worcester County but is an I-495/MetroWest-belt town and is grouped with MetroWest (curated assignment).",
+    "MILFORD": "MetroWest"
+  },
+  "county_to_region": {
+    "WORCESTER": "Central Massachusetts",
+    "HAMPDEN": "Pioneer Valley",
+    "HAMPSHIRE": "Pioneer Valley",
+    "FRANKLIN": "Pioneer Valley",
+    "BERKSHIRE": "Berkshires",
+    "BRISTOL": "Southeastern MA / South Coast",
+    "BARNSTABLE": "Cape Cod & Islands",
+    "DUKES": "Cape Cod & Islands",
+    "NANTUCKET": "Cape Cod & Islands"
+  },
+  "eastern_metro_counties": {
+    "_note": "Suffolk/Middlesex/Essex/Norfolk/Plymouth span more than one metro region, so a county default is combined with a municipality gazetteer. `default_region` applies when a municipality is not listed in `city_overrides`. The gazetteer is authoritative for every facility currently in the denominator and is extended per-municipality as non-hospital facilities are added in later phases (never guessed at publish time).",
+    "SUFFOLK": {
+      "default_region": "Greater Boston",
+      "city_overrides": {}
+    },
+    "MIDDLESEX": {
+      "default_region": "Greater Boston",
+      "city_overrides": {
+        "LOWELL": "Merrimack Valley",
+        "FRAMINGHAM": "MetroWest",
+        "MARLBOROUGH": "MetroWest",
+        "W CONCORD": "MetroWest",
+        "WEST CONCORD": "MetroWest",
+        "CONCORD": "MetroWest",
+        "BURLINGTON": "North Shore"
+      }
+    },
+    "ESSEX": {
+      "default_region": "North Shore",
+      "city_overrides": {
+        "LAWRENCE": "Merrimack Valley",
+        "METHUEN": "Merrimack Valley",
+        "HAVERHILL": "Merrimack Valley",
+        "ANDOVER": "Merrimack Valley",
+        "NORTH ANDOVER": "Merrimack Valley"
+      }
+    },
+    "NORFOLK": {
+      "default_region": "Greater Boston",
+      "city_overrides": {
+        "SOUTH WEYMOUTH": "South Shore",
+        "WEYMOUTH": "South Shore",
+        "BRAINTREE": "South Shore",
+        "RANDOLPH": "South Shore"
+      }
+    },
+    "PLYMOUTH": {
+      "default_region": "South Shore",
+      "city_overrides": {}
+    }
+  }
+}
