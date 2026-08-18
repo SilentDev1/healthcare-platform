@@ -76,10 +76,13 @@ canonical procedure exists. Do NOT force-map; recorded for review.
   (all-inclusive), both verified 2026-08-18. Baseline 50→51; fp-detector 26/26 CLEAN; safety PASS.
 - Medical gate hardened alongside: "Do I need a vitamin D test?" refuses pre-LLM.
 
-### 6. PSA (prostate-specific antigen)
-- **Evidence:** common preventive/self-pay search ("psa test"); Quest/LabCorp DTC product.
-  Proposed slug `psa-test` (CPT 84153). Consumer name "PSA (prostate screening)".
-- **Blocker:** `NO_CANONICAL_PROCEDURE`.
+### 6. PSA (prostate-specific antigen) — ✅ ADDED as canonical #52 (2026-08-18)
+- **Slug** `psa-test` ("Prostate-specific antigen (PSA) test", laboratory) · **CPT 84153** (exact
+  approved mapping; total PSA). Aliases: psa / psa test / prostate specific antigen / prostate-
+  specific antigen test. NOT aliased: broad "prostate test/exam" (DRE, MRI, biopsy).
+- **Live:** search → `psa-test`; **16/26 hospitals** publish it (cash $30–$208 sample, median
+  ~$108); DTC LabCorp **$69** (all-inclusive) / Quest **$75** ($69 + $6 fee), verified 2026-08-18.
+  Baseline 51→52; fp-detector 26/26 CLEAN; safety PASS. "Should I get a PSA test?" refuses pre-LLM.
 
 ### 7. "Diabetes test" (ambiguous)
 - **Evidence:** search term "diabetes test". **Ambiguous** — could mean HbA1c, fasting
