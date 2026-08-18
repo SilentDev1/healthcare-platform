@@ -1682,15 +1682,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "VERIFIED_PUBLIC_SELF_PAY_PRICE",
+          "PROMOTED_LIVE"
         ],
-        "public_pricing_source": null,
-        "source_url": null,
-        "source_type": null,
-        "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
+        "public_pricing_source": "New Hampshire Open MRI flat retail self-pay price: $1,099 for ANY non-contrast MRI (includes radiologist interpretation = global scope), $1,799 with contrast. Independent single-service outpatient MRI facility, West Lebanon NH.",
+        "source_url": "https://www.nhopenmri.com/cost",
+        "source_type": "provider_published_self_pay_price",
+        "retrieval_date": "2026-08-18",
+        "applicability": "West Lebanon NH location; flat non-contrast MRI price mapped to mri-brain/knee/lumbar-without-contrast",
+        "ingestion_status": "promoted_publishable",
+        "mapping_status": "3 canonical MRI-without-contrast procedures @ $1,099 (global, incl. interpretation)",
+        "qa_status": "live_verified",
         "blocker": null
       }
     },
@@ -1988,6 +1990,13 @@
         "asc_no_price": "Bedford / Minimally Invasive / Nashua / Novamed / Portsmouth ASCs \u2014 NO_PUBLIC_PRICE (no provider-published cash schedule; NH HealthCost is claims-derived, excluded)."
       },
       "next_independent_step": "No safe NH ASC ingestion (the apparent surgical price list was an out-of-state same-name facility). Next: continue the ledger to remaining imaging / PT-rehab / chiropractic organizations, or verify the NH Concord orthopaedic ASC's OWN official pricing if one exists."
+    },
+    "nonhospital_pricing_state_2026_08_18": {
+      "derry_imaging": "LIVE (29 prices) \u2014 RESTORED after a rebuild_price_summaries regression wiped non-hospital summaries; re-ingested + re-promoted; provenance intact.",
+      "nh_open_mri": "LIVE (3 MRI prices @ $1,099 global) \u2014 first new non-hospital source this pass; West Lebanon NH.",
+      "quest_labcorp_dtc": "served via org-level DTC surface (/dtc-options); Quest candidates non-public.",
+      "projections_bug_fixed": "rebuild_price_summaries now preserves provider_published_price summaries (regression test added) so future rebuilds no longer wipe Derry/NH Open MRI/candidates.",
+      "asc_urgent_care": "ConvenientMD/ClearChoiceMD = NO_CANONICAL_PROCEDURE (flat visit fee); 6 NH ASCs = NO_PUBLIC_PRICE; the apparent Ortho ASC list was an OHIO same-name facility (retracted)."
     }
   },
   "track_b_results": {
