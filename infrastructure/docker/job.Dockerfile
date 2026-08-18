@@ -20,6 +20,7 @@ COPY data/fixtures/verified_price_locations.json data/fixtures/verified_price_lo
 COPY data/ma_hospitals_seed.json data/ma_hospitals_seed.json
 COPY data/ma_cms_hospital_snapshot.json data/ma_cms_hospital_snapshot.json
 COPY data/ma_region_taxonomy.json data/ma_region_taxonomy.json
+COPY data/ma_hospital_price_sources.json data/ma_hospital_price_sources.json
 RUN useradd --create-home --uid 10001 carevero && mkdir -p /data/downloads && chown -R carevero:carevero /app /data
 USER carevero
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1 HOSPITAL_PRICE_RAW_DIR=/data/downloads/hospital-prices/US/NH
