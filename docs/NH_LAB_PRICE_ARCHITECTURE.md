@@ -67,8 +67,43 @@ non-public holding state; they must not be counted as 14 location prices in cove
 Promo caution: HbA1c showed a transient 10%-off promo ($35.10). Durable list = $39.00;
 promotional prices are time-varying and must never be stored as a stable price.
 
-## LabCorp OnDemand
+## LabCorp OnDemand — verified 2026-08-18 (in-browser, official ondemand.labcorp.com)
 
-Re-verification pending (do not reuse prior-researched values). Same architecture will
-apply (national DTC bundled price + any required fee). Record a blocker if verification
-is impossible; never substitute a third-party estimate.
+| Product | Canonical | Price | Fee | Total | Source |
+|---|---|---|---|---|---|
+| CBC | complete-blood-count | $29 | included | **$29** | ondemand.labcorp.com/.../complete-blood-count |
+| CMP | comprehensive-metabolic-panel | $49 | included | **$49** | .../comprehensive-metabolic-panel |
+| Lipid | lipid-panel | $59 | included | **$59** | .../cholesterol-test-lipid-panel |
+| TSH | thyroid-test | $49 | included | **$49** | .../thyroid-stimulating-hormone-tsh-test |
+| HbA1c | — (canonical gap) | $39 | included | **$39** | .../diabetes-risk-hbA1c-test |
+
+**Key finding — LabCorp OnDemand is all-inclusive.** Unlike Quest (test price + a separate
+required $6 physician service fee), LabCorp OnDemand's displayed price already includes the
+independent-provider order — there is no separate physician fee. So the honest self-pay total
+is lower on every test:
+
+| Test | Quest total | LabCorp total |
+|---|---|---|
+| CBC | $35 ($29 + $6) | **$29** |
+| CMP | $55 ($49 + $6) | **$49** |
+| Lipid | $65 ($59 + $6) | **$59** |
+| TSH | $55 ($49 + $6) | **$49** |
+| HbA1c | $45 ($39 + $6) | **$39** |
+
+## PUBLICATION DECISION (2026-08-18): DTC labs stay NON-PUBLIC pending an org-level surface
+
+Both Quest and LabCorp DTC prices are **national, organization/product-level** self-pay prices
+(buy online → collect at any of that lab's Patient Service Centers). The current pricing model
+(`FacilityProcedurePriceSummary`) is **per service location**. Publishing a single national DTC
+price against each NH collection site would fabricate the exact "14 independent location-published
+prices" the directive forbids — and would misrepresent a national product as location-specific.
+
+Therefore the deliberate, safe disposition is: **verified, recorded, kept `candidate_review`
+(NON-PUBLIC); NOT promoted as per-location prices.** Consumer publication requires a small
+**org-level DTC price surface** — a distinct presentation (e.g. a "Direct-to-consumer self-pay
+option" card on the lab procedure page: "Quest $35 / LabCorp $29 total, national online purchase,
+collect at NH locations") that is explicitly separate from the per-location hospital comparison,
+plus per-location `LocationServiceAvailability` for the collection sites (service-offered, not
+price). That surface is the specified NEXT feature (see `PRODUCT_OPPORTUNITIES.md`). Until it
+exists, promoting DTC labs would violate the no-fake-location-prices rule, so promotion is
+correctly withheld — a documented product-model gap, not a data failure.
