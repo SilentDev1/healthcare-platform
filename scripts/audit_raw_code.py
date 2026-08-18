@@ -16,7 +16,7 @@ import statistics
 from collections import defaultdict
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 
 from collectors.hospital_prices.scope import active_consumer_facility_ids
 from packages.database import Facility, get_session
@@ -50,7 +50,7 @@ def run(code: str, system: str, state: str) -> dict[str, Any]:
         lambda: {"name": "", "records": 0, "cash": [], "neg": [], "descs": set(), "settings": set()}
     )
     cash_all: list[float] = []
-    for fid, name, desc, setting, cash, neg_min, neg_max in rows:
+    for fid, name, desc, setting, cash, neg_min, _neg_max in rows:
         f = by_fac[fid]
         f["name"] = name
         f["records"] += 1
