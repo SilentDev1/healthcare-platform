@@ -759,16 +759,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "NO_CANONICAL_PROCEDURE"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Physical therapy is a location CAPABILITY; Carevero has no canonical PT evaluation/treatment/session procedure (documented gap). Even where a per-visit self-pay rate is published, it cannot map to any of the 52 canonical procedures.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "No canonical PT procedure exists (needs a reviewed comparable-service definition \u2014 see NH_CANONICAL_PROCEDURE_GAPS). Not ingestable until/unless PT canonicals are added."
       }
     },
     {
@@ -925,16 +926,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "NO_CANONICAL_PROCEDURE"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Physical therapy is a location CAPABILITY; Carevero has no canonical PT evaluation/treatment/session procedure (documented gap). Even where a per-visit self-pay rate is published, it cannot map to any of the 52 canonical procedures.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "No canonical PT procedure exists (needs a reviewed comparable-service definition \u2014 see NH_CANONICAL_PROCEDURE_GAPS). Not ingestable until/unless PT canonicals are added."
       }
     },
     {
@@ -985,16 +987,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "NO_PUBLIC_PRICE"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "ASC not under the CMS hospital price-transparency mandate; no provider-published machine-readable/self-pay cash schedule found. Any figure is phone-quote or NH HealthCost claims-derived (excluded).",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "No provider-published cash price for a canonical procedure."
       }
     },
     {
@@ -1044,16 +1047,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "NO_CANONICAL_PROCEDURE"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Physical therapy is a location CAPABILITY; Carevero has no canonical PT evaluation/treatment/session procedure (documented gap). Even where a per-visit self-pay rate is published, it cannot map to any of the 52 canonical procedures.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "No canonical PT procedure exists (needs a reviewed comparable-service definition \u2014 see NH_CANONICAL_PROCEDURE_GAPS). Not ingestable until/unless PT canonicals are added."
       }
     },
     {
@@ -1103,16 +1107,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "NO_CANONICAL_PROCEDURE"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Physical therapy is a location CAPABILITY; Carevero has no canonical PT evaluation/treatment/session procedure (documented gap). Even where a per-visit self-pay rate is published, it cannot map to any of the 52 canonical procedures.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "No canonical PT procedure exists (needs a reviewed comparable-service definition \u2014 see NH_CANONICAL_PROCEDURE_GAPS). Not ingestable until/unless PT canonicals are added."
       }
     },
     {
@@ -1153,16 +1158,18 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "NO_PUBLIC_PRICE",
+          "OCCUPATIONAL_HEALTH"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Occupational-health / employer-billed model (Concentra); services billed to employers, not consumer self-pay for canonical procedures. No consumer cash price list.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "Employer/occ-health billing; no consumer self-pay published price for a canonical procedure."
       }
     },
     {
@@ -1340,16 +1347,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "NO_CANONICAL_PROCEDURE"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Physical therapy is a location CAPABILITY; Carevero has no canonical PT evaluation/treatment/session procedure (documented gap). Even where a per-visit self-pay rate is published, it cannot map to any of the 52 canonical procedures.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "No canonical PT procedure exists (needs a reviewed comparable-service definition \u2014 see NH_CANONICAL_PROCEDURE_GAPS). Not ingestable until/unless PT canonicals are added."
       }
     },
     {
@@ -1381,15 +1389,16 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "ALREADY_PRICED_VIA_HOSPITAL_MRF"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Health system whose member hospital(s) are among the 26 priced consumer hospitals; their standard-charge MRF pricing is already ingested via the hospital pipeline. No separate non-hospital acquisition needed.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "hospital_mrf_covered",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
         "blocker": null
       }
     },
@@ -1422,15 +1431,16 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "ALREADY_PRICED_VIA_HOSPITAL_MRF"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Health system whose member hospital(s) are among the 26 priced consumer hospitals; their standard-charge MRF pricing is already ingested via the hospital pipeline. No separate non-hospital acquisition needed.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "hospital_mrf_covered",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
         "blocker": null
       }
     },
@@ -1454,16 +1464,19 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "VERIFIED_OR_LIKELY_VISIT_FEE",
+          "NO_CANONICAL_PROCEDURE",
+          "PACKAGE_NOT_PROCEDURE"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Retail clinic / urgent care with a flat VISIT fee (and vaccine/service line items). No canonical urgent-care/clinic-visit procedure in Carevero; the visit is a bundle, not a CPT-coded canonical procedure.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "No canonical visit procedure (documented gap); visit fee is a package, unmappable."
       }
     },
     {
@@ -1486,15 +1499,16 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "ALREADY_PRICED_VIA_HOSPITAL_MRF"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Health system whose member hospital(s) are among the 26 priced consumer hospitals; their standard-charge MRF pricing is already ingested via the hospital pipeline. No separate non-hospital acquisition needed.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "hospital_mrf_covered",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
         "blocker": null
       }
     },
@@ -1518,16 +1532,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "OUT_OF_SCOPE_SPECIALTY"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Inpatient behavioral-health / state psychiatric facility; not a consumer-shoppable outpatient provider for any of the 52 canonical procedures.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "Specialty inpatient psychiatric \u2014 out of consumer price-shopping scope."
       }
     },
     {
@@ -1584,16 +1599,19 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "VERIFIED_OR_LIKELY_VISIT_FEE",
+          "NO_CANONICAL_PROCEDURE",
+          "PACKAGE_NOT_PROCEDURE"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Retail clinic / urgent care with a flat VISIT fee (and vaccine/service line items). No canonical urgent-care/clinic-visit procedure in Carevero; the visit is a bundle, not a CPT-coded canonical procedure.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "No canonical visit procedure (documented gap); visit fee is a package, unmappable."
       }
     },
     {
@@ -1616,16 +1634,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "OUT_OF_SCOPE_SPECIALTY"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Inpatient behavioral-health / state psychiatric facility; not a consumer-shoppable outpatient provider for any of the 52 canonical procedures.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "Specialty inpatient psychiatric \u2014 out of consumer price-shopping scope."
       }
     },
     {
@@ -1716,16 +1735,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "NO_PUBLIC_PRICE"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "ASC not under the CMS hospital price-transparency mandate; no provider-published machine-readable/self-pay cash schedule found. Any figure is phone-quote or NH HealthCost claims-derived (excluded).",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "No provider-published cash price for a canonical procedure."
       }
     },
     {
@@ -1748,16 +1768,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "NO_PUBLIC_PRICE"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "ASC not under the CMS hospital price-transparency mandate; no provider-published machine-readable/self-pay cash schedule found. Any figure is phone-quote or NH HealthCost claims-derived (excluded).",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "No provider-published cash price for a canonical procedure."
       }
     },
     {
@@ -1849,16 +1870,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "NO_CANONICAL_PROCEDURE"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "Physical therapy is a location CAPABILITY; Carevero has no canonical PT evaluation/treatment/session procedure (documented gap). Even where a per-visit self-pay rate is published, it cannot map to any of the 52 canonical procedures.",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "No canonical PT procedure exists (needs a reviewed comparable-service definition \u2014 see NH_CANONICAL_PROCEDURE_GAPS). Not ingestable until/unless PT canonicals are added."
       }
     },
     {
@@ -1915,16 +1937,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "ESTIMATE_ONLY"
         ],
-        "public_pricing_source": null,
-        "source_url": null,
-        "source_type": null,
+        "public_pricing_source": "Shields Health Care Group publishes a cost CALCULATOR/estimate, not a firm provider-published cash price schedule. Estimates are not ingested (never inferred/estimated pricing).",
+        "source_url": "https://www.shields.com/",
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "Calculator/estimate only \u2014 not a firm published cash price."
       }
     },
     {
@@ -1947,16 +1970,17 @@
       ],
       "disposition": {
         "reason_codes": [
-          "NEEDS_MANUAL_REVIEW"
+          "NO_PUBLIC_PRICE"
         ],
-        "public_pricing_source": null,
+        "public_pricing_source": "ASC not under the CMS hospital price-transparency mandate; no provider-published machine-readable/self-pay cash schedule found. Any figure is phone-quote or NH HealthCost claims-derived (excluded).",
         "source_url": null,
-        "source_type": null,
+        "source_type": "none_provider_published",
+        "retrieval_date": "2026-08-18",
         "applicability": null,
-        "ingestion_status": "pending",
-        "mapping_status": "pending",
-        "qa_status": "pending",
-        "blocker": null
+        "ingestion_status": "not_ingestable",
+        "mapping_status": "n/a",
+        "qa_status": "n/a",
+        "blocker": "No provider-published cash price for a canonical procedure."
       }
     }
   ],
@@ -2048,5 +2072,30 @@
     "procedures": "50/50",
     "published_nonhospital": "Derry Imaging 7 locations (29 prices)",
     "candidates_nonpublic": "Derry 6 (not-offered) + Quest CMP 14"
+  },
+  "ledger_disposition_summary_2026_08_18": {
+    "organizations_total": 34,
+    "by_primary_disposition": {
+      "VERIFIED_PUBLIC_SELF_PAY_PRICE": 3,
+      "PUBLIC_CASH_SCHEDULE_FOUND": 2,
+      "GOV_SOURCE_NH_HEALTHCOST": 1,
+      "NO_CANONICAL_PROCEDURE": 6,
+      "AFFILIATED_HOSPITAL_SOURCE_FOUND": 2,
+      "NO_PUBLIC_PRICE": 11,
+      "PUBLIC_PRICE_SOURCE_FOUND": 1,
+      "ALREADY_PRICED_VIA_HOSPITAL_MRF": 3,
+      "VERIFIED_OR_LIKELY_VISIT_FEE": 2,
+      "OUT_OF_SCOPE_SPECIALTY": 2,
+      "ESTIMATE_ONLY": 1
+    },
+    "acquired_live_nonhospital": [
+      "Derry Imaging (imaging, 29 prices)",
+      "New Hampshire Open MRI (MRI, 3 prices @ $1,099)"
+    ],
+    "dtc_org_level": [
+      "Quest Diagnostics",
+      "Labcorp OnDemand"
+    ],
+    "notes": "All 34 organizations classified. Genuine acquirable NH non-hospital pricing (independent imaging + DTC labs) is captured. Remaining are NO_CANONICAL_PROCEDURE (PT/rehab, urgent-care/clinic visit fees \u2014 canonical gaps), NO_PUBLIC_PRICE (ASCs \u2014 not under transparency mandate), ALREADY_PRICED_VIA_HOSPITAL_MRF (health systems), OUT_OF_SCOPE_SPECIALTY (psychiatric), ESTIMATE_ONLY (Shields calculator), OCCUPATIONAL_HEALTH (Concentra). No fabricated coverage."
   }
 }
