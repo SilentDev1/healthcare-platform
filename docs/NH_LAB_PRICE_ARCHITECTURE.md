@@ -99,11 +99,19 @@ price against each NH collection site would fabricate the exact "14 independent 
 prices" the directive forbids — and would misrepresent a national product as location-specific.
 
 Therefore the deliberate, safe disposition is: **verified, recorded, kept `candidate_review`
-(NON-PUBLIC); NOT promoted as per-location prices.** Consumer publication requires a small
-**org-level DTC price surface** — a distinct presentation (e.g. a "Direct-to-consumer self-pay
-option" card on the lab procedure page: "Quest $35 / LabCorp $29 total, national online purchase,
-collect at NH locations") that is explicitly separate from the per-location hospital comparison,
-plus per-location `LocationServiceAvailability` for the collection sites (service-offered, not
-price). That surface is the specified NEXT feature (see `PRODUCT_OPPORTUNITIES.md`). Until it
-exists, promoting DTC labs would violate the no-fake-location-prices rule, so promotion is
-correctly withheld — a documented product-model gap, not a data failure.
+(NON-PUBLIC); NOT promoted as per-location prices.** Consumer publication uses a distinct
+**org-level DTC price surface**, separate from the per-location hospital comparison.
+
+**Backend LIVE (2026-08-18):** `GET /api/v1/procedures/{slug}/dtc-options` (API rev
+`carevero-beta-api-00060-tir`) serves the verified org/product-level DTC options (read-only,
+DB-free, from `data/nh_dtc_lab_options.json`) with an explicit disclaimer ("national online
+purchase, collect at a provider location; not a personalized estimate; not location-specific").
+Live: CBC → LabCorp $29 / Quest $35; CMP → $49 / $55; non-lab → empty; unknown → 404. It never
+writes a `FacilityProcedurePriceSummary`, so it cannot create the forbidden 14 fake location prices.
+
+**Remaining (frontend):** a "Direct-to-consumer self-pay option" card on the lab procedure /
+comparison page that consumes `dtc-options`, shown distinctly from the per-location comparison
+(owned by the frontend track). Optional: `LocationServiceAvailability` for collection sites
+(service-offered, not price). The Quest `candidate_review` rows can then be retired in favor of
+this surface. Until the card ships, DTC prices are served by the API but not yet rendered — no
+fake location prices exist at any point.
