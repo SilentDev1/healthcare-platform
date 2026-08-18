@@ -46,6 +46,7 @@ ALLOWED_CONTENT_TYPES = (
     "application/zip",
     "application/gzip",
     "application/octet-stream",
+    "binary/octet-stream",
     "text/plain",
     "application/xml",
     "text/xml",
