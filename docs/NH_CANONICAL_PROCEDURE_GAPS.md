@@ -68,10 +68,13 @@ ledger — not published, not force-fit onto a wrong canonical slug.
 These are real consumer search terms that currently return no match because no
 canonical procedure exists. Do NOT force-map; recorded for review.
 
-### 5. Vitamin D test (25-hydroxyvitamin D)
-- **Evidence:** high-frequency consumer search ("vitamin d test"); Quest/LabCorp both
-  sell a DTC vitamin D product. Proposed slug `vitamin-d-test` (CPT 82306).
-- **Blocker:** `NO_CANONICAL_PROCEDURE`.
+### 5. Vitamin D test (25-hydroxyvitamin D) — ✅ ADDED as canonical #51 (2026-08-18)
+- **Slug** `vitamin-d-test` ("Vitamin D test", laboratory) · **CPT 82306** (exact approved
+  mapping; 82652 = the different 1,25-dihydroxy form, excluded).
+- **Live:** search (vitamin d / vitamin d test / 25-hydroxy) → `vitamin-d-test`; **16/26 hospitals**
+  publish it (cash $78–$326 sample, median ~$185); DTC Quest **$81** ($75 + $6 fee) / LabCorp **$99**
+  (all-inclusive), both verified 2026-08-18. Baseline 50→51; fp-detector 26/26 CLEAN; safety PASS.
+- Medical gate hardened alongside: "Do I need a vitamin D test?" refuses pre-LLM.
 
 ### 6. PSA (prostate-specific antigen)
 - **Evidence:** common preventive/self-pay search ("psa test"); Quest/LabCorp DTC product.
