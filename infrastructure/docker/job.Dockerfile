@@ -17,6 +17,9 @@ COPY data/nh_location_service_availability.json data/nh_location_service_availab
 COPY data/fixtures/cdm_crosswalk.json data/fixtures/cdm_crosswalk.json
 COPY data/fixtures/verified_hospital_price_sources.json data/fixtures/verified_hospital_price_sources.json
 COPY data/fixtures/verified_price_locations.json data/fixtures/verified_price_locations.json
+COPY data/ma_hospitals_seed.json data/ma_hospitals_seed.json
+COPY data/ma_cms_hospital_snapshot.json data/ma_cms_hospital_snapshot.json
+COPY data/ma_region_taxonomy.json data/ma_region_taxonomy.json
 RUN useradd --create-home --uid 10001 carevero && mkdir -p /data/downloads && chown -R carevero:carevero /app /data
 USER carevero
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1 HOSPITAL_PRICE_RAW_DIR=/data/downloads/hospital-prices/US/NH
