@@ -23,7 +23,7 @@
         {"test": "Lipid Panel", "canonical_slug": "lipid-panel", "test_price": 59.00, "physician_fee": 6.00, "total": 65.00, "sku": "94355M"},
         {"test": "TSH", "canonical_slug": "thyroid-test", "test_price": 49.00, "physician_fee": 6.00, "total": 55.00, "sku": "36127M", "mapping_note": "product is TSH-only; confirm vs canonical thyroid-test scope"},
         {"test": "Urinalysis (UTI)", "canonical_slug": "urinalysis", "test_price": 40.00, "physician_fee": 6.00, "total": 46.00, "sku": "5463M", "mapping_note": "UTI-framed; confirm vs routine urinalysis"},
-        {"test": "HbA1c", "canonical_slug": null, "test_price": 39.00, "physician_fee": 6.00, "total": 45.00, "sku": "496M", "blocker": "NO_CANONICAL_PROCEDURE", "promo_note": "list $39; a transient 10%-off promo showed $35.10 — do not store the promo as a stable price"}
+        {"test": "HbA1c", "canonical_slug": "a1c-test", "test_price": 39.00, "physician_fee": 6.00, "total": 45.00, "sku": "496M", "promo_note": "list $39; a transient 10%-off promo showed $35.10 — do not store the promo as a stable price. Maps to the EXISTING canonical a1c-test."}
       ]
     },
     "labcorp_ondemand": {
@@ -35,7 +35,7 @@
         {"test": "CMP", "canonical_slug": "comprehensive-metabolic-panel", "total": 49.00, "product": "comprehensive-metabolic-panel"},
         {"test": "Lipid Panel", "canonical_slug": "lipid-panel", "total": 59.00, "product": "cholesterol-test-lipid-panel"},
         {"test": "TSH", "canonical_slug": "thyroid-test", "total": 49.00, "product": "thyroid-stimulating-hormone-tsh-test", "mapping_note": "confirm vs canonical thyroid-test scope"},
-        {"test": "HbA1c", "canonical_slug": null, "total": 39.00, "product": "diabetes-risk-hbA1c-test", "blocker": "NO_CANONICAL_PROCEDURE"}
+        {"test": "HbA1c", "canonical_slug": "a1c-test", "total": 39.00, "product": "diabetes-risk-hbA1c-test"}
       ]
     },
     "consumer_insight": "LabCorp OnDemand is cheaper than Quest on every comparable test (no separate $6 fee): CBC 29 vs 35, CMP 49 vs 55, Lipid 59 vs 65, TSH 49 vs 55, HbA1c 39 vs 45."

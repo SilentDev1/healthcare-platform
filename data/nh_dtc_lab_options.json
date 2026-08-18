@@ -26,6 +26,10 @@
     ],
     "urinalysis": [
       {"organization": "Quest Diagnostics", "product": "Urinalysis (UTI)", "total": 46.00, "components": "Test $40.00 + required $6.00 physician service fee.", "fee_included": true, "source_url": "https://www.questhealth.com/product/urinalysis-urinary-tract-infection-uti-test/5463M.html", "retrieved": "2026-08-17", "scope": "national_dtc", "note": "UTI-framed product; confirm scope vs routine urinalysis."}
+    ],
+    "a1c-test": [
+      {"organization": "Labcorp OnDemand", "product": "Diabetes Risk (HbA1c)", "total": 39.00, "components": "All-inclusive (independent-provider order included).", "fee_included": true, "source_url": "https://www.ondemand.labcorp.com/content/labcorp-ondemand/us/en/lab-tests/diabetes-risk-hbA1c-test", "retrieved": "2026-08-18", "scope": "national_dtc"},
+      {"organization": "Quest Diagnostics", "product": "Hemoglobin A1c (HbA1c)", "total": 45.00, "components": "Test $39.00 + required $6.00 physician service fee.", "fee_included": true, "source_url": "https://www.questhealth.com/product/hemoglobin-a1c-test/496M.html", "retrieved": "2026-08-17", "scope": "national_dtc"}
     ]
   }
 }

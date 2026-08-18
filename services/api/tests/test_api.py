@@ -572,6 +572,10 @@ def test_dtc_options_endpoint_serves_verified_lab_options() -> None:
         assert opt["scope"] == "national_dtc"
         assert opt["fee_included"] is True
         assert Decimal(opt["total"]) > 0
+    # HbA1c already exists as canonical `a1c-test` (not a gap); it also carries DTC options.
+    a1c = client.get("/api/v1/procedures/a1c-test/dtc-options").json()
+    a1c_orgs = {o["organization"] for o in a1c["options"]}
+    assert {"Quest Diagnostics", "Labcorp OnDemand"} <= a1c_orgs
     # A non-lab procedure has no DTC options (empty, not an error).
     imaging = client.get("/api/v1/procedures/mri-brain-without-contrast/dtc-options")
     assert imaging.status_code == 200
