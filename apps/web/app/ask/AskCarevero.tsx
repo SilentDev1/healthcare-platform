@@ -57,6 +57,8 @@ type Turn =
       procedures?: SearchItem[];
       locations?: SearchItem[];
       prices?: { slug: string; rows: PriceRow[] };
+      /** Deterministic self-pay/uninsured intent — links lead with cash prices. */
+      selfPay?: boolean;
     };
 
 function money(n: number | null): string | null {
@@ -116,6 +118,7 @@ export function AskCarevero({ locale }: { locale: Locale }) {
       ).then((r) => (r.ok ? r.json() : { items: [], capability_locations: [] }));
       const items: SearchItem[] = search.items ?? [];
       const locations: SearchItem[] = search.capability_locations ?? [];
+      const selfPay = search.payment_context === "self_pay";
       const procedures = items.filter((i) => i.entity_type === "procedure" && i.metadata.slug);
 
       // If a single procedure is clearly identified, fetch a few REAL price rows to show inline.
@@ -147,6 +150,7 @@ export function AskCarevero({ locale }: { locale: Locale }) {
           procedures: procedures.slice(0, 4),
           locations: locations.slice(0, 6),
           prices,
+          selfPay,
         },
       ]);
     } catch {
@@ -236,7 +240,7 @@ export function AskCarevero({ locale }: { locale: Locale }) {
                       </ul>
                       <Link
                         className="ask-more"
-                        href={localePath(locale, `/procedures/${turn.prices.slug}/prices?state=NH`)}
+                        href={localePath(locale, `/procedures/${turn.prices.slug}/prices?state=NH${turn.selfPay ? "&pay=self" : ""}`)}
                       >
                         {t.labelResults} →
                       </Link>
@@ -281,7 +285,7 @@ export function AskCarevero({ locale }: { locale: Locale }) {
                           <span className="ask-card-name">{p.title}</span>
                           <Link
                             className="ask-card-link"
-                            href={localePath(locale, `/procedures/${p.metadata.slug}/prices?state=NH`)}
+                            href={localePath(locale, `/procedures/${p.metadata.slug}/prices?state=NH${turn.selfPay ? "&pay=self" : ""}`)}
                           >
                             {t.labelPrices} →
                           </Link>
