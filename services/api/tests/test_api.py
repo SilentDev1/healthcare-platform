@@ -236,7 +236,7 @@ def test_search_category_semantics_and_safe_clarification() -> None:
     )
     members = [item for item in payload["items"] if item["match_reason"] == "category_member"]
     assert category_item["title"] == "Lab tests"
-    assert category_item["metadata"]["procedure_count"] == len(members) == 12
+    assert category_item["metadata"]["procedure_count"] == len(members) == 13
     assert not any("price" in item["metadata"] for item in members)
 
     clarification = client.get("/api/v1/search?q=knee%20scan")

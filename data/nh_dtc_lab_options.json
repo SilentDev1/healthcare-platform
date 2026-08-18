@@ -34,6 +34,10 @@
     "vitamin-d-test": [
       {"organization": "Quest Diagnostics", "product": "Vitamin D (25-Hydroxy)", "total": 81.00, "components": "Test $75.00 + required $6.00 physician service fee. (A transient 10% promo showed $73.50 test; the durable list total is $81.00.)", "fee_included": true, "source_url": "https://www.questhealth.com/product/vitamin-d-test/17306.html", "retrieved": "2026-08-18", "scope": "national_dtc"},
       {"organization": "Labcorp OnDemand", "product": "Vitamin D Test", "total": 99.00, "components": "All-inclusive (independent-provider order included).", "fee_included": true, "source_url": "https://www.ondemand.labcorp.com/content/labcorp-ondemand/us/en/lab-tests/vitamin-d-test", "retrieved": "2026-08-18", "scope": "national_dtc"}
+    ],
+    "psa-test": [
+      {"organization": "Labcorp OnDemand", "product": "PSA Prostate Cancer Screening", "total": 69.00, "components": "All-inclusive (independent-provider order included).", "fee_included": true, "source_url": "https://www.ondemand.labcorp.com/content/labcorp-ondemand/us/en/lab-tests/psa-prostate-cancer-screening-test", "retrieved": "2026-08-18", "scope": "national_dtc"},
+      {"organization": "Quest Diagnostics", "product": "Prostate Screening (PSA)", "total": 75.00, "components": "Test $69.00 + required $6.00 physician service fee.", "fee_included": true, "source_url": "https://www.questhealth.com/product/prostate-screening-psa/5363.html", "retrieved": "2026-08-18", "scope": "national_dtc"}
     ]
   }
 }

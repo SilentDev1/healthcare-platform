@@ -142,6 +142,7 @@ SERVICES = (
     ("lipid-panel", "Cholesterol and lipid panel", "laboratory", "laboratory", "lipid test"),
     ("a1c-test", "Hemoglobin A1C test", "laboratory", "laboratory", "diabetes blood test"),
     ("vitamin-d-test", "Vitamin D test", "laboratory", "laboratory", "25-hydroxy vitamin D"),
+    ("psa-test", "Prostate-specific antigen (PSA) test", "laboratory", "laboratory", "PSA"),
     ("thyroid-test", "Thyroid-stimulating hormone test", "laboratory", "laboratory", "TSH"),
     ("urinalysis", "Urinalysis", "laboratory", "laboratory", "urine test"),
     ("pregnancy-test", "Pregnancy test", "laboratory", "laboratory", "hCG test"),
@@ -284,6 +285,14 @@ def seed_catalog(session: Session) -> SeedSummary:
             "25-hydroxy vitamin d",
             "25 hydroxy vitamin d",
             "25-oh vitamin d",
+        ),
+        # Reviewed PSA wording (CPT 84153, total PSA). Deliberately NOT aliased:
+        # broad "prostate test"/"prostate exam" (could mean DRE, MRI, biopsy, etc.).
+        "psa-test": (
+            "psa",
+            "psa test",
+            "prostate specific antigen",
+            "prostate-specific antigen test",
         ),
         "cesarean-delivery": ("cesarean", "cesarean section"),
         "urgent-care-visit": ("urgent care", "walk in clinic"),

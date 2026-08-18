@@ -31,6 +31,7 @@ MAPPINGS = (
     ("lipid-panel", "CPT", "80061"),
     ("a1c-test", "CPT", "83036"),
     ("vitamin-d-test", "CPT", "82306"),
+    ("psa-test", "CPT", "84153"),
     ("thyroid-test", "CPT", "84443"),
     ("urinalysis", "CPT", "81001"),
     ("pregnancy-test", "CPT", "81025"),
