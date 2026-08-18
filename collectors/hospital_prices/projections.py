@@ -74,8 +74,34 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
         )
         previous_prices[key] = (s.cash_price_median, s.negotiated_price_median)
 
-    session.execute(delete(FacilityProcedurePriceSummarySource))
-    session.execute(delete(FacilityProcedurePriceSummary))
+    # Non-hospital provider-published summaries (Derry Imaging, NH Open MRI, staged
+    # Quest/LabCorp candidates, …) are DIRECT summaries created by the non-hospital
+    # ingest — they have no HospitalPriceRecord observation backing, so this
+    # hospital-only rebuild would silently DELETE them and never recreate them
+    # (that is exactly how Derry's live prices were once wiped). Preserve every
+    # summary + provenance row whose SourceFile is a provider_published_price source;
+    # rebuild only the hospital-derived rows (all observations are hospital-derived).
+    provider_published_source_ids: set[object] = set(
+        session.scalars(
+            select(SourceFile.id).where(SourceFile.source_type == "provider_published_price")
+        )
+    )
+    if provider_published_source_ids:
+        session.execute(
+            delete(FacilityProcedurePriceSummarySource).where(
+                FacilityProcedurePriceSummarySource.source_file_id.not_in(
+                    provider_published_source_ids
+                )
+            )
+        )
+        session.execute(
+            delete(FacilityProcedurePriceSummary).where(
+                FacilityProcedurePriceSummary.source_file_id.not_in(provider_published_source_ids)
+            )
+        )
+    else:
+        session.execute(delete(FacilityProcedurePriceSummarySource))
+        session.execute(delete(FacilityProcedurePriceSummary))
     session.execute(delete(FacilityProcedurePriceObservation))
 
     # Pre-load blocked record IDs in one query (O(1) set lookup per record)

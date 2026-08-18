@@ -423,3 +423,83 @@ def test_scorecard_components_identical_across_states() -> None:
             assert isinstance(components, dict)
             assert set(components.keys()) == expected_keys, f"State {state} missing components"
     engine.dispose()
+
+
+def test_rebuild_preserves_provider_published_summaries() -> None:
+    """rebuild_price_summaries must NOT delete non-hospital provider-published
+    summaries (they have no observation backing and are never rebuilt here).
+    Regression: this hospital-only rebuild once wiped Derry Imaging's live prices."""
+    from decimal import Decimal
+
+    from packages.database import (
+        FacilityProcedurePriceSummary,
+        FacilityProcedurePriceSummarySource,
+        Procedure,
+    )
+    from packages.database.models import SourceStatus
+    from scripts.seed_procedure_catalog import seed_catalog
+
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        seed_catalog(session)
+        procedure = session.scalar(select(Procedure).where(Procedure.slug == "mri-brain-without-contrast"))
+        assert procedure is not None
+        facility = Facility(
+            cms_certification_number=None,
+            legal_name="NH Open MRI Test",
+            display_name="NH Open MRI Test",
+            facility_type="Imaging Center",
+            active=True,
+        )
+        facility.locations.append(
+            FacilityLocation(address_line_1="1 A St", city="West Lebanon", state="NH", postal_code="03784")
+        )
+        session.add(facility)
+        session.flush()
+        src = SourceFile(
+            source_name="NH Open MRI (published cash prices)",
+            source_url="https://www.nhopenmri.example/cost",
+            source_type="provider_published_price",
+            storage_path="provenance/x",
+            checksum_sha256="d" * 64,
+            file_size=0,
+            parser_version="nonhospital-published-prices-manual",
+            status=SourceStatus.COMPLETED,
+        )
+        session.add(src)
+        session.flush()
+        summary = FacilityProcedurePriceSummary(
+            facility_id=facility.id,
+            facility_location_id=facility.locations[0].id,
+            procedure_id=procedure.id,
+            service_setting="outpatient",
+            included_component_scope="global",
+            cash_price_min=Decimal("1099"),
+            cash_price_max=Decimal("1099"),
+            cash_price_median=Decimal("1099"),
+            record_count=1,
+            source_file_id=src.id,
+            publication_status="publishable",
+            completeness_score=Decimal("1.0"),
+        )
+        session.add(summary)
+        session.flush()
+        session.add(
+            FacilityProcedurePriceSummarySource(
+                summary_id=summary.id, source_file_id=src.id, observation_count=1
+            )
+        )
+        session.commit()
+
+        rebuild_price_summaries(session)
+        session.commit()
+
+        survivors = session.scalars(
+            select(FacilityProcedurePriceSummary).where(
+                FacilityProcedurePriceSummary.source_file_id == src.id
+            )
+        ).all()
+        assert len(survivors) == 1, "provider-published summary was wiped by hospital rebuild"
+        assert survivors[0].cash_price_median == Decimal("1099")
+    engine.dispose()
