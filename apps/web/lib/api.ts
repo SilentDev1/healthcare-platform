@@ -288,6 +288,26 @@ export interface ProcedureComparison {
   items: ProcedureComparisonItem[];
 }
 
+export interface DtcOption {
+  organization: string;
+  product: string;
+  total: string;
+  currency: string;
+  components: string;
+  fee_included: boolean;
+  source_url: string;
+  retrieved: string;
+  scope: string;
+  note?: string | null;
+}
+
+export interface DtcOptions {
+  procedure_slug: string;
+  procedure_name: string;
+  disclaimer: string;
+  options: DtcOption[];
+}
+
 export interface ConsumerPriceDetailRecord {
   semantic_type: string;
   amount: string;

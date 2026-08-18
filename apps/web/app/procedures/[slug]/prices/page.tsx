@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { apiGet, type Procedure } from "../../../../lib/api";
+import { apiGet, type Procedure, type DtcOptions as DtcOptionsData } from "../../../../lib/api";
 import { ErrorState } from "../../../components/ui";
+import { DtcOptions } from "../../../components/DtcOptions";
 import {
   ProcedureResults,
   type ProcedureResultsFilters,
@@ -36,6 +37,23 @@ export default async function ProcedurePrices({
       </main>
     );
   }
+
+  // Verified national DTC self-pay options (a SEPARATE surface from the per-location
+  // comparison). Fetched server-side; degrades to nothing if the endpoint is empty
+  // or unavailable — never blocks the comparison.
+  let dtc: DtcOptionsData | null = null;
+  try {
+    const fetched = await apiGet<DtcOptionsData>(
+      `/api/v1/procedures/${encodeURIComponent(slug)}/dtc-options`,
+    );
+    if (fetched.options?.length) dtc = fetched;
+  } catch {
+    dtc = null;
+  }
+  const selfPayFirst = filters.pay === "self";
+  const dtcSection = dtc ? (
+    <DtcOptions data={dtc} messages={messages} locale={locale} />
+  ) : null;
 
   const payerName = undefined;
   return (
@@ -87,6 +105,7 @@ export default async function ProcedurePrices({
           </dd>
         </div>
       </dl>
+      {selfPayFirst ? dtcSection : null}
       <ProcedureResults
         slug={slug}
         procedureName={procedure.consumer_name}
@@ -95,6 +114,7 @@ export default async function ProcedurePrices({
         messages={messages}
         basePath={basePath}
       />
+      {selfPayFirst ? null : dtcSection}
     </main>
   );
 }
