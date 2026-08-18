@@ -132,4 +132,36 @@ describe("ProcedurePrices", () => {
     expect(screen.getByText("Coverage Gap Hospital")).toBeInTheDocument();
     expect(screen.queryByText("Published Hospital")).not.toBeInTheDocument();
   });
+
+  it("renders removable URL-backed active filter chips", async () => {
+    render(
+      await resolveAsyncServerComponents(
+        await ProcedurePrices({
+          params: Promise.resolve({ slug: "mri-brain" }),
+          searchParams: Promise.resolve({
+            location: "Nashua",
+            facility_type: "Acute Care Hospital",
+            pay: "self",
+            availability: "available",
+          }),
+        }),
+      ),
+    );
+
+    const locationChip = screen.getByRole("link", {
+      name: /Clear filters: Nashua/,
+    });
+    expect(locationChip).toHaveAttribute(
+      "href",
+      expect.not.stringContaining("location="),
+    );
+    expect(locationChip).toHaveAttribute(
+      "href",
+      expect.stringContaining("facility_type=Acute+Care+Hospital"),
+    );
+    expect(
+      screen.getByRole("link", { name: "Clear all filters" }),
+    ).toHaveAttribute("href", "/procedures/mri-brain/prices");
+    expect(screen.getByText(/4 active filters/)).toBeInTheDocument();
+  });
 });

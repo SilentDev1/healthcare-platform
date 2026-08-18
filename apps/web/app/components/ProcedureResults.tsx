@@ -164,9 +164,28 @@ export async function ProcedureResults({
   const planName = filters.plan
     ? plans.find((plan) => plan.id === filters.plan)?.name
     : undefined;
-  const activeFilterCount = Object.entries(filters).filter(
-    ([key, value]) => key !== "sort" && Boolean(value),
-  ).length;
+  const chipLabels: Record<string, string | undefined> = {
+    location: filters.location,
+    facility_type: filters.facility_type,
+    pay: filters.pay === "self" ? messages.selfPay : undefined,
+    payer: payerName,
+    plan: planName,
+    availability:
+      filters.availability === "unavailable"
+        ? messages.availabilityUnavailable
+        : filters.availability === "available"
+          ? messages.availabilityAvailable
+          : undefined,
+    setting: filters.setting?.replaceAll("_", " "),
+    radius: filters.radius
+      ? `${filters.radius} ${messages.milesUnit}`
+      : undefined,
+    rating: filters.rating ? `${filters.rating}+ CMS` : undefined,
+  };
+  const activeChips = Object.entries(chipLabels).filter(
+    (entry): entry is [string, string] => Boolean(entry[1]),
+  );
+  const activeFilterCount = activeChips.length;
 
   const filterForm = (
     <form className="filter-form persistent-filter-form">
@@ -189,12 +208,18 @@ export async function ProcedureResults({
         >
           <option value="available">{messages.availabilityAvailable}</option>
           <option value="">{messages.availabilityAll}</option>
-          <option value="unavailable">{messages.availabilityUnavailable}</option>
+          <option value="unavailable">
+            {messages.availabilityUnavailable}
+          </option>
         </select>
       </div>
       <div className="filter-group">
         <label htmlFor="setting">{messages.serviceSetting}</label>
-        <select id="setting" name="setting" defaultValue={filters.setting ?? ""}>
+        <select
+          id="setting"
+          name="setting"
+          defaultValue={filters.setting ?? ""}
+        >
           <option value="">{messages.settingAll}</option>
           <option value="outpatient">{messages.settingOutpatient}</option>
           <option value="inpatient">{messages.settingInpatient}</option>
@@ -268,18 +293,18 @@ export async function ProcedureResults({
   );
 
   const hospitalsWithPricesLabel =
-    data.facilities_with_prices === 1
+    items.length === 1
       ? experienceMessages[locale].providerOne
       : experienceMessages[locale].providerMany.replace(
           "{count}",
-          String(data.facilities_with_prices),
+          String(items.length),
         );
   const matchingLocationsLabel =
-    data.service_locations === 1
-      ? messages.matchingLocationsTotalOne
-      : messages.matchingLocationsTotal.replace(
+    items.length === 1
+      ? experienceMessages[locale].providerOne
+      : experienceMessages[locale].providerMany.replace(
           "{count}",
-          String(data.service_locations),
+          String(items.length),
         );
 
   return (
@@ -294,11 +319,17 @@ export async function ProcedureResults({
           <span>{selfPay ? messages.selfPayBody : messages.selfPayPrompt}</span>
         </div>
         {selfPay ? (
-          <Link className="text-link" href={buildResultsHref({ pay: undefined })}>
+          <Link
+            className="text-link"
+            href={buildResultsHref({ pay: undefined })}
+          >
             {messages.selfPayShowAll}
           </Link>
         ) : (
-          <Link className="button secondary" href={buildResultsHref({ pay: "self" })}>
+          <Link
+            className="button secondary"
+            href={buildResultsHref({ pay: "self" })}
+          >
             {messages.selfPayShowCash}
           </Link>
         )}
@@ -316,7 +347,9 @@ export async function ProcedureResults({
         {filterForm}
         <form className="results-sort-form">
           {Object.entries(filters)
-            .filter(([key, value]) => key !== "sort" && key !== "radius" && value)
+            .filter(
+              ([key, value]) => key !== "sort" && key !== "radius" && value,
+            )
             .map(([key, value]) => (
               <input key={key} type="hidden" name={key} value={value} />
             ))}
@@ -342,6 +375,26 @@ export async function ProcedureResults({
           </label>
           <button className="button secondary">{messages.apply}</button>
         </form>
+        {activeChips.length ? (
+          <div
+            className="active-filter-row"
+            aria-label={messages.filterResultsSummary}
+          >
+            {activeChips.map(([key, label]) => (
+              <Link
+                key={key}
+                className="active-filter-chip"
+                href={buildResultsHref({ [key]: undefined })}
+                aria-label={`${messages.clearFilters}: ${label}`}
+              >
+                {label} <span aria-hidden="true">×</span>
+              </Link>
+            ))}
+            <Link className="clear-filter-chips" href={clearHref}>
+              {messages.clearAllFilters}
+            </Link>
+          </div>
+        ) : null}
       </div>
       <div className="marketplace-results-layout single-column-results">
         <section className="result-list" aria-label={messages.facilityResults}>
@@ -355,25 +408,35 @@ export async function ProcedureResults({
               </div>
             </EmptyState>
           ) : (
-            items.slice(0, filters.view === "all" ? items.length : 5).map((item) => (
-              <ComparisonFacilityCard
-                key={`${item.facility_id}-${item.facility_location_id}`}
-                item={item}
-                procedureName={procedureName}
-                procedureSlug={slug}
-                payerName={payerName}
-                planName={planName}
-                planId={filters.plan}
-                messages={messages}
-                locale={locale}
-              />
-            ))
+            items
+              .slice(0, filters.view === "all" ? items.length : 5)
+              .map((item) => (
+                <ComparisonFacilityCard
+                  key={`${item.facility_id}-${item.facility_location_id}`}
+                  item={item}
+                  procedureName={procedureName}
+                  procedureSlug={slug}
+                  payerName={payerName}
+                  planName={planName}
+                  planId={filters.plan}
+                  messages={messages}
+                  locale={locale}
+                />
+              ))
           )}
         </section>
       </div>
       {items.length > 5 && filters.view !== "all" ? (
         <div className="see-all-results">
-          <Link className="button secondary" href={buildResultsHref({ view: "all" })}>{experienceMessages[locale].seeAll.replace("{count}", String(items.length))}</Link>
+          <Link
+            className="button secondary"
+            href={buildResultsHref({ view: "all" })}
+          >
+            {experienceMessages[locale].seeAll.replace(
+              "{count}",
+              String(items.length),
+            )}
+          </Link>
         </div>
       ) : null}
       <PricingDisclaimer messages={messages} />

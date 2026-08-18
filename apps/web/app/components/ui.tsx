@@ -1,6 +1,10 @@
 import Link from "next/link";
 import type { ProcedureComparisonItem } from "../../lib/api";
-import { formatCashExplanation, type Locale, type Messages } from "../../lib/i18n";
+import {
+  formatCashExplanation,
+  type Locale,
+  type Messages,
+} from "../../lib/i18n";
 import { CompareSelect } from "./CompareSelect";
 import { FacilityImage } from "./FacilityImage";
 
@@ -102,9 +106,7 @@ export function CoverageNotice({
     <aside className="notice coverage-notice">
       <span aria-hidden="true">ⓘ</span>
       <div>
-        <strong>
-          {messages?.priceCoverage ?? "Price coverage"}
-        </strong>
+        <strong>{messages?.priceCoverage ?? "Price coverage"}</strong>
         <p>{children}</p>
       </div>
     </aside>
@@ -299,150 +301,156 @@ export function ComparisonFacilityCard({
         className="rcard-photo"
       />
       <div className="rcard-body">
-      <div className="rcard-info">
-        <h3 className="rcard-name">{item.facility_name}</h3>
-        <p className="rcard-meta">
-          {locationLabel}
-          {distanceLabel && (
-            <span className="rcard-distance"> · {distanceLabel}</span>
-          )}
-        </p>
-        <div className="rcard-tags">
-          <QualityRating value={item.cms_overall_rating} messages={messages} />
-          <span className="rcard-type">
-            {item.facility_type ?? (messages?.facilityTypeHospital ?? "Hospital")}
-            {settingLabel ? ` · ${settingLabel}` : ""}
-          </span>
+        <div className="rcard-info">
+          <h3 className="rcard-name">{item.facility_name}</h3>
+          <p className="rcard-meta">
+            {locationLabel}
+            {distanceLabel && (
+              <span className="rcard-distance"> · {distanceLabel}</span>
+            )}
+          </p>
+          <div className="rcard-tags">
+            <span className="rcard-type">
+              {item.facility_type ??
+                messages?.facilityTypeHospital ??
+                "Hospital"}
+            </span>
+          </div>
         </div>
-      </div>
 
-      <div className="rcard-price">
-        {item.price_available ? (
-          <>
-            <span className="rcard-price-label">{cashLabel}</span>
-            <strong className="rcard-price-value">
-              <PriceRange
-                min={item.cash_price_min}
-                max={item.cash_price_max}
-                messages={messages}
-              />
-            </strong>
-            {item.lower_priced_nearby_option ? (
-              <span
-                className="savings-badge nearby"
-                title={messages?.comparedWithLowest ?? undefined}
-              >
-                <span aria-hidden="true">↓ </span>
-                {moneyWhole(
-                  item.lower_priced_nearby_option.published_price_difference ??
-                    0,
-                )}{" "}
-                {messages?.lowerNearbySuffix ?? "lower published price nearby"}{" "}
-                · {item.lower_priced_nearby_option.facility_name}
-                {typeof item.lower_priced_nearby_option.distance_miles ===
-                "number"
-                  ? ` · ${item.lower_priced_nearby_option.distance_miles} ${messages?.milesUnit ?? "miles"}`
-                  : ""}
+        <div className="rcard-price">
+          {item.price_available ? (
+            <>
+              <span className="rcard-price-label">
+                {payerName
+                  ? (messages?.matchingRates ??
+                    "Published matching negotiated rates")
+                  : cashLabel}
               </span>
-            ) : item.is_lowest_comparable_cash ? (
-              <span className="savings-badge lowest">
-                {messages?.lowestNearby ??
-                  "Lowest comparable published price nearby"}
-              </span>
-            ) : null}
-            {item.additional_published_prices &&
-            item.additional_published_prices.length > 0 ? (
-              <details className="component-note">
-                <summary>
-                  {messages?.additionalPublishedPrices ??
-                    "Additional published prices"}{" "}
-                  ({item.additional_published_prices.length})
-                </summary>
-                <p>
-                  {messages?.componentRangeNote ??
-                    "This hospital publishes multiple prices for this service. They may represent different billing components and are not a single price range."}
-                </p>
-                <ul>
-                  {item.additional_published_prices.map((component, index) => (
-                    <li key={index}>
-                      {moneyWhole(component.amount_min)}
-                      {component.amount_min !== component.amount_max
-                        ? `–${moneyWhole(component.amount_max)}`
-                        : ""}{" "}
-                      · {component.service_setting.replaceAll("_", " ")} ·{" "}
-                      {component.billing_scope.replaceAll("_", " ")}
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            ) : cashExplanation ? (
-              <small className="price-context">{cashExplanation}</small>
-            ) : null}
-            <div className="rcard-insurance">
-              {payerName ? (
-                <>
-                  <span className="rcard-insurance-name">
-                    {payerName}
-                    {planName ? ` · ${planName}` : ""}
-                  </span>{" "}
-                  <PriceRange
-                    min={item.negotiated_price_min}
-                    max={item.negotiated_price_max}
+              <strong className="rcard-price-value">
+                <PriceRange
+                  min={
+                    payerName ? item.negotiated_price_min : item.cash_price_min
+                  }
+                  max={
+                    payerName ? item.negotiated_price_max : item.cash_price_max
+                  }
+                  messages={messages}
+                />
+              </strong>
+              <details className="rcard-price-details">
+                <summary>{messages?.priceDetails ?? "Price details"}</summary>
+                <div className="rcard-price-details-body">
+                  <QualityRating
+                    value={item.cms_overall_rating}
                     messages={messages}
-                  />{" "}
-                  <span className="rcard-insurance-note">
-                    ·{" "}
-                    {(
-                      messages?.matchingRateRecords ??
-                      "{count} matching published rate records"
-                    ).replace(
-                      "{count}",
-                      String(item.matching_negotiated_rate_count ?? 0),
-                    )}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="rcard-insurance-count">
-                    {item.distinct_payer_count
-                      ? item.distinct_payer_count === 1
-                        ? (messages?.oneCompanyPublishesRates ??
-                          "1 company publishes rates")
-                        : `${item.distinct_payer_count} ${messages?.companiesPublishRates ?? "companies publish rates"}`
-                      : (messages?.noInsurancePrices ??
-                        "No published insurance prices")}
-                  </span>
-                  {!!item.published_payers?.length && (
-                    <span className="rcard-insurance-note">
-                      {item.published_payers
-                        .slice(0, 3)
-                        .map((publishedPayer) => publishedPayer.name)
-                        .join(" · ")}
-                      {item.published_payers.length > 3
-                        ? ` · +${item.published_payers.length - 3} more`
+                  />
+                  {settingLabel ? (
+                    <p>
+                      {messages?.serviceSetting ?? "Service setting"}:{" "}
+                      {settingLabel}
+                    </p>
+                  ) : null}
+                  {cashExplanation ? (
+                    <p className="price-context">{cashExplanation}</p>
+                  ) : null}
+                  {payerName ? (
+                    <p>
+                      <strong>
+                        {payerName}
+                        {planName ? ` · ${planName}` : ""}
+                      </strong>{" "}
+                      ·{" "}
+                      {(
+                        messages?.matchingRateRecords ??
+                        "{count} matching published rate records"
+                      ).replace(
+                        "{count}",
+                        String(item.matching_negotiated_rate_count ?? 0),
+                      )}
+                    </p>
+                  ) : (
+                    <p>
+                      {item.distinct_payer_count
+                        ? item.distinct_payer_count === 1
+                          ? (messages?.oneCompanyPublishesRates ??
+                            "1 company publishes rates")
+                          : `${item.distinct_payer_count} ${messages?.companiesPublishRates ?? "companies publish rates"}`
+                        : (messages?.noInsurancePrices ??
+                          "No published insurance prices")}
+                    </p>
+                  )}
+                  {item.lower_priced_nearby_option ? (
+                    <span
+                      className="savings-badge nearby"
+                      title={messages?.comparedWithLowest ?? undefined}
+                    >
+                      <span aria-hidden="true">↓ </span>
+                      {moneyWhole(
+                        item.lower_priced_nearby_option
+                          .published_price_difference ?? 0,
+                      )}{" "}
+                      {messages?.lowerNearbySuffix ??
+                        "lower published price nearby"}{" "}
+                      · {item.lower_priced_nearby_option.facility_name}
+                      {typeof item.lower_priced_nearby_option.distance_miles ===
+                      "number"
+                        ? ` · ${item.lower_priced_nearby_option.distance_miles} ${messages?.milesUnit ?? "miles"}`
                         : ""}
                     </span>
-                  )}
-                </>
-              )}
+                  ) : item.is_lowest_comparable_cash ? (
+                    <span className="savings-badge lowest">
+                      {messages?.lowestNearby ??
+                        "Lowest comparable published price nearby"}
+                    </span>
+                  ) : null}
+                  {item.additional_published_prices &&
+                  item.additional_published_prices.length > 0 ? (
+                    <div className="component-note">
+                      <strong>
+                        {messages?.additionalPublishedPrices ??
+                          "Additional published prices"}{" "}
+                        ({item.additional_published_prices.length})
+                      </strong>
+                      <p>
+                        {messages?.componentRangeNote ??
+                          "This hospital publishes multiple prices for this service. They may represent different billing components and are not a single price range."}
+                      </p>
+                      <ul>
+                        {item.additional_published_prices.map(
+                          (component, index) => (
+                            <li key={index}>
+                              {moneyWhole(component.amount_min)}
+                              {component.amount_min !== component.amount_max
+                                ? `–${moneyWhole(component.amount_max)}`
+                                : ""}{" "}
+                              · {component.service_setting.replaceAll("_", " ")}{" "}
+                              · {component.billing_scope.replaceAll("_", " ")}
+                            </li>
+                          ),
+                        )}
+                      </ul>
+                    </div>
+                  ) : null}
+                  <Link className="rcard-detail" href={detailHref}>
+                    {messages?.priceDetails ?? "View price details"}
+                  </Link>
+                </div>
+              </details>
+            </>
+          ) : (
+            <div className="rcard-nopricebox">
+              <strong>
+                {messages?.unpricedCardTitle ??
+                  "No published price available for this procedure"}
+              </strong>
+              <p>
+                {messages?.unpricedCardBody ??
+                  "Carevero has not found a currently publishable price for this procedure at this location."}
+              </p>
             </div>
-            <Link className="rcard-detail" href={detailHref}>
-              {messages?.priceDetails ?? "View price details"}
-            </Link>
-          </>
-        ) : (
-          <div className="rcard-nopricebox">
-            <strong>
-              {messages?.unpricedCardTitle ??
-                "No published price available for this procedure"}
-            </strong>
-            <p>
-              {messages?.unpricedCardBody ??
-                "Carevero has not found a currently publishable price for this procedure at this location."}
-            </p>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
       </div>
 
       <div className="rcard-actions">

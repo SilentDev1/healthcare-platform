@@ -64,9 +64,12 @@ export default async function Layout({
             )}
           </Link>
           <nav aria-label={t.mainNavigation}>
-            <Link className="nav-primary" href={localePath(locale, "/search")}>
+            <ExperienceTrigger
+              kind="search"
+              className="nav-primary nav-button"
+            >
               {t.findPrices}
-            </Link>
+            </ExperienceTrigger>
             <Link href={localePath(locale, "/providers")}>
               {directoryMessages[locale].navLabel}
             </Link>

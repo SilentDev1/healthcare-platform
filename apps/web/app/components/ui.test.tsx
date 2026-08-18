@@ -66,8 +66,9 @@ describe("consumer pricing components", () => {
     // CMS quality, not fabricated review stars.
     expect(screen.getByText(/4\/5 CMS/)).toBeInTheDocument();
     expect(
-      screen.queryByText(/insurance accepted/i),
-    ).not.toBeInTheDocument();
+      screen.getByText("Price details", { selector: "summary" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/insurance accepted/i)).not.toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "View price details" }),
     ).toBeInTheDocument();
@@ -89,13 +90,9 @@ describe("consumer pricing components", () => {
       />,
     );
     expect(
-      screen.getByText(
-        "No published price available for this procedure",
-      ),
+      screen.getByText("No published price available for this procedure"),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(/currently publishable price/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/currently publishable price/)).toBeInTheDocument();
   });
 
   it("prioritizes only explicitly selected insurance rates", () => {
@@ -110,6 +107,7 @@ describe("consumer pricing components", () => {
     // The selected payer's published rate is shown by name (not "accepted").
     expect(screen.getByText("Example Insurance")).toBeInTheDocument();
     expect(screen.getAllByText(/\$640/).length).toBeGreaterThan(0);
+    expect(screen.queryByText("$825")).not.toBeInTheDocument();
     expect(
       screen.getByText(/3 matching published rate records/),
     ).toBeInTheDocument();
