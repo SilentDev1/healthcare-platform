@@ -43,6 +43,29 @@ vi.mock("../../../../lib/api", () => ({
             latest_updated: "2026-08-01T12:00:00Z",
             source_url: "https://example.test/prices.csv",
           },
+          ...Array.from({ length: 5 }, (_, index) => ({
+            facility_id: `extra-${index + 1}`,
+            facility_name: `Published Hospital ${index + 2}`,
+            facility_location_id: `extra-location-${index + 1}`,
+            location_name: `Campus ${index + 2}`,
+            location_type: "hospital_campus",
+            address_line_1: `${index + 3} Main St`,
+            city: "Concord",
+            state: "NH",
+            postal_code: "03301",
+            facility_type: "Acute Care Hospital",
+            cms_overall_rating: index === 0 ? "5" : "4",
+            price_available: true,
+            cash_price_min: String(850 + index * 25),
+            cash_price_max: String(850 + index * 25),
+            negotiated_price_min: null,
+            negotiated_price_max: null,
+            service_settings: ["outpatient"],
+            summary_count: 1,
+            source_count: 1,
+            latest_updated: "2026-08-01T12:00:00Z",
+            source_url: "https://example.test/prices.csv",
+          })),
           {
             facility_id: "f2",
             facility_name: "Coverage Gap Hospital",
@@ -109,7 +132,7 @@ describe("ProcedurePrices", () => {
       await resolveAsyncServerComponents(
         await ProcedurePrices({
           params: Promise.resolve({ slug: "mri-brain" }),
-          searchParams: Promise.resolve({ availability: "" }),
+          searchParams: Promise.resolve({ availability: "", view: "all" }),
         }),
       ),
     );
@@ -163,5 +186,49 @@ describe("ProcedurePrices", () => {
       screen.getByRole("link", { name: "Clear all filters" }),
     ).toHaveAttribute("href", "/procedures/mri-brain/prices");
     expect(screen.getByText(/4 active filters/)).toBeInTheDocument();
+  });
+
+  it("moves from the first five to all results and updates after filtering", async () => {
+    const { rerender } = render(
+      await resolveAsyncServerComponents(
+        await ProcedurePrices({
+          params: Promise.resolve({ slug: "mri-brain" }),
+          searchParams: Promise.resolve({}),
+        }),
+      ),
+    );
+
+    expect(screen.getAllByRole("article")).toHaveLength(5);
+    expect(
+      screen.getByRole("link", { name: "See all 6 providers" }),
+    ).toHaveAttribute("href", expect.stringContaining("view=all"));
+
+    rerender(
+      await resolveAsyncServerComponents(
+        await ProcedurePrices({
+          params: Promise.resolve({ slug: "mri-brain" }),
+          searchParams: Promise.resolve({ view: "all" }),
+        }),
+      ),
+    );
+    expect(screen.getAllByRole("article")).toHaveLength(6);
+
+    rerender(
+      await resolveAsyncServerComponents(
+        await ProcedurePrices({
+          params: Promise.resolve({ slug: "mri-brain" }),
+          searchParams: Promise.resolve({ view: "all", rating: "5" }),
+        }),
+      ),
+    );
+    expect(screen.getAllByRole("article")).toHaveLength(1);
+    expect(
+      screen.getByRole("heading", {
+        name: "1 provider with published prices",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Clear filters: 5\+ CMS/ }),
+    ).toBeInTheDocument();
   });
 });
