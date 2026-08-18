@@ -141,6 +141,7 @@ SERVICES = (
     ("basic-metabolic-panel", "Basic metabolic panel", "laboratory", "laboratory", "BMP"),
     ("lipid-panel", "Cholesterol and lipid panel", "laboratory", "laboratory", "lipid test"),
     ("a1c-test", "Hemoglobin A1C test", "laboratory", "laboratory", "diabetes blood test"),
+    ("vitamin-d-test", "Vitamin D test", "laboratory", "laboratory", "25-hydroxy vitamin D"),
     ("thyroid-test", "Thyroid-stimulating hormone test", "laboratory", "laboratory", "TSH"),
     ("urinalysis", "Urinalysis", "laboratory", "laboratory", "urine test"),
     ("pregnancy-test", "Pregnancy test", "laboratory", "laboratory", "hCG test"),
@@ -275,6 +276,15 @@ def seed_catalog(session: Session) -> SeedSummary:
     # procedure). Deliberately specific: category-level terms like "blood work" or
     # "childbirth" resolve to their category/clarification, not captured here.
     reviewed_aliases: dict[str, tuple[str, ...]] = {
+        # Reviewed, specific vitamin-D wording (CPT 82306, 25-hydroxy). Deliberately
+        # NOT aliased: vague "vitamin test"/"vitamin panel" (different assays).
+        "vitamin-d-test": (
+            "vitamin d",
+            "vitamin d test",
+            "25-hydroxy vitamin d",
+            "25 hydroxy vitamin d",
+            "25-oh vitamin d",
+        ),
         "cesarean-delivery": ("cesarean", "cesarean section"),
         "urgent-care-visit": ("urgent care", "walk in clinic"),
         "physical-therapy-evaluation": ("physical therapy", "physical therapist"),

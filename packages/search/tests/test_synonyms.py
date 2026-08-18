@@ -214,7 +214,7 @@ def test_lab_tests_resolves_category_and_actual_catalog_members() -> None:
         members = [item for item in results if item.match_reason == "category_member"]
         assert category.title == "Lab tests"
         assert category.match_reason == "exact_category"
-        assert category.metadata["procedure_count"] == len(members) == 11
+        assert category.metadata["procedure_count"] == len(members) == 12
         assert all(item.metadata["category"] == "laboratory" for item in members)
         assert all("price" not in item.metadata for item in members)
     engine.dispose()
@@ -340,7 +340,7 @@ def test_ai_registry_visibility_and_canonical_candidate_validation() -> None:
         registry = category_registry_for_ai(session, locale="vi")
         laboratory = next(item for item in registry if item["canonical_id"] == "laboratory")
         assert laboratory["consumer_display_name"] == "Xét nghiệm"
-        assert laboratory["procedure_count"] == 11
+        assert laboratory["procedure_count"] == 12
         valid = validate_ai_intent(
             session,
             AIIntentProposal(
