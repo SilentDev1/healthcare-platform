@@ -1,41 +1,112 @@
 {
   "_meta": {
-    "description": "REAL, provider-published non-hospital CASH prices for NH, captured from official provider price pages during a 2026-08-16 research sweep. These are ingested as NON-PUBLIC candidate_review rows (publication_status != 'publishable') so nothing reaches consumers automatically — promotion to public requires human review, exactly like hospital mapping approvals. Prices are transcribed verbatim from the cited source; none is inferred or estimated. Missing prices stay 'price not available' (never $0).",
+    "description": "REAL, provider-published non-hospital CASH prices for NH, captured from official provider price pages during a 2026-08-16 research sweep. These are ingested as NON-PUBLIC candidate_review rows (publication_status != 'publishable') so nothing reaches consumers automatically \u2014 promotion to public requires human review, exactly like hospital mapping approvals. Prices are transcribed verbatim from the cited source; none is inferred or estimated. Missing prices stay 'price not available' (never $0).",
     "policy": "Candidate discovery is separate from approved public mappings. Mapping a provider's published line item to a canonical Carevero procedure is a human-review step; the canonical_slug here is a PROPOSED exact-name match, not an approved public mapping.",
     "sources_researched_but_not_yet_built": {
-      "labcorp_ondemand": "VERIFIED 2026-08-18 — see _dtc_reference.labcorp_ondemand (all-inclusive; CBC $29, CMP $49, Lipid $59, TSH $49, HbA1c $39). Org-level DTC; not per-location.",
-      "questhealth": "VERIFIED 2026-08-17 — see _dtc_reference.quest_diagnostics (test + required $6 fee). Staged candidate_review; not promoted per-location.",
-      "the_joint_chiropractic": "thejoint.com/plans-pricing — single visit $55, new-patient $29 — buildable (no canonical chiropractic procedure yet)",
-      "convenientmd": "convenientmd.com/urgent-care/faqs — flat urgent-care visit $175 (cap $265) + occ-health PDF",
-      "clearchoicemd": "ccmdcenters.com/prompt-pay — flat self-pay urgent-care visit $160",
-      "excluded_estimated_only": "Shields (calculator only), Bedford/Nashua/Concord ASCs (phone quote only), NH HealthCost (claims-ESTIMATED medians — reference only, not provider-published)"
+      "labcorp_ondemand": "VERIFIED 2026-08-18 \u2014 see _dtc_reference.labcorp_ondemand (all-inclusive; CBC $29, CMP $49, Lipid $59, TSH $49, HbA1c $39). Org-level DTC; not per-location.",
+      "questhealth": "VERIFIED 2026-08-17 \u2014 see _dtc_reference.quest_diagnostics (test + required $6 fee). Staged candidate_review; not promoted per-location.",
+      "the_joint_chiropractic": "thejoint.com/plans-pricing \u2014 single visit $55, new-patient $29 \u2014 buildable (no canonical chiropractic procedure yet)",
+      "convenientmd": "convenientmd.com/urgent-care/faqs \u2014 flat urgent-care visit $175 (cap $265) + occ-health PDF",
+      "clearchoicemd": "ccmdcenters.com/prompt-pay \u2014 flat self-pay urgent-care visit $160",
+      "excluded_estimated_only": "Shields (calculator only), Bedford/Nashua/Concord ASCs (phone quote only), NH HealthCost (claims-ESTIMATED medians \u2014 reference only, not provider-published)"
     }
   },
   "_dtc_reference": {
-    "description": "VERIFIED national direct-to-consumer (DTC) self-pay lab prices, organization/product-level (NOT location-specific). This is REFERENCE data only — the ingest does not read this key, so these never become per-location publishable prices. Publishing DTC labs to consumers requires a dedicated org-level DTC price surface (see docs/NH_LAB_PRICE_ARCHITECTURE.md); until then Quest candidates stay candidate_review and LabCorp is not ingested. Do NOT expand these into 14 per-location prices.",
+    "description": "VERIFIED national direct-to-consumer (DTC) self-pay lab prices, organization/product-level (NOT location-specific). This is REFERENCE data only \u2014 the ingest does not read this key, so these never become per-location publishable prices. Publishing DTC labs to consumers requires a dedicated org-level DTC price surface (see docs/NH_LAB_PRICE_ARCHITECTURE.md); until then Quest candidates stay candidate_review and LabCorp is not ingested. Do NOT expand these into 14 per-location prices.",
     "quest_diagnostics": {
       "source": "questhealth.com product pages",
       "retrieval_date": "2026-08-17",
       "fee_model": "test price + REQUIRED $6.00 physician service fee = purchase total",
       "products": [
-        {"test": "CBC", "canonical_slug": "complete-blood-count", "test_price": 29.00, "physician_fee": 6.00, "total": 35.00, "sku": "6399M"},
-        {"test": "CMP", "canonical_slug": "comprehensive-metabolic-panel", "test_price": 49.00, "physician_fee": 6.00, "total": 55.00, "sku": "10231M"},
-        {"test": "Lipid Panel", "canonical_slug": "lipid-panel", "test_price": 59.00, "physician_fee": 6.00, "total": 65.00, "sku": "94355M"},
-        {"test": "TSH", "canonical_slug": "thyroid-test", "test_price": 49.00, "physician_fee": 6.00, "total": 55.00, "sku": "36127M", "mapping_note": "product is TSH-only; confirm vs canonical thyroid-test scope"},
-        {"test": "Urinalysis (UTI)", "canonical_slug": "urinalysis", "test_price": 40.00, "physician_fee": 6.00, "total": 46.00, "sku": "5463M", "mapping_note": "UTI-framed; confirm vs routine urinalysis"},
-        {"test": "HbA1c", "canonical_slug": "a1c-test", "test_price": 39.00, "physician_fee": 6.00, "total": 45.00, "sku": "496M", "promo_note": "list $39; a transient 10%-off promo showed $35.10 — do not store the promo as a stable price. Maps to the EXISTING canonical a1c-test."}
+        {
+          "test": "CBC",
+          "canonical_slug": "complete-blood-count",
+          "test_price": 29.0,
+          "physician_fee": 6.0,
+          "total": 35.0,
+          "sku": "6399M"
+        },
+        {
+          "test": "CMP",
+          "canonical_slug": "comprehensive-metabolic-panel",
+          "test_price": 49.0,
+          "physician_fee": 6.0,
+          "total": 55.0,
+          "sku": "10231M"
+        },
+        {
+          "test": "Lipid Panel",
+          "canonical_slug": "lipid-panel",
+          "test_price": 59.0,
+          "physician_fee": 6.0,
+          "total": 65.0,
+          "sku": "94355M"
+        },
+        {
+          "test": "TSH",
+          "canonical_slug": "thyroid-test",
+          "test_price": 49.0,
+          "physician_fee": 6.0,
+          "total": 55.0,
+          "sku": "36127M",
+          "mapping_note": "product is TSH-only; confirm vs canonical thyroid-test scope"
+        },
+        {
+          "test": "Urinalysis (UTI)",
+          "canonical_slug": "urinalysis",
+          "test_price": 40.0,
+          "physician_fee": 6.0,
+          "total": 46.0,
+          "sku": "5463M",
+          "mapping_note": "UTI-framed; confirm vs routine urinalysis"
+        },
+        {
+          "test": "HbA1c",
+          "canonical_slug": "a1c-test",
+          "test_price": 39.0,
+          "physician_fee": 6.0,
+          "total": 45.0,
+          "sku": "496M",
+          "promo_note": "list $39; a transient 10%-off promo showed $35.10 \u2014 do not store the promo as a stable price. Maps to the EXISTING canonical a1c-test."
+        }
       ]
     },
     "labcorp_ondemand": {
       "source": "ondemand.labcorp.com",
       "retrieval_date": "2026-08-18",
-      "fee_model": "ALL-INCLUSIVE — displayed price includes the independent-provider order; NO separate physician fee (unlike Quest)",
+      "fee_model": "ALL-INCLUSIVE \u2014 displayed price includes the independent-provider order; NO separate physician fee (unlike Quest)",
       "products": [
-        {"test": "CBC", "canonical_slug": "complete-blood-count", "total": 29.00, "product": "complete-blood-count"},
-        {"test": "CMP", "canonical_slug": "comprehensive-metabolic-panel", "total": 49.00, "product": "comprehensive-metabolic-panel"},
-        {"test": "Lipid Panel", "canonical_slug": "lipid-panel", "total": 59.00, "product": "cholesterol-test-lipid-panel"},
-        {"test": "TSH", "canonical_slug": "thyroid-test", "total": 49.00, "product": "thyroid-stimulating-hormone-tsh-test", "mapping_note": "confirm vs canonical thyroid-test scope"},
-        {"test": "HbA1c", "canonical_slug": "a1c-test", "total": 39.00, "product": "diabetes-risk-hbA1c-test"}
+        {
+          "test": "CBC",
+          "canonical_slug": "complete-blood-count",
+          "total": 29.0,
+          "product": "complete-blood-count"
+        },
+        {
+          "test": "CMP",
+          "canonical_slug": "comprehensive-metabolic-panel",
+          "total": 49.0,
+          "product": "comprehensive-metabolic-panel"
+        },
+        {
+          "test": "Lipid Panel",
+          "canonical_slug": "lipid-panel",
+          "total": 59.0,
+          "product": "cholesterol-test-lipid-panel"
+        },
+        {
+          "test": "TSH",
+          "canonical_slug": "thyroid-test",
+          "total": 49.0,
+          "product": "thyroid-stimulating-hormone-tsh-test",
+          "mapping_note": "confirm vs canonical thyroid-test scope"
+        },
+        {
+          "test": "HbA1c",
+          "canonical_slug": "a1c-test",
+          "total": 39.0,
+          "product": "diabetes-risk-hbA1c-test"
+        }
       ]
     },
     "consumer_insight": "LabCorp OnDemand is cheaper than Quest on every comparable test (no separate $6 fee): CBC 29 vs 35, CMP 49 vs 55, Lipid 59 vs 65, TSH 49 vs 55, HbA1c 39 vs 45."
@@ -50,11 +121,41 @@
       "price_scope": "organization-wide published cash/self-pay list price (applies to all Derry Imaging NH locations)",
       "service_setting": "outpatient",
       "prices": [
-        {"published_description": "Ultrasound (Abdomen)", "canonical_slug": "abdominal-ultrasound", "cash_price": 325, "component_scope": "global", "mapping_confidence": "exact_name"},
-        {"published_description": "CT Chest", "canonical_slug": "ct-chest", "cash_price": 450, "component_scope": "global", "mapping_confidence": "exact_name"},
-        {"published_description": "CT Abdomen/Pelvis with Contrast", "canonical_slug": "ct-abdomen-pelvis", "cash_price": 1135, "component_scope": "global; WITH contrast", "mapping_confidence": "name_match_contrast_note"},
-        {"published_description": "MRI Brain", "canonical_slug": "mri-brain-without-contrast", "cash_price": 800, "component_scope": "global; contrast status not specified by provider", "mapping_confidence": "name_match_contrast_ambiguous"},
-        {"published_description": "MRI Back (Lumbar)", "canonical_slug": "mri-lumbar-spine-without-contrast", "cash_price": 800, "component_scope": "global; contrast status not specified by provider", "mapping_confidence": "name_match_contrast_ambiguous"}
+        {
+          "published_description": "Ultrasound (Abdomen)",
+          "canonical_slug": "abdominal-ultrasound",
+          "cash_price": 325,
+          "component_scope": "global",
+          "mapping_confidence": "exact_name"
+        },
+        {
+          "published_description": "CT Chest",
+          "canonical_slug": "ct-chest",
+          "cash_price": 450,
+          "component_scope": "global",
+          "mapping_confidence": "exact_name"
+        },
+        {
+          "published_description": "CT Abdomen/Pelvis with Contrast",
+          "canonical_slug": "ct-abdomen-pelvis",
+          "cash_price": 1135,
+          "component_scope": "global; WITH contrast",
+          "mapping_confidence": "name_match_contrast_note"
+        },
+        {
+          "published_description": "MRI Brain",
+          "canonical_slug": "mri-brain-without-contrast",
+          "cash_price": 800,
+          "component_scope": "global; contrast status not specified by provider",
+          "mapping_confidence": "name_match_contrast_ambiguous"
+        },
+        {
+          "published_description": "MRI Back (Lumbar)",
+          "canonical_slug": "mri-lumbar-spine-without-contrast",
+          "cash_price": 800,
+          "component_scope": "global; contrast status not specified by provider",
+          "mapping_confidence": "name_match_contrast_ambiguous"
+        }
       ]
     },
     {
@@ -62,17 +163,124 @@
       "source_url": "https://www.questhealth.com/",
       "source_format": "questhealth.com consumer product pages (national direct-to-consumer; JS-rendered, each read in-browser 2026-08-17). Per-product source URL is on each item.",
       "retrieval_date": "2026-08-17",
-      "price_scope": "NATIONAL direct-to-consumer online-purchase price (questhealth.com), NOT location-specific and NOT ordinary walk-in cash billing. The test is PURCHASED through the DTC product, then collected at any of 2000+ Quest locations — so a single national price is an ORGANIZATION/PRODUCT-level price, NOT 14 NH-location-specific prices. Every product carries a flat, REQUIRED $6.00 physician service fee (an independent provider order); cash_price here is the TOTAL a consumer pays (test + required fee), with the component breakdown preserved. No CPT/test code is published. Staged org-wide as NON-PUBLIC candidates only; promotion will NOT publish lab candidates (no imaging modality gate) and requires per-location service evidence + a DTC-vs-walk-in comparability decision.",
+      "price_scope": "NATIONAL direct-to-consumer online-purchase price (questhealth.com), NOT location-specific and NOT ordinary walk-in cash billing. The test is PURCHASED through the DTC product, then collected at any of 2000+ Quest locations \u2014 so a single national price is an ORGANIZATION/PRODUCT-level price, NOT 14 NH-location-specific prices. Every product carries a flat, REQUIRED $6.00 physician service fee (an independent provider order); cash_price here is the TOTAL a consumer pays (test + required fee), with the component breakdown preserved. No CPT/test code is published. Staged org-wide as NON-PUBLIC candidates only; promotion will NOT publish lab candidates (no imaging modality gate) and requires per-location service evidence + a DTC-vs-walk-in comparability decision.",
       "service_setting": "outpatient",
       "canonical_gap_not_ingested": [
-        {"published_description": "Hemoglobin A1c (HbA1c) — questhealth DTC", "product_url": "https://www.questhealth.com/product/hemoglobin-a1c-test/496M.html", "list_price": 39.00, "current_price": 35.10, "promo": "10% off — transient/'Terms apply'; durable list price is $39.00, do NOT publish the promo as a stable price", "physician_service_fee": 6.00, "sku": "496M", "reason": "NO_CANONICAL_PROCEDURE — no canonical HbA1c procedure exists in the 50/50 catalog (only search synonyms a1c/hba1c). Do NOT invent one; see docs/NH_CANONICAL_PROCEDURE_GAPS.md."}
+        {
+          "published_description": "Hemoglobin A1c (HbA1c) \u2014 questhealth DTC",
+          "product_url": "https://www.questhealth.com/product/hemoglobin-a1c-test/496M.html",
+          "list_price": 39.0,
+          "current_price": 35.1,
+          "promo": "10% off \u2014 transient/'Terms apply'; durable list price is $39.00, do NOT publish the promo as a stable price",
+          "physician_service_fee": 6.0,
+          "sku": "496M",
+          "reason": "NO_CANONICAL_PROCEDURE \u2014 no canonical HbA1c procedure exists in the 50/50 catalog (only search synonyms a1c/hba1c). Do NOT invent one; see docs/NH_CANONICAL_PROCEDURE_GAPS.md."
+        }
       ],
       "prices": [
-        {"published_description": "Comprehensive Metabolic Panel (CMP) — questhealth DTC", "canonical_slug": "comprehensive-metabolic-panel", "cash_price": 55.00, "test_price": 49.00, "physician_service_fee": 6.00, "total_price": 55.00, "sku": "10231M", "product_url": "https://www.questhealth.com/product/comprehensive-metabolic-panel-cmp/10231M.html", "retrieval_date": "2026-08-17", "national_dtc": true, "component_scope": "DTC bundled: $49.00 test + $6.00 REQUIRED physician service fee = $55.00 total; national online-purchase price, not location-specific", "mapping_confidence": "exact_name_dtc_national"},
-        {"published_description": "Complete Blood Count (CBC) Test — questhealth DTC", "canonical_slug": "complete-blood-count", "cash_price": 35.00, "test_price": 29.00, "physician_service_fee": 6.00, "total_price": 35.00, "sku": "6399M", "product_url": "https://www.questhealth.com/product/complete-blood-count-cbc/6399M.html", "retrieval_date": "2026-08-17", "national_dtc": true, "component_scope": "DTC bundled: $29.00 test + $6.00 REQUIRED physician service fee = $35.00 total; national online-purchase price, not location-specific", "mapping_confidence": "exact_name_dtc_national"},
-        {"published_description": "Lipid Panel (Cholesterol) Test — questhealth DTC", "canonical_slug": "lipid-panel", "cash_price": 65.00, "test_price": 59.00, "physician_service_fee": 6.00, "total_price": 65.00, "sku": "94355M", "product_url": "https://www.questhealth.com/product/cholesterol-lipid-panel/94355M.html", "retrieval_date": "2026-08-17", "national_dtc": true, "component_scope": "DTC bundled: $59.00 test + $6.00 REQUIRED physician service fee = $65.00 total; national online-purchase price, not location-specific", "mapping_confidence": "exact_name_dtc_national"},
-        {"published_description": "TSH (Thyroid Function) Test — questhealth DTC", "canonical_slug": "thyroid-test", "cash_price": 55.00, "test_price": 49.00, "physician_service_fee": 6.00, "total_price": 55.00, "sku": "36127M", "product_url": "https://www.questhealth.com/product/thyroid-tsh-function-test/36127M.html", "retrieval_date": "2026-08-17", "national_dtc": true, "component_scope": "DTC bundled: $49.00 test + $6.00 REQUIRED physician service fee = $55.00 total; national online-purchase price, not location-specific", "mapping_confidence": "name_match_review", "mapping_note": "Quest product is TSH-only; canonical 'thyroid-test' may be broader (panel). Confirm scope equivalence before publish"},
-        {"published_description": "Urinalysis (UTI) Test — questhealth DTC", "canonical_slug": "urinalysis", "cash_price": 46.00, "test_price": 40.00, "physician_service_fee": 6.00, "total_price": 46.00, "sku": "5463M", "product_url": "https://www.questhealth.com/product/urinalysis-urinary-tract-infection-uti-test/5463M.html", "retrieval_date": "2026-08-17", "national_dtc": true, "component_scope": "DTC bundled: $40.00 test + $6.00 REQUIRED physician service fee = $46.00 total; national online-purchase price, not location-specific", "mapping_confidence": "name_match_review", "mapping_note": "Quest product is UTI-framed (urinalysis + reflex culture); confirm equivalence to canonical routine urinalysis before publish"}
+        {
+          "published_description": "Comprehensive Metabolic Panel (CMP) \u2014 questhealth DTC",
+          "canonical_slug": "comprehensive-metabolic-panel",
+          "cash_price": 55.0,
+          "test_price": 49.0,
+          "physician_service_fee": 6.0,
+          "total_price": 55.0,
+          "sku": "10231M",
+          "product_url": "https://www.questhealth.com/product/comprehensive-metabolic-panel-cmp/10231M.html",
+          "retrieval_date": "2026-08-17",
+          "national_dtc": true,
+          "component_scope": "DTC bundled: $49.00 test + $6.00 REQUIRED physician service fee = $55.00 total; national online-purchase price, not location-specific",
+          "mapping_confidence": "exact_name_dtc_national"
+        },
+        {
+          "published_description": "Complete Blood Count (CBC) Test \u2014 questhealth DTC",
+          "canonical_slug": "complete-blood-count",
+          "cash_price": 35.0,
+          "test_price": 29.0,
+          "physician_service_fee": 6.0,
+          "total_price": 35.0,
+          "sku": "6399M",
+          "product_url": "https://www.questhealth.com/product/complete-blood-count-cbc/6399M.html",
+          "retrieval_date": "2026-08-17",
+          "national_dtc": true,
+          "component_scope": "DTC bundled: $29.00 test + $6.00 REQUIRED physician service fee = $35.00 total; national online-purchase price, not location-specific",
+          "mapping_confidence": "exact_name_dtc_national"
+        },
+        {
+          "published_description": "Lipid Panel (Cholesterol) Test \u2014 questhealth DTC",
+          "canonical_slug": "lipid-panel",
+          "cash_price": 65.0,
+          "test_price": 59.0,
+          "physician_service_fee": 6.0,
+          "total_price": 65.0,
+          "sku": "94355M",
+          "product_url": "https://www.questhealth.com/product/cholesterol-lipid-panel/94355M.html",
+          "retrieval_date": "2026-08-17",
+          "national_dtc": true,
+          "component_scope": "DTC bundled: $59.00 test + $6.00 REQUIRED physician service fee = $65.00 total; national online-purchase price, not location-specific",
+          "mapping_confidence": "exact_name_dtc_national"
+        },
+        {
+          "published_description": "TSH (Thyroid Function) Test \u2014 questhealth DTC",
+          "canonical_slug": "thyroid-test",
+          "cash_price": 55.0,
+          "test_price": 49.0,
+          "physician_service_fee": 6.0,
+          "total_price": 55.0,
+          "sku": "36127M",
+          "product_url": "https://www.questhealth.com/product/thyroid-tsh-function-test/36127M.html",
+          "retrieval_date": "2026-08-17",
+          "national_dtc": true,
+          "component_scope": "DTC bundled: $49.00 test + $6.00 REQUIRED physician service fee = $55.00 total; national online-purchase price, not location-specific",
+          "mapping_confidence": "name_match_review",
+          "mapping_note": "Quest product is TSH-only; canonical 'thyroid-test' may be broader (panel). Confirm scope equivalence before publish"
+        },
+        {
+          "published_description": "Urinalysis (UTI) Test \u2014 questhealth DTC",
+          "canonical_slug": "urinalysis",
+          "cash_price": 46.0,
+          "test_price": 40.0,
+          "physician_service_fee": 6.0,
+          "total_price": 46.0,
+          "sku": "5463M",
+          "product_url": "https://www.questhealth.com/product/urinalysis-urinary-tract-infection-uti-test/5463M.html",
+          "retrieval_date": "2026-08-17",
+          "national_dtc": true,
+          "component_scope": "DTC bundled: $40.00 test + $6.00 REQUIRED physician service fee = $46.00 total; national online-purchase price, not location-specific",
+          "mapping_confidence": "name_match_review",
+          "mapping_note": "Quest product is UTI-framed (urinalysis + reflex culture); confirm equivalence to canonical routine urinalysis before publish"
+        }
+      ]
+    },
+    {
+      "organization": "New Hampshire Open MRI",
+      "source_url": "https://www.nhopenmri.com/cost",
+      "source_format": "HTML cost page \u2014 flat retail self-pay price; includes radiologist interpretation; no separate charges",
+      "retrieval_date": "2026-08-18",
+      "price_scope": "FLAT retail self-pay price for ANY non-contrast MRI examination = $1,099 (INCLUDES radiologist interpretation); $1,799 with contrast. Independent single-service outpatient MRI facility (West Lebanon, NH). Firm published retail price (not a quote). Verified NH (603 / West Lebanon).",
+      "service_setting": "outpatient",
+      "prices": [
+        {
+          "published_description": "MRI non-contrast (flat retail self-pay, any body part; incl. interpretation)",
+          "canonical_slug": "mri-brain-without-contrast",
+          "cash_price": 1099,
+          "component_scope": "global; includes radiologist interpretation",
+          "mapping_confidence": "flat_all_noncontrast_mri"
+        },
+        {
+          "published_description": "MRI non-contrast (flat retail self-pay, any body part; incl. interpretation)",
+          "canonical_slug": "mri-knee-without-contrast",
+          "cash_price": 1099,
+          "component_scope": "global; includes radiologist interpretation",
+          "mapping_confidence": "flat_all_noncontrast_mri"
+        },
+        {
+          "published_description": "MRI non-contrast (flat retail self-pay, any body part; incl. interpretation)",
+          "canonical_slug": "mri-lumbar-spine-without-contrast",
+          "cash_price": 1099,
+          "component_scope": "global; includes radiologist interpretation",
+          "mapping_confidence": "flat_all_noncontrast_mri"
+        }
       ]
     }
   ]
