@@ -50,8 +50,37 @@ an explicit "don't flip until later gates" guard. **Plan:** flip as part of "MA 
 pilot has published real MA prices, so MA does not launch as an all-empty directory (directive §42). Rollback:
 set `consumer_visible=False`, redeploy API.
 
+## Step 3 — MRF acquisition matrix (53/53) ✅
+
+`docs/MA_MRF_ACQUISITION.md` + `data/ma_hospital_price_sources.json`: 4 parallel official-source
+discovery sweeps → **51 MRF_FOUND** (HEAD-verified: csv 19, zip 15, json 14, unknown 3) + **2
+SOURCE_BLOCKED** (Sturdy 220008, Holyoke 220024 — WAF 403). Every format maps to the existing NH
+pipeline (ZipMemberSource + parsers); shared national `ProcedureCodeMapping` catalog → no new MA
+mappings. Registered into `FacilityPriceSource` via `scripts/seed_ma_price_sources.py` (verified_manual).
+
+## Step 4 — Diverse pilot (10 hospitals, 2 waves) — PASS gate green ✅
+
+Pilot spans 7 regions, 9 systems, 4 formats, academic+community+CAH, 8 distinct MRF hosts.
+
+**Wave A (5): 2 imported clean, 3 exposed systemic issues** (exactly the pilot's purpose):
+- ✅ **MGH** (220071, MGB zip 3.6 MB) — 159,489 records, **49/52 procedures published**.
+- ✅ **Martha's Vineyard** (221300, MGB zip, CAH) — 10,452 records, **38 procedures**.
+- ❌ UMass Memorial (220163) — download rejected: declared size > 750 MB cap.
+- ❌ Beth Israel Deaconess (220086) — `SSL: UNSAFE_LEGACY_RENEGOTIATION_DISABLED` (bidmc.org).
+- ❌ Cape Cod (220012) — `StringDataRightTruncation`: Craneware CDM code blob > `code` varchar(100).
+
+**Pilot pass-gate (on the clean imports): GREEN** — NH intact (`passed:true`, 26 hospitals, 16,709 NH
+summaries preserved, +184 MA public; hospital_price_records +169,941 = MGH+MV exactly; all
+zero-invariants 0, **ai_modified_prices 0**); MA **fp-detector 53/53 CLEAN, 0 suspects**. Live API:
+MGH MRI-brain $3,858, Martha's Vineyard $2,116.50, honest `facility` scope.
+
+**3 systemic fixes** (committed `155a0f0`, image `ma-pilot2`; 96 pipeline tests pass) — not suppressed:
+1. `hospital_price_max_bytes` 750 MB → 3 GB (large academic MRFs).
+2. TLS `OP_LEGACY_SERVER_CONNECT` for MRF downloads (bidmc.org et al.); cert verification stays on.
+3. Cap `PriceServiceCode.code/raw_code` to varchar(100) (Craneware CDM blobs); canonical codes short, unaffected.
+
+**Wave B (retry 3 fixed + 5 new: BMC/Baystate/Berkshire/Milford/South Shore)** — running (exec `7zvjf`).
+
 ## Next
 
-- **MRF acquisition matrix** for all 53 (`docs/MA_MRF_ACQUISITION.md`) — discover official standard-charges files, group by system, profile/cluster formats before any parser.
-- **Diverse ~10-hospital pilot** ingestion → validate → scale to 43 → publish only verified prices.
-- Coverage dashboard: `docs/MA_PRICING_COVERAGE.md`.
+- After wave B: safety + fp gates, live coverage → `docs/MA_PRICING_COVERAGE.md`; then scale remaining 43 in waves.
