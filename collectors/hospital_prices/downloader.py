@@ -462,7 +462,22 @@ def download_price_source(
                 if total_expected > settings.hospital_price_max_bytes:
                     raise ValueError("declared source size exceeds configured maximum")
                 content_type = response.headers.get("content-type", "").split(";")[0].lower()
-                if content_type and content_type not in ALLOWED_CONTENT_TYPES:
+                # Hospitals serve MRFs under many nonstandard content-types (force-download,
+                # comma-separated-values, x-download, …). Rather than enumerate every variant,
+                # accept anything that either is on the allowlist or *looks* like a data payload,
+                # and only reject markup (HTML/XHTML error pages). The downloaded bytes are still
+                # validated by format afterward (validate_downloaded_file / detect_container).
+                _data_tokens = (
+                    "csv", "json", "zip", "octet", "download", "excel",
+                    "text/plain", "separated-values", "gzip",
+                )
+                _looks_like_data = any(tok in content_type for tok in _data_tokens)
+                _is_markup = content_type in ("text/html", "application/xhtml+xml")
+                if (
+                    content_type
+                    and content_type not in ALLOWED_CONTENT_TYPES
+                    and (_is_markup or not _looks_like_data)
+                ):
                     raise ValueError(f"unsupported content type: {content_type}")
 
                 # Parse Content-Disposition for filename hints
