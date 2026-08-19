@@ -79,8 +79,27 @@ MGH MRI-brain $3,858, Martha's Vineyard $2,116.50, honest `facility` scope.
 2. TLS `OP_LEGACY_SERVER_CONNECT` for MRF downloads (bidmc.org et al.); cert verification stays on.
 3. Cap `PriceServiceCode.code/raw_code` to varchar(100) (Craneware CDM blobs); canonical codes short, unaffected.
 
-**Wave B (retry 3 fixed + 5 new: BMC/Baystate/Berkshire/Milford/South Shore)** — running (exec `7zvjf`).
+**Wave B (retry 3 fixed + 5 new)** — the 2 big fixes were confirmed working (UMass 756 MB + BIDMC both
+downloaded on retry), but **the job hit the 2 hr Cloud Run task timeout mid-import**: batching many large
+MRFs in one job is too much. It left partial, summary-less (invisible) records + a stuck import run.
 
-## Next
+## Step 5 — Recovery to a clean baseline ✅
 
-- After wave B: safety + fp gates, live coverage → `docs/MA_PRICING_COVERAGE.md`; then scale remaining 43 in waves.
+- `scripts/reset_ma_pricing.py` (`--fast` bulk delete + **orphan sweep by facility_id**) cleared the stuck run
+  and all ~957K partial wave-B records, keeping the clean wave-A imports (MGH, Martha's Vineyard).
+- **Clean baseline confirmed:** `hospital_price_records = 5,968,919` (exact post-wave-A number), `passed: true`,
+  NH intact (26 hospitals, 16,893 summaries, all zero-invariants 0, ai_modified 0). Live: MA directory 53,
+  MA priced 2 (MGH 49 / MV 38), NH 148 — all correct.
+- Wave-B CCNs' sources are reset to needs-download for clean re-import.
+
+## Corrected scaling strategy (multi-session)
+
+Each large academic MRF (UMass 756 MB, Baystate 444 MB, BWH, BMC) is a **30–60 min isolated ingestion job**;
+Cloud Run jobs cap at 2 hr. So pricing all 53 is inherently **sequential, multi-session** work — done in
+**small waves with large hospitals one-per-job**, gating (safety + fp) after each. Exact per-wave commands +
+the wave-B/remaining CCN list are in `CLAUDE_HANDOFF.md` (machine-actionable resume point). Job image `ma-scale4`.
+
+## Phase-2 status: PARTIAL (safe, proven, ongoing)
+
+Directory + identity + MRF discovery **complete**; pipeline **proven & hardened** (2 hospitals priced live,
+4 ingest bugs fixed); NH **never harmed**. Remaining: sequential small-wave pricing ingestion of the other 51.
