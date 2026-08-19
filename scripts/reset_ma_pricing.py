@@ -127,9 +127,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Reset stuck imports + clear partial MA pricing (NH untouched)")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--keep-ccns", default="", help="comma-separated CCNs to keep (default MGH+Martha's Vineyard)")
+    parser.add_argument("--fast", action="store_true", help="bulk in-database deletes (much faster; MA is unpublished)")
     args = parser.parse_args()
     keep = {c.strip() for c in args.keep_ccns.split(",") if c.strip()} or None
-    result = reset(keep_ccns=keep, dry_run=args.dry_run)
+    result = reset(keep_ccns=keep, dry_run=args.dry_run, fast=args.fast)
     prefix = "DRY-RUN " if args.dry_run else ""
     print(f"{prefix}MA_PRICING_RESET={result}")
 
