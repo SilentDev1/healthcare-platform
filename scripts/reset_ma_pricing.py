@@ -41,6 +41,24 @@ from scripts.restart_price_import import _RECORD_CHILDREN, _delete_records_in_ch
 DEFAULT_KEEP = {"220071", "221300"}  # MGH + Martha's Vineyard — clean wave-A imports, kept live
 
 
+def _delete_facility_records_fast(session: Session, facility_id: object) -> int:
+    """Bulk-delete ALL price records for a facility, by facility_id, regardless of source linkage.
+
+    Catches orphan/stranded records whose FacilityPriceSource.source_file_id was already nulled
+    (e.g. by an interrupted earlier reset) so the source-based sweep can no longer reach them.
+    Safe here because MA pricing is unpublished with no concurrent readers.
+    """
+    rec_ids = select(HospitalPriceRecord.id).where(HospitalPriceRecord.facility_id == facility_id)
+    count = session.scalar(select(func.count()).select_from(rec_ids.subquery())) or 0
+    if not count:
+        return 0
+    for child in _RECORD_CHILDREN:
+        session.execute(delete(child).where(child.hospital_price_record_id.in_(rec_ids)))
+    session.execute(delete(HospitalPriceRecord).where(HospitalPriceRecord.facility_id == facility_id))
+    session.commit()
+    return count
+
+
 def _delete_records_fast(session: Session, source_file_id: object) -> int:
     """Bulk-delete a source's records + children with correlated-subquery DELETEs.
 
@@ -117,6 +135,15 @@ def reset(session: Session | None = None, *, keep_ccns: set[str] | None = None, 
         src.last_failed_download_at = None
         session.commit()
         result["sources_reset"] += 1
+
+    # Fast-mode orphan sweep: delete any remaining records by facility_id for target MA facilities,
+    # catching records whose source linkage was already severed by an interrupted earlier reset.
+    if fast and not dry_run:
+        for fid in target_ids:
+            swept = _delete_facility_records_fast(session, fid)
+            if swept:
+                result["records_deleted"] += swept
+                result["sources_reset"] += 0  # accounting stays on source resets
 
     if dry_run:
         session.rollback()
