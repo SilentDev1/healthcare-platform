@@ -36,12 +36,29 @@ from packages.database import (
     get_session,
 )
 from packages.database.models import ImportStatus
-from scripts.restart_price_import import _delete_records_in_chunks
+from scripts.restart_price_import import _RECORD_CHILDREN, _delete_records_in_chunks
 
 DEFAULT_KEEP = {"220071", "221300"}  # MGH + Martha's Vineyard — clean wave-A imports, kept live
 
 
-def reset(session: Session | None = None, *, keep_ccns: set[str] | None = None, dry_run: bool = False) -> dict[str, int]:
+def _delete_records_fast(session: Session, source_file_id: object) -> int:
+    """Bulk-delete a source's records + children with correlated-subquery DELETEs.
+
+    Much faster than the 5000-row chunked path (a few SQL statements vs hundreds of Python
+    round-trips) because the FK-fanout delete runs inside the database. Safe here because MA
+    pricing is not consumer-published and has no concurrent readers — there is no live query
+    racing these rows. Returns the number of price records deleted.
+    """
+    rec_ids = select(HospitalPriceRecord.id).where(HospitalPriceRecord.source_file_id == source_file_id)
+    count = session.scalar(select(func.count()).select_from(rec_ids.subquery())) or 0
+    for child in _RECORD_CHILDREN:
+        session.execute(delete(child).where(child.hospital_price_record_id.in_(rec_ids)))
+    session.execute(delete(HospitalPriceRecord).where(HospitalPriceRecord.source_file_id == source_file_id))
+    session.commit()
+    return count
+
+
+def reset(session: Session | None = None, *, keep_ccns: set[str] | None = None, dry_run: bool = False, fast: bool = False) -> dict[str, int]:
     if session is None:
         session = next(get_session())
     keep = keep_ccns if keep_ccns is not None else set(DEFAULT_KEEP)
@@ -87,7 +104,8 @@ def reset(session: Session | None = None, *, keep_ccns: set[str] | None = None, 
             result["sources_reset"] += 1
             continue
         if rec_count:
-            result["records_deleted"] += _delete_records_in_chunks(session, sfid)
+            deleter = _delete_records_fast if fast else _delete_records_in_chunks
+            result["records_deleted"] += deleter(session, sfid)
         session.execute(delete(PricingUnmatchedRecord).where(PricingUnmatchedRecord.source_file_id == sfid))
         run_ids = list(session.scalars(select(ImportRun.id).where(ImportRun.source_file_id == sfid)))
         if run_ids:
