@@ -22,16 +22,29 @@ The goal is **53/53 accounted for** (a precise disposition each), *not* 53/53 pr
 
 Formats: csv 19, zip 15, json 14, unknown 3. Detail: `MA_MRF_ACQUISITION.md`.
 
-## Pricing ingestion — IN PROGRESS
+## Pricing ingestion — IN PROGRESS (5 published, scale-out ongoing)
 
 | Hospital | CCN | Region | Published procedures | Status |
 |---|---|---|---:|---|
 | Massachusetts General Hospital | 220071 | Greater Boston | 49 / 52 | **PUBLISHED** |
+| Boston Medical Center | 220031 | Greater Boston | 48 | **PUBLISHED** |
+| Fairview Hospital | 221302 | Berkshires | 44 | **PUBLISHED** |
+| North Adams Regional Hospital | 221304 | Berkshires | 44 | **PUBLISHED** |
 | Martha's Vineyard Hospital | 221300 | Cape Cod & Islands | 38 | **PUBLISHED** |
-| *(remaining 51)* | | | 0 | pending small-wave ingestion |
+| *(remaining 46)* | | | 0 | small-wave ingestion in progress |
 
 **Live examples** (verified on the production API): MGH MRI-brain-without-contrast **$3,858**,
 Martha's Vineyard **$2,116.50**, honest `facility` billing scope; cash vs negotiated preserved.
+
+### Ingestion operational rules (learned)
+
+- **Import time dominates** (~2 min per 10 MB, from the rate-detail fan-out). A single 489 MB MRF ≈ 90 min.
+- **Large hospitals (>~150 MB) run SOLO**; small ones batch 3/job. Never batch two large files.
+- **Per-wave rebuild is deferred** (`--no-rebuild`) — one final rebuild surfaces all summaries; MA is not
+  consumer-activated during scale-out, so deferral is invisible.
+- **Never cancel a running ingest** — cancellation leaves a stuck ImportRun (fails the safety gate) and
+  partial records (which a rebuild would surface). Recover with `reset_ma_pricing --fast --keep-ccns <priced>`.
+- Task timeout raised to 3 hr for large-hospital headroom.
 
 ### Ingestion status legend (fail-forward)
 
@@ -54,7 +67,7 @@ NH must stay: `active_consumer_hospitals=26`, `official_public_summaries≥16,89
 
 | Region | Hospitals | Priced |
 |---|---:|---:|
-| Greater Boston | 14 | 1 |
+| Greater Boston | 14 | 2 |
 | Pioneer Valley | 7 | 0 |
 | Central Massachusetts | 6 | 0 |
 | North Shore | 4 | 0 |
@@ -63,5 +76,5 @@ NH must stay: `active_consumer_hospitals=26`, `official_public_summaries≥16,89
 | Southeastern MA / South Coast | 4 | 0 |
 | Cape Cod & Islands | 4 | 1 |
 | Merrimack Valley | 3 | 0 |
-| Berkshires | 3 | 0 |
-| **Total** | **53** | **2** |
+| Berkshires | 3 | 2 |
+| **Total** | **53** | **5** |
