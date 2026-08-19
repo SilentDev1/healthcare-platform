@@ -15,19 +15,26 @@ from packages.database import Facility, FacilityLocation, FacilityPriceSource, s
 from scripts.seed_price_mappings import seed_price_mappings
 
 
-def import_all_sources(session: Session, state_code: str = "NH") -> dict[str, object]:
-    """Import all sources in state, rebuild summaries, evaluate health."""
+def import_all_sources(
+    session: Session, state_code: str = "NH", only_ccns: set[str] | None = None
+) -> dict[str, object]:
+    """Import all sources in state, rebuild summaries, evaluate health.
+
+    ``only_ccns`` optionally restricts which hospitals are *imported* (by CCN) so a wave stays
+    bounded. The summary rebuild always runs across all data (it preserves NH + provider-published).
+    """
     seed_price_mappings(session)
     session.commit()
 
-    facility_ids = set(
-        session.scalars(
-            select(Facility.id)
-            .distinct()
-            .join(FacilityLocation)
-            .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
-        )
+    query = (
+        select(Facility.id)
+        .distinct()
+        .join(FacilityLocation)
+        .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
     )
+    if only_ccns:
+        query = query.where(Facility.cms_certification_number.in_(only_ccns))
+    facility_ids = set(session.scalars(query))
 
     sources = session.scalars(
         select(FacilityPriceSource).where(

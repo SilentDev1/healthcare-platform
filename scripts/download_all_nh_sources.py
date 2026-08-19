@@ -13,16 +13,23 @@ from collectors.hospital_prices.downloader import download_price_source
 from packages.database import Facility, FacilityLocation, FacilityPriceSource, session_factory
 
 
-def download_all_sources(session: Session, state_code: str = "NH") -> dict[str, int]:
-    """Download all sources missing source_file_id for facilities in state."""
-    facility_ids = set(
-        session.scalars(
-            select(Facility.id)
-            .distinct()
-            .join(FacilityLocation)
-            .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
-        )
+def download_all_sources(
+    session: Session, state_code: str = "NH", only_ccns: set[str] | None = None
+) -> dict[str, int]:
+    """Download all sources missing source_file_id for facilities in state.
+
+    ``only_ccns`` optionally restricts to specific hospitals (by CMS CCN) so a wave can
+    be bounded — e.g. to keep a large-MRF ingestion within the Cloud Run job timeout.
+    """
+    query = (
+        select(Facility.id)
+        .distinct()
+        .join(FacilityLocation)
+        .where(FacilityLocation.state == state_code.upper(), Facility.active.is_(True))
     )
+    if only_ccns:
+        query = query.where(Facility.cms_certification_number.in_(only_ccns))
+    facility_ids = set(session.scalars(query))
 
     sources = session.scalars(
         select(FacilityPriceSource).where(

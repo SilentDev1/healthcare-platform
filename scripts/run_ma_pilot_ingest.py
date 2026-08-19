@@ -16,6 +16,7 @@ Run: python -m scripts.run_ma_pilot_ingest
 from __future__ import annotations
 
 # ruff: noqa: E501
+import argparse
 import json
 import time
 
@@ -27,11 +28,16 @@ STATE = "MA"
 
 
 def main() -> None:
-    results: dict[str, object] = {"state": STATE}
+    parser = argparse.ArgumentParser(description="Bounded MA hospital-price ingestion (download+import+rebuild)")
+    parser.add_argument("--only-ccns", default="", help="comma-separated CCNs to bound the wave (large MRFs solo)")
+    args = parser.parse_args()
+    only = {c.strip() for c in args.only_ccns.split(",") if c.strip()} or None
+
+    results: dict[str, object] = {"state": STATE, "only_ccns": sorted(only) if only else "all"}
     with session_factory() as session:
         t0 = time.perf_counter()
         try:
-            download = download_all_sources(session, STATE)
+            download = download_all_sources(session, STATE, only_ccns=only)
             session.commit()
             results["download"] = {**download, "elapsed_sec": round(time.perf_counter() - t0, 2)}
         except Exception as exc:  # fail-forward: report, keep going to import what did land
@@ -39,7 +45,7 @@ def main() -> None:
 
         t0 = time.perf_counter()
         try:
-            imported = import_all_sources(session, STATE)
+            imported = import_all_sources(session, STATE, only_ccns=only)
             session.commit()
             results["import"] = {**imported, "elapsed_sec": round(time.perf_counter() - t0, 2)}
         except Exception as exc:
