@@ -16,7 +16,10 @@ from scripts.seed_price_mappings import seed_price_mappings
 
 
 def import_all_sources(
-    session: Session, state_code: str = "NH", only_ccns: set[str] | None = None
+    session: Session,
+    state_code: str = "NH",
+    only_ccns: set[str] | None = None,
+    rebuild: bool = True,
 ) -> dict[str, object]:
     """Import all sources in state, rebuild summaries, evaluate health.
 
@@ -73,16 +76,21 @@ def import_all_sources(
             errors.append({"facility": name, "error": f"{type(exc).__name__}: {exc}"})
             print(f"  Failed: {name} — {type(exc).__name__}: {exc}")
 
-    # Post-processing
-    print("\nRebuilding price summaries...")
-    projection = rebuild_price_summaries(session)
-    print(f"  Observations: {projection['observations']}, Summaries: {projection['summaries']}")
-
-    print("Evaluating pricing health...")
-    health = evaluate_pricing_health(session)
-    print(
-        f"  Facilities scored: {health['facilities']}, Average: {health['average_pricing_health']}"
-    )
+    # Post-processing. Skippable so multi-wave scale-outs import fast and rebuild ONCE at the end
+    # (the rebuild is O(all observations) and is the slow tail of each wave). MA is not consumer-
+    # activated during scale-out, so deferring the rebuild has no consumer impact.
+    if rebuild:
+        print("\nRebuilding price summaries...")
+        projection = rebuild_price_summaries(session)
+        print(f"  Observations: {projection['observations']}, Summaries: {projection['summaries']}")
+        print("Evaluating pricing health...")
+        health = evaluate_pricing_health(session)
+        avg = health["average_pricing_health"]
+        print(f"  Facilities scored: {health['facilities']}, Average: {avg}")
+        obs, summ = projection["observations"], projection["summaries"]
+    else:
+        print("\n(skipping rebuild — deferred to a final rebuild pass)")
+        obs = summ = avg = None
 
     return {
         "sources_total": len(sources),
@@ -91,9 +99,9 @@ def import_all_sources(
         "failed": failed,
         "total_rows": total_rows,
         "total_records": total_records,
-        "observations": projection["observations"],
-        "summaries": projection["summaries"],
-        "average_health": health["average_pricing_health"],
+        "observations": obs,
+        "summaries": summ,
+        "average_health": avg,
         "errors": errors,
     }
 
