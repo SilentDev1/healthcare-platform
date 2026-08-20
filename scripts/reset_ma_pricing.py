@@ -76,7 +76,16 @@ def _delete_records_fast(session: Session, source_file_id: object) -> int:
     return count
 
 
-def reset(session: Session | None = None, *, keep_ccns: set[str] | None = None, dry_run: bool = False, fast: bool = False) -> dict[str, int]:
+def reset(
+    session: Session | None = None,
+    *,
+    keep_ccns: set[str] | None = None,
+    reset_ccns: set[str] | None = None,
+    dry_run: bool = False,
+    fast: bool = False,
+) -> dict[str, int]:
+    """Reset MA pricing. Either KEEP-mode (reset everything except keep_ccns; default keeps MGH+MV)
+    or RESET-mode (reset ONLY reset_ccns — the natural tool for cleaning a few failed hospitals)."""
     if session is None:
         session = next(get_session())
     keep = keep_ccns if keep_ccns is not None else set(DEFAULT_KEEP)
@@ -100,9 +109,13 @@ def reset(session: Session | None = None, *, keep_ccns: set[str] | None = None, 
             .where(FacilityLocation.state == "MA")
         )
     }
-    keep_ids = {fid for fid, f in ma_facilities.items() if f.cms_certification_number in keep}
-    result["sources_kept"] = len(keep_ids)
-    target_ids = set(ma_facilities) - keep_ids
+    if reset_ccns:  # RESET-mode: target ONLY the named hospitals
+        target_ids = {fid for fid, f in ma_facilities.items() if f.cms_certification_number in reset_ccns}
+        result["sources_kept"] = len(ma_facilities) - len(target_ids)
+    else:  # KEEP-mode: target everything except the keep-set
+        keep_ids = {fid for fid, f in ma_facilities.items() if f.cms_certification_number in keep}
+        result["sources_kept"] = len(keep_ids)
+        target_ids = set(ma_facilities) - keep_ids
 
     sources = list(
         session.scalars(
@@ -154,10 +167,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Reset stuck imports + clear partial MA pricing (NH untouched)")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--keep-ccns", default="", help="comma-separated CCNs to keep (default MGH+Martha's Vineyard)")
+    parser.add_argument("--reset-ccns", default="", help="comma-separated CCNs to reset ONLY these (inverse of keep; for cleaning a few failed hospitals)")
     parser.add_argument("--fast", action="store_true", help="bulk in-database deletes (much faster; MA is unpublished)")
     args = parser.parse_args()
     keep = {c.strip() for c in args.keep_ccns.split(",") if c.strip()} or None
-    result = reset(keep_ccns=keep, dry_run=args.dry_run, fast=args.fast)
+    reset_only = {c.strip() for c in args.reset_ccns.split(",") if c.strip()} or None
+    result = reset(keep_ccns=keep, reset_ccns=reset_only, dry_run=args.dry_run, fast=args.fast)
     prefix = "DRY-RUN " if args.dry_run else ""
     print(f"{prefix}MA_PRICING_RESET={result}")
 
