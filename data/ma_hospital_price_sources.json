@@ -12,7 +12,8 @@
       "json": 14,
       "unknown": 3,
       "zip": 15
-    }
+    },
+    "note": "Verified MA hospital price-transparency MRF acquisition matrix (Phase 2). Each MRF_FOUND URL was HEAD/range-verified during discovery against the official hospital or health-system price-transparency page. Identity of WHERE to fetch charges \u2014 NOT prices, not published. MRF_NOT_FOUND/SOURCE_BLOCKED/MRF_INDEX_ONLY are recorded honestly and NOT registered as sources."
   },
   "sources": [
     {
@@ -125,14 +126,14 @@
       "city": "Northampton",
       "status": "MRF_FOUND",
       "format": "zip",
-      "mrf_url": "https://www.massgeneralbrigham.org/content/dam/mgb-global/en/price-transparency/222617175_Cooley-Dickinson-Hospital_StandardCharges.zip",
+      "mrf_url": "https://www.massgeneralbrigham.org/price-transparency/222617175_Cooley-Dickinson-Hospital_StandardCharges.zip",
       "transparency_page_url": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
       "official_site": "https://www.massgeneralbrigham.org",
       "size_hint": "459 KB",
       "last_updated": "2026-03-30",
       "vendor_name": "",
       "evidence": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
-      "notes": "MGB system page; per-hospital file. EIN 222617175. HTTP 200 application/zip content-length 469863."
+      "notes": "MGB system page; per-hospital file. EIN 222617175. HTTP 200 application/zip content-length 469863. | URL refreshed 2026-08-20 (MGB moved to /price-transparency/)"
     },
     {
       "ccn": "220016",
@@ -278,14 +279,14 @@
       "city": "Salem",
       "status": "MRF_FOUND",
       "format": "zip",
-      "mrf_url": "https://www.massgeneralbrigham.org/content/dam/mgb-global/en/price-transparency/043399616_Salem-Hospital_StandardCharges.zip",
+      "mrf_url": "https://www.massgeneralbrigham.org/price-transparency/043399616_Salem-Hospital_StandardCharges.zip",
       "transparency_page_url": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
       "official_site": "https://www.massgeneralbrigham.org",
       "size_hint": "924 KB",
       "last_updated": "2026-03-30",
       "vendor_name": "",
       "evidence": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
-      "notes": "MGB system page; per-hospital file. EIN 043399616. HTTP 200 application/zip content-length 946050."
+      "notes": "MGB system page; per-hospital file. EIN 043399616. HTTP 200 application/zip content-length 946050. | URL refreshed 2026-08-20 (MGB moved to /price-transparency/)"
     },
     {
       "ccn": "220036",
@@ -448,14 +449,14 @@
       "city": "Boston",
       "status": "MRF_FOUND",
       "format": "zip",
-      "mrf_url": "https://www.massgeneralbrigham.org/content/dam/mgb-global/en/price-transparency/042697983_Massachusetts-General-Hospital_StandardCharges.zip",
+      "mrf_url": "https://www.massgeneralbrigham.org/price-transparency/042697983_Massachusetts-General-Hospital_StandardCharges.zip",
       "transparency_page_url": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
       "official_site": "https://www.massgeneralbrigham.org",
       "size_hint": "3.6 MB",
       "last_updated": "2026-03-30",
       "vendor_name": "",
       "evidence": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
-      "notes": "MGB system page; per-hospital file. EIN 042697983. HTTP 200 application/zip content-length 3756817."
+      "notes": "MGB system page; per-hospital file. EIN 042697983. HTTP 200 application/zip content-length 3756817. | URL refreshed 2026-08-20 (MGB moved to /price-transparency/)"
     },
     {
       "ccn": "220073",
@@ -635,14 +636,14 @@
       "city": "Newton",
       "status": "MRF_FOUND",
       "format": "zip",
-      "mrf_url": "https://www.massgeneralbrigham.org/content/dam/mgb-global/en/price-transparency/042103611_Newton-Wellesley-Hospital_StandardCharges.zip",
+      "mrf_url": "https://www.massgeneralbrigham.org/price-transparency/042103611_Newton-Wellesley-Hospital_StandardCharges.zip",
       "transparency_page_url": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
       "official_site": "https://www.massgeneralbrigham.org",
       "size_hint": "1.0 MB",
       "last_updated": "2026-03-30",
       "vendor_name": "",
       "evidence": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
-      "notes": "MGB system page; per-hospital file. EIN 042103611. HTTP 200 application/zip content-length 1034717."
+      "notes": "MGB system page; per-hospital file. EIN 042103611. HTTP 200 application/zip content-length 1034717. | URL refreshed 2026-08-20 (MGB moved to /price-transparency/)"
     },
     {
       "ccn": "220105",
@@ -686,14 +687,14 @@
       "city": "Boston",
       "status": "MRF_FOUND",
       "format": "zip",
-      "mrf_url": "https://www.massgeneralbrigham.org/content/dam/mgb-global/en/price-transparency/042312909_Brigham-and-Womens-Hospital_StandardCharges.zip",
+      "mrf_url": "https://www.massgeneralbrigham.org/price-transparency/042312909_Brigham-and-Womens-Hospital_StandardCharges.zip",
       "transparency_page_url": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
       "official_site": "https://www.massgeneralbrigham.org",
       "size_hint": "2.7 MB",
       "last_updated": "2026-03-30",
       "vendor_name": "",
       "evidence": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
-      "notes": "MGB system page; per-hospital file. EIN 042312909. HTTP 200 application/zip content-length 2879322."
+      "notes": "MGB system page; per-hospital file. EIN 042312909. HTTP 200 application/zip content-length 2879322. | URL refreshed 2026-08-20 (MGB moved to /price-transparency/)"
     },
     {
       "ccn": "220111",
@@ -737,14 +738,14 @@
       "city": "Jamaica Plain",
       "status": "MRF_FOUND",
       "format": "zip",
-      "mrf_url": "https://www.massgeneralbrigham.org/content/dam/mgb-global/en/price-transparency/042768256_Brigham-and-Womens-Faulkner-Hospital_StandardCharges.zip",
+      "mrf_url": "https://www.massgeneralbrigham.org/price-transparency/042768256_Brigham-and-Womens-Faulkner-Hospital_StandardCharges.zip",
       "transparency_page_url": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
       "official_site": "https://www.massgeneralbrigham.org",
       "size_hint": "975 KB",
       "last_updated": "2026-03-30",
       "vendor_name": "",
       "evidence": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
-      "notes": "MGB system page; per-hospital file. EIN 042768256. HTTP 200 application/zip content-length 998107."
+      "notes": "MGB system page; per-hospital file. EIN 042768256. HTTP 200 application/zip content-length 998107. | URL refreshed 2026-08-20 (MGB moved to /price-transparency/)"
     },
     {
       "ccn": "220135",
@@ -839,14 +840,14 @@
       "city": "Nantucket",
       "status": "MRF_FOUND",
       "format": "zip",
-      "mrf_url": "https://www.massgeneralbrigham.org/content/dam/mgb-global/en/price-transparency/042103823_Nantucket-Cottage-Hospital_StandardCharges.zip",
+      "mrf_url": "https://www.massgeneralbrigham.org/price-transparency/042103823_Nantucket-Cottage-Hospital_StandardCharges.zip",
       "transparency_page_url": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
       "official_site": "https://www.massgeneralbrigham.org",
       "size_hint": "110 KB",
       "last_updated": "2026-03-30",
       "vendor_name": "",
       "evidence": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
-      "notes": "MGB system page; per-hospital file. EIN 042103823. HTTP 200 application/zip content-length 112982."
+      "notes": "MGB system page; per-hospital file. EIN 042103823. HTTP 200 application/zip content-length 112982. | URL refreshed 2026-08-20 (MGB moved to /price-transparency/)"
     },
     {
       "ccn": "221300",
@@ -856,14 +857,14 @@
       "city": "Oak Bluffs",
       "status": "MRF_FOUND",
       "format": "zip",
-      "mrf_url": "https://www.massgeneralbrigham.org/content/dam/mgb-global/en/price-transparency/042104691_Marthas-Vineyard-Hospital_StandardCharges.zip",
+      "mrf_url": "https://www.massgeneralbrigham.org/price-transparency/042104691_Marthas-Vineyard-Hospital_StandardCharges.zip",
       "transparency_page_url": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
       "official_site": "https://www.massgeneralbrigham.org",
       "size_hint": "298 KB",
       "last_updated": "2026-03-30",
       "vendor_name": "",
       "evidence": "https://www.massgeneralbrigham.org/en/patient-care/patient-visitor-information/billing/cms-required-hospital-charge-data",
-      "notes": "MGB system page; per-hospital file. EIN 042104691. HTTP 200 application/zip content-length 304716."
+      "notes": "MGB system page; per-hospital file. EIN 042104691. HTTP 200 application/zip content-length 304716. | URL refreshed 2026-08-20 (MGB moved to /price-transparency/)"
     },
     {
       "ccn": "221302",

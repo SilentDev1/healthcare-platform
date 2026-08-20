@@ -42,13 +42,14 @@ def seed(
     dry_run: bool = False,
     data: dict[str, Any] | None = None,
     only_ccns: set[str] | None = None,
+    refresh_urls: bool = False,
 ) -> dict[str, int]:
     if session is None:
         session = next(get_session())
     if data is None:
         data = json.loads(DATA_PATH.read_text())
 
-    counts = {"registered": 0, "already_present": 0, "skipped_not_found": 0, "unmatched_ccn": 0}
+    counts = {"registered": 0, "already_present": 0, "skipped_not_found": 0, "unmatched_ccn": 0, "url_refreshed": 0}
 
     for rec in data["sources"]:
         ccn = rec["ccn"]
@@ -83,6 +84,26 @@ def seed(
             counts["already_present"] += 1
             continue
 
+        # URL refresh: a stale-URL source for this facility that never downloaded (source_file_id NULL)
+        # gets re-pointed to the fixture's new URL in place. Already-downloaded sources are left alone,
+        # so a hospital already imported under a working URL is never disturbed.
+        if refresh_urls:
+            stale = session.scalar(
+                select(FacilityPriceSource).where(
+                    FacilityPriceSource.facility_id == facility.id,
+                    FacilityPriceSource.source_file_id.is_(None),
+                    FacilityPriceSource.machine_readable_file_url != rec["mrf_url"],
+                )
+            )
+            if stale is not None:
+                stale.machine_readable_file_url = rec["mrf_url"]
+                stale.declared_format = rec.get("format") or stale.declared_format
+                stale.source_page_url = rec.get("transparency_page_url") or stale.source_page_url
+                stale.last_failed_download_at = None
+                stale.active = True
+                counts["url_refreshed"] += 1
+                continue
+
         session.add(
             FacilityPriceSource(
                 facility_id=facility.id,
@@ -112,9 +133,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Register verified MA hospital MRF sources (no download, no pricing)")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--only-ccns", default="", help="comma-separated CCNs to restrict (pilot subset)")
+    parser.add_argument("--refresh-urls", action="store_true", help="re-point stale-URL, not-yet-downloaded sources to the fixture URL")
     args = parser.parse_args()
     only = {c.strip() for c in args.only_ccns.split(",") if c.strip()} or None
-    result = seed(dry_run=args.dry_run, only_ccns=only)
+    result = seed(dry_run=args.dry_run, only_ccns=only, refresh_urls=args.refresh_urls)
     prefix = "DRY-RUN " if args.dry_run else ""
     print(f"{prefix}MA_PRICE_SOURCES={result}")
 
