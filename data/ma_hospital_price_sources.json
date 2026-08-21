@@ -328,7 +328,7 @@
       "system": "UMass Memorial Health",
       "region": "MetroWest",
       "city": "Marlborough",
-      "status": "MRF_FOUND",
+      "status": "MERGED_INTO_UMMC",
       "format": "csv",
       "mrf_url": "https://ummh-price-transparency.s3.us-east-2.amazonaws.com/043358564_umass-memorial-medical-center-inc._standardcharges.csv",
       "transparency_page_url": "https://www.ummhealth.org/patients-visitors/price-transparency",
@@ -337,7 +337,7 @@
       "last_updated": "2026-03-31 (file), attest 2026-03-26",
       "vendor_name": "",
       "evidence": "https://www.ummhealth.org/patients-visitors/price-transparency ; CSV header location_name includes 'UMass Memorial Medical Center-Marlborough Campus' 157 Union Street Marlborough MA 01752",
-      "notes": "Marlborough Hospital merged into UMass Memorial Medical Center (Inc.) and is now a licensed CAMPUS of UMMC; its charges are COVERED WITHIN the UMMC file (EIN 043358564), no separate per-CCN file. HEAD verified HTTP 200, Content-Type text/csv."
+      "notes": "Marlborough Hospital merged into UMass Memorial Medical Center (Inc.) and is now a licensed CAMPUS of UMMC; its charges are COVERED WITHIN the UMMC file (EIN 043358564), no separate per-CCN file. HEAD verified HTTP 200, Content-Type text/csv. | Merged into UMass Memorial Medical Center (Marlborough Campus); charges are inside the UMMC file (imported under 220163). Not imported separately to avoid double-attribution."
     },
     {
       "ccn": "220052",
