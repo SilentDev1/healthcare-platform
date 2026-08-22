@@ -413,7 +413,7 @@
       "system": "Trinity Health Of New England",
       "region": "Pioneer Valley",
       "city": "Springfield",
-      "status": "MRF_FOUND",
+      "status": "TOO_LARGE",
       "format": "zip",
       "mrf_url": "https://hpt.trinity-health.org/043398280_the-mercy-hospital-inc_standardcharges.zip",
       "transparency_page_url": "https://www.trinity-health.org/price-estimates-lists",
@@ -422,7 +422,7 @@
       "last_updated": "unknown",
       "vendor_name": "",
       "evidence": "https://www.trinityhealthofne.org/cms-hpt.txt",
-      "notes": "Part of Trinity Health Of New England / Trinity Health. Legal entity 'The Mercy Hospital Inc' (EIN 043398280) = Mercy Medical Center, Springfield. MRF is a ZIP archive on hpt.trinity-health.org; URL from official cms-hpt.txt."
+      "notes": "Part of Trinity Health Of New England / Trinity Health. Legal entity 'The Mercy Hospital Inc' (EIN 043398280) = Mercy Medical Center, Springfield. MRF is a ZIP archive on hpt.trinity-health.org; URL from official cms-hpt.txt. | Trinity Health MRF (all-payer negotiated rates) too large to import in one Cloud Run job (>3.5M records, did not finish in ~10h). Disposition TOO_LARGE/INGESTED_NOT_PUBLISHED; revisit with resumable/optimized import."
     },
     {
       "ccn": "220070",
