@@ -147,13 +147,17 @@ def rebuild_price_summaries(session: Session) -> dict[str, int]:
         .where(PriceRecordProcedureMapping.reviewed.is_(True))
     ).all()
 
-    # Pre-load all rate details for matched records in one query
+    # Pre-load rate details for matched records. Chunk the id list: a single IN(...) with all
+    # matched ids overflows psycopg's 65535 bind-parameter cap once a state has millions of
+    # matched records (e.g. MA). Batches of 20k stay well under the cap and bound memory.
     matched_record_ids = [record.id for record, _mapping in records]
     rate_details_by_record: dict[object, list[HospitalPriceRateDetail]] = defaultdict(list)
-    if matched_record_ids:
+    _ID_CHUNK = 20000
+    for _i in range(0, len(matched_record_ids), _ID_CHUNK):
+        _batch = matched_record_ids[_i : _i + _ID_CHUNK]
         for rate in session.scalars(
             select(HospitalPriceRateDetail).where(
-                HospitalPriceRateDetail.hospital_price_record_id.in_(matched_record_ids)
+                HospitalPriceRateDetail.hospital_price_record_id.in_(_batch)
             )
         ):
             rate_details_by_record[rate.hospital_price_record_id].append(rate)
