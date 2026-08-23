@@ -1,0 +1,1975 @@
+{
+ "_meta": {
+  "description": "Authoritative New York operating general acute-care + critical-access + rural-emergency hospital identity for the Carevero NY foundation. Reconciled from CMS Hospital General Information (data.cms.gov dataset xubh-q36u, state=NY, retrieved 2026-08-23) UNION the operating hospitals CMS Care Compare omits (confirmed in NYSDOH Health Facility General Information, health.data.ny.gov dataset vn5v-hh5r) MINUS closed/merged/superseded/specialty/rehab-LTAC dispositions. Federal (VA/DoD), Psychiatric, and Childrens CMS rows are excluded by type. Region is derived from CMS/NYSDOH county via ny_region_taxonomy.json (NYC counties -> boroughs). IDENTITY only — no pricing; MRF ingestion is a later step. NH and MA baselines are not affected. Multi-campus single-CCN hospitals are one seed facility (see multi_campus_single_ccn).",
+  "retrieval_date": "2026-08-23",
+  "region_taxonomy": [
+   "Manhattan",
+   "Brooklyn",
+   "Queens",
+   "Bronx",
+   "Staten Island",
+   "Long Island",
+   "Hudson Valley",
+   "Capital Region",
+   "Mohawk Valley",
+   "Central New York",
+   "North Country",
+   "Southern Tier",
+   "Finger Lakes",
+   "Western New York"
+  ],
+  "counts": {
+   "cms_consumer_type": 152,
+   "operating_denominator": 157,
+   "from_cms": 144,
+   "added_from_nysdoh": 13
+  },
+  "excluded_closed": [
+   {
+    "ccn": "330169",
+    "name": "Mount Sinai Beth Israel",
+    "note": "closed 2025-04-09 after NYSDOH-approved closure plan + litigation; CMS acute tag lags; absent from NYSDOH operating"
+   }
+  ],
+  "excluded_merged": [
+   {
+    "ccn": "330246",
+    "name": "St Charles Hospital",
+    "into": "330286",
+    "note": "merged into Good Samaritan University Hospital (2026-07-01) as its St. Charles Campus; shares NYS license/TIN/CCN 330286; do not price separately"
+   }
+  ],
+  "excluded_superseded": [
+   {
+    "ccn": "330166",
+    "name": "Westfield Memorial Hospital (acute)",
+    "by": "330801",
+    "note": "converted to a Rural Emergency Hospital; live CCN is REH 330801 (same hospital, Westfield); acute CCN 330166 lags in CMS"
+   }
+  ],
+  "specialty_bucket": [
+   {
+    "ccn": "330100",
+    "name": "NY Eye and Ear Infirmary of Mount Sinai",
+    "note": "ophthalmology/ENT specialty acute hospital; bucket separately (candidate for later consumer visibility)"
+   },
+   {
+    "ccn": "330270",
+    "name": "Hospital for Special Surgery",
+    "note": "orthopedic specialty acute hospital; bucket separately (high-value for hip/knee — candidate for later consumer visibility)"
+   }
+  ],
+  "excluded_rehab_ltac": [
+   {
+    "ccn": "330405",
+    "name": "Helen Hayes Hospital",
+    "note": "physical rehabilitation specialty hospital (state-run); not general acute"
+   },
+   {
+    "ccn": "330406",
+    "name": "Sunnyview Hospital and Rehabilitation Center",
+    "note": "rehabilitation specialty hospital; not general acute"
+   },
+   {
+    "ccn": "330411",
+    "name": "Unity Specialty Hospital",
+    "note": "long-term acute care (LTAC) / specialty unit of Unity; not general acute"
+   }
+  ],
+  "excluded_by_type": {
+   "federal_va_dod": 10,
+   "psychiatric": 29,
+   "childrens": 1
+  },
+  "added_from_nysdoh": [
+   {
+    "ccn": "330061",
+    "name": "NewYork-Presbyterian Westchester",
+    "city": "Bronxville",
+    "county": "Westchester",
+    "reason": "operating general-acute hospital omitted from CMS Care Compare (xubh-q36u); confirmed operating in NYSDOH vn5v-hh5r"
+   },
+   {
+    "ccn": "330064",
+    "name": "NewYork-Presbyterian Lower Manhattan Hospital",
+    "city": "New York",
+    "county": "New York",
+    "reason": "operating general-acute hospital omitted from CMS Care Compare (xubh-q36u); confirmed operating in NYSDOH vn5v-hh5r"
+   },
+   {
+    "ccn": "330072",
+    "name": "Montefiore Wakefield Campus",
+    "city": "Bronx",
+    "county": "Bronx",
+    "reason": "operating general-acute hospital omitted from CMS Care Compare (xubh-q36u); confirmed operating in NYSDOH vn5v-hh5r"
+   },
+   {
+    "ccn": "330088",
+    "name": "Stony Brook Eastern Long Island Hospital",
+    "city": "Greenport",
+    "county": "Suffolk",
+    "reason": "operating general-acute hospital omitted from CMS Care Compare (xubh-q36u); confirmed operating in NYSDOH vn5v-hh5r"
+   },
+   {
+    "ccn": "330108",
+    "name": "St Joseph's Hospital (Elmira)",
+    "city": "Elmira",
+    "county": "Chemung",
+    "reason": "operating general-acute hospital omitted from CMS Care Compare (xubh-q36u); confirmed operating in NYSDOH vn5v-hh5r"
+   },
+   {
+    "ccn": "330167",
+    "name": "NYU Langone Hospital - Long Island",
+    "city": "Mineola",
+    "county": "Nassau",
+    "reason": "operating general-acute hospital omitted from CMS Care Compare (xubh-q36u); confirmed operating in NYSDOH vn5v-hh5r"
+   },
+   {
+    "ccn": "330236",
+    "name": "NewYork-Presbyterian Brooklyn Methodist Hospital",
+    "city": "Brooklyn",
+    "county": "Kings",
+    "reason": "operating general-acute hospital omitted from CMS Care Compare (xubh-q36u); confirmed operating in NYSDOH vn5v-hh5r"
+   },
+   {
+    "ccn": "330306",
+    "name": "NYU Langone Hospital - Brooklyn",
+    "city": "Brooklyn",
+    "county": "Kings",
+    "reason": "operating general-acute hospital omitted from CMS Care Compare (xubh-q36u); confirmed operating in NYSDOH vn5v-hh5r"
+   },
+   {
+    "ccn": "330340",
+    "name": "Stony Brook Southampton Hospital",
+    "city": "Southampton",
+    "county": "Suffolk",
+    "reason": "operating general-acute hospital omitted from CMS Care Compare (xubh-q36u); confirmed operating in NYSDOH vn5v-hh5r"
+   },
+   {
+    "ccn": "330353",
+    "name": "Long Island Jewish Forest Hills",
+    "city": "Forest Hills",
+    "county": "Queens",
+    "reason": "operating general-acute hospital omitted from CMS Care Compare (xubh-q36u); confirmed operating in NYSDOH vn5v-hh5r"
+   },
+   {
+    "ccn": "330372",
+    "name": "Long Island Jewish Valley Stream",
+    "city": "Valley Stream",
+    "county": "Nassau",
+    "reason": "operating general-acute hospital omitted from CMS Care Compare (xubh-q36u); confirmed operating in NYSDOH vn5v-hh5r"
+   },
+   {
+    "ccn": "330397",
+    "name": "Interfaith Medical Center",
+    "city": "Brooklyn",
+    "county": "Kings",
+    "reason": "operating general-acute hospital omitted from CMS Care Compare (xubh-q36u); confirmed operating in NYSDOH vn5v-hh5r"
+   },
+   {
+    "ccn": "330398",
+    "name": "Syosset Hospital",
+    "city": "Syosset",
+    "county": "Nassau",
+    "reason": "operating general-acute hospital omitted from CMS Care Compare (xubh-q36u); confirmed operating in NYSDOH vn5v-hh5r"
+   }
+  ],
+  "multi_campus_single_ccn": [
+   {
+    "ccn": "330101",
+    "note": "NYP: Weill Cornell + Columbia/CUIMC + Allen + Morgan Stanley/Komansky Children's"
+   },
+   {
+    "ccn": "330214",
+    "note": "NYU Langone Hospitals: Tisch + Kimmel Pavilion + Hassenfeld Children's + NYU Orthopedic"
+   },
+   {
+    "ccn": "330024",
+    "note": "Mount Sinai Hospital + Mount Sinai Queens (subunit)"
+   },
+   {
+    "ccn": "330059",
+    "note": "Montefiore: Moses + Weiler/Einstein + Children's Hospital at Montefiore (CHAM)"
+   },
+   {
+    "ccn": "330160",
+    "note": "Staten Island University Hospital: North + South campuses"
+   },
+   {
+    "ccn": "330005",
+    "note": "Kaleida Health: Buffalo General + Gates Vascular + Millard Fillmore Suburban + Oishei Children's"
+   },
+   {
+    "ccn": "330078",
+    "note": "Sisters of Charity: Main St (Buffalo) + St. Joseph Campus (Cheektowaga)"
+   },
+   {
+    "ccn": "330153",
+    "note": "Ellis Hospital + Bellevue Woman's Center (Niskayuna)"
+   },
+   {
+    "ccn": "330286",
+    "note": "Good Samaritan University Hospital (West Islip) + St. Charles Campus (Port Jefferson, ex-330246)"
+   },
+   {
+    "ccn": "330264",
+    "note": "Montefiore St. Luke's Cornwall: Newburgh (inpatient) + Cornwall (ambulatory)"
+   },
+   {
+    "ccn": "330073",
+    "note": "United Memorial Medical Center (Batavia): North St + Bank St campuses"
+   },
+   {
+    "ccn": "330394",
+    "note": "UHS: Wilson Medical Center (Johnson City) + Binghamton General"
+   },
+   {
+    "ccn": "330224",
+    "note": "HealthAlliance Hospital (Kingston): Mary's Ave + Broadway campuses"
+   },
+   {
+    "ccn": "330127",
+    "note": "Jacobi shares NYS opcert 7000002H with North Central Bronx (NCB has no separate CCN)"
+   },
+   {
+    "ccn": "330188",
+    "note": "Mount St. Mary's + Lockport Memorial Hospital campus (replaced closed Eastern Niagara)"
+   },
+   {
+    "ccn": "330234",
+    "note": "Westchester Medical Center: main + Maria Fareri Children's + MidHudson Regional division"
+   }
+  ]
+ },
+ "hospitals": [
+  {
+   "ccn": "330005",
+   "name": "Kaleida Health",
+   "city": "Buffalo",
+   "zip": "14210",
+   "county": "Erie",
+   "type": "Acute Care Hospitals",
+   "system": "Kaleida Health",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330006",
+   "name": "St Joseph'S Medical Center",
+   "city": "Yonkers",
+   "zip": "10701",
+   "county": "Westchester",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330009",
+   "name": "Bronxcare Hospital Center",
+   "city": "Bronx",
+   "zip": "10456",
+   "county": "Bronx",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Bronx",
+   "source": "cms"
+  },
+  {
+   "ccn": "330011",
+   "name": "Our Lady Of Lourdes Memorial Hospital, Inc",
+   "city": "Binghamton",
+   "zip": "13905",
+   "county": "Broome",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Southern Tier",
+   "source": "cms"
+  },
+  {
+   "ccn": "330013",
+   "name": "Albany Medical Center Hospital",
+   "city": "Albany",
+   "zip": "12208",
+   "county": "Albany",
+   "type": "Acute Care Hospitals",
+   "system": "Albany Med Health System",
+   "region": "Capital Region",
+   "source": "cms"
+  },
+  {
+   "ccn": "330014",
+   "name": "Jamaica Hospital Medical Center",
+   "city": "Jamaica",
+   "zip": "11418",
+   "county": "Queens",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Queens",
+   "source": "cms"
+  },
+  {
+   "ccn": "330019",
+   "name": "New York Community Hospital Of Brooklyn, Inc.",
+   "city": "Brooklyn",
+   "zip": "11229",
+   "county": "Kings",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Brooklyn",
+   "source": "cms"
+  },
+  {
+   "ccn": "330023",
+   "name": "Vassar Brothers Medical Center",
+   "city": "Poughkeepsie",
+   "zip": "12601",
+   "county": "Dutchess",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330024",
+   "name": "Mount Sinai Hospital",
+   "city": "New York",
+   "zip": "10029",
+   "county": "New York",
+   "type": "Acute Care Hospitals",
+   "system": "Mount Sinai Health System",
+   "region": "Manhattan",
+   "source": "cms"
+  },
+  {
+   "ccn": "330027",
+   "name": "Nassau University Medical Center",
+   "city": "East Meadow",
+   "zip": "11554",
+   "county": "Nassau",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330028",
+   "name": "Richmond University Medical Center",
+   "city": "Staten Island",
+   "zip": "10310",
+   "county": "Richmond",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Staten Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330030",
+   "name": "Newark-Wayne Community Hospital",
+   "city": "Newark",
+   "zip": "14513",
+   "county": "Wayne",
+   "type": "Acute Care Hospitals",
+   "system": "Rochester Regional Health",
+   "region": "Finger Lakes",
+   "source": "cms"
+  },
+  {
+   "ccn": "330033",
+   "name": "Chenango Memorial Hospital",
+   "city": "Norwich",
+   "zip": "13815",
+   "county": "Chenango",
+   "type": "Acute Care Hospitals",
+   "system": "United Health Services",
+   "region": "Southern Tier",
+   "source": "cms"
+  },
+  {
+   "ccn": "330043",
+   "name": "Ns/Lij Hs Southside Hospital",
+   "city": "Bay Shore",
+   "zip": "11706",
+   "county": "Suffolk",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330044",
+   "name": "Wynn Hospital",
+   "city": "Utica",
+   "zip": "13503",
+   "county": "Oneida",
+   "type": "Acute Care Hospitals",
+   "system": "Mohawk Valley Health System",
+   "region": "Mohawk Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330045",
+   "name": "Ns/Lij Hs Huntington Hospital",
+   "city": "Huntington",
+   "zip": "11743",
+   "county": "Suffolk",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330046",
+   "name": "Mount Sinai West",
+   "city": "New York",
+   "zip": "10019",
+   "county": "New York",
+   "type": "Acute Care Hospitals",
+   "system": "Mount Sinai Health System",
+   "region": "Manhattan",
+   "source": "cms"
+  },
+  {
+   "ccn": "330047",
+   "name": "St Marys Healthcare",
+   "city": "Amsterdam",
+   "zip": "12010",
+   "county": "Montgomery",
+   "type": "Acute Care Hospitals",
+   "system": "St. Peter's Health Partners",
+   "region": "Mohawk Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330049",
+   "name": "Northern Dutchess Hospital",
+   "city": "Rhinebeck",
+   "zip": "12572",
+   "county": "Dutchess",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330055",
+   "name": "New York-Presbyterian/Queens",
+   "city": "Flushing",
+   "zip": "11355",
+   "county": "Queens",
+   "type": "Acute Care Hospitals",
+   "system": "NewYork-Presbyterian",
+   "region": "Queens",
+   "source": "cms"
+  },
+  {
+   "ccn": "330056",
+   "name": "Brooklyn Hospital Center - Downtown Campus",
+   "city": "Brooklyn",
+   "zip": "11201",
+   "county": "Kings",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Brooklyn",
+   "source": "cms"
+  },
+  {
+   "ccn": "330057",
+   "name": "St Peter'S Hospital",
+   "city": "Albany",
+   "zip": "12208",
+   "county": "Albany",
+   "type": "Acute Care Hospitals",
+   "system": "St. Peter's Health Partners",
+   "region": "Capital Region",
+   "source": "cms"
+  },
+  {
+   "ccn": "330058",
+   "name": "Geneva General Hospital",
+   "city": "Geneva",
+   "zip": "14456",
+   "county": "Ontario",
+   "type": "Acute Care Hospitals",
+   "system": "UR Medicine",
+   "region": "Finger Lakes",
+   "source": "cms"
+  },
+  {
+   "ccn": "330059",
+   "name": "Montefiore Medical Center",
+   "city": "Bronx",
+   "zip": "10467",
+   "county": "Bronx",
+   "type": "Acute Care Hospitals",
+   "system": "Montefiore",
+   "region": "Bronx",
+   "source": "cms"
+  },
+  {
+   "ccn": "330061",
+   "name": "NewYork-Presbyterian Westchester",
+   "city": "Bronxville",
+   "zip": "10708",
+   "county": "Westchester",
+   "type": "Acute Care Hospitals",
+   "system": "NewYork-Presbyterian",
+   "region": "Hudson Valley",
+   "source": "nysdoh",
+   "ccn_confidence": "moderate (330060/330061 legacy Lawrence ambiguity — verify at MRF time)"
+  },
+  {
+   "ccn": "330064",
+   "name": "NewYork-Presbyterian Lower Manhattan Hospital",
+   "city": "New York",
+   "zip": "10038",
+   "county": "New York",
+   "type": "Acute Care Hospitals",
+   "system": "NewYork-Presbyterian",
+   "region": "Manhattan",
+   "source": "nysdoh",
+   "ccn_confidence": "moderate — verify at MRF time"
+  },
+  {
+   "ccn": "330065",
+   "name": "Niagara Falls Memorial Medical Center",
+   "city": "Niagara Falls",
+   "zip": "14302",
+   "county": "Niagara",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330072",
+   "name": "Montefiore Wakefield Campus",
+   "city": "Bronx",
+   "zip": "10466",
+   "county": "Bronx",
+   "type": "Acute Care Hospitals",
+   "system": "Montefiore",
+   "region": "Bronx",
+   "source": "nysdoh"
+  },
+  {
+   "ccn": "330073",
+   "name": "United Memorial Medical Center",
+   "city": "Batavia",
+   "zip": "14020",
+   "county": "Genesee",
+   "type": "Acute Care Hospitals",
+   "system": "Rochester Regional Health",
+   "region": "Finger Lakes",
+   "source": "cms"
+  },
+  {
+   "ccn": "330074",
+   "name": "F F Thompson Hospital",
+   "city": "Canandaigua",
+   "zip": "14424",
+   "county": "Ontario",
+   "type": "Acute Care Hospitals",
+   "system": "UR Medicine",
+   "region": "Finger Lakes",
+   "source": "cms"
+  },
+  {
+   "ccn": "330078",
+   "name": "Sisters Of Charity Hospital",
+   "city": "Buffalo",
+   "zip": "14214",
+   "county": "Erie",
+   "type": "Acute Care Hospitals",
+   "system": "Catholic Health (Buffalo)",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330079",
+   "name": "Adirondack Medical Center - Saranac Lake",
+   "city": "Saranac Lake",
+   "zip": "12983",
+   "county": "Franklin",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "North Country",
+   "source": "cms"
+  },
+  {
+   "ccn": "330080",
+   "name": "Lincoln Medical & Mental Health Center",
+   "city": "Bronx",
+   "zip": "10451",
+   "county": "Bronx",
+   "type": "Acute Care Hospitals",
+   "system": "NYC Health + Hospitals",
+   "region": "Bronx",
+   "source": "cms"
+  },
+  {
+   "ccn": "330085",
+   "name": "Aurelia Osborn Fox Memorial Hospital",
+   "city": "Oneonta",
+   "zip": "13820",
+   "county": "Otsego",
+   "type": "Acute Care Hospitals",
+   "system": "Bassett Healthcare Network",
+   "region": "Mohawk Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330086",
+   "name": "Montefiore Mount Vernon Hospital",
+   "city": "Mount Vernon",
+   "zip": "10550",
+   "county": "Westchester",
+   "type": "Acute Care Hospitals",
+   "system": "Montefiore",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330088",
+   "name": "Stony Brook Eastern Long Island Hospital",
+   "city": "Greenport",
+   "zip": "11944",
+   "county": "Suffolk",
+   "type": "Acute Care Hospitals",
+   "system": "Stony Brook Medicine",
+   "region": "Long Island",
+   "source": "nysdoh"
+  },
+  {
+   "ccn": "330090",
+   "name": "Arnot Ogden Medical Center",
+   "city": "Elmira",
+   "zip": "14905",
+   "county": "Chemung",
+   "type": "Acute Care Hospitals",
+   "system": "Arnot Health",
+   "region": "Southern Tier",
+   "source": "cms"
+  },
+  {
+   "ccn": "330094",
+   "name": "Columbia Memorial Hospital",
+   "city": "Hudson",
+   "zip": "12534",
+   "county": "Columbia",
+   "type": "Acute Care Hospitals",
+   "system": "Albany Med Health System",
+   "region": "Capital Region",
+   "source": "cms"
+  },
+  {
+   "ccn": "330096",
+   "name": "Jones Memorial Hospital",
+   "city": "Wellsville",
+   "zip": "14895",
+   "county": "Allegany",
+   "type": "Acute Care Hospitals",
+   "system": "UR Medicine",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330101",
+   "name": "New York-Presbyterian Hospital",
+   "city": "New York",
+   "zip": "10065",
+   "county": "New York",
+   "type": "Acute Care Hospitals",
+   "system": "NewYork-Presbyterian",
+   "region": "Manhattan",
+   "source": "cms"
+  },
+  {
+   "ccn": "330102",
+   "name": "Kenmore Mercy Hospital",
+   "city": "Kenmore",
+   "zip": "14217",
+   "county": "Erie",
+   "type": "Acute Care Hospitals",
+   "system": "Catholic Health (Buffalo)",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330103",
+   "name": "Olean General Hospital",
+   "city": "Olean",
+   "zip": "14760",
+   "county": "Cattaraugus",
+   "type": "Acute Care Hospitals",
+   "system": "Kaleida Health",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330104",
+   "name": "Nyack Hospital",
+   "city": "Nyack",
+   "zip": "10960",
+   "county": "Rockland",
+   "type": "Acute Care Hospitals",
+   "system": "Montefiore",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330106",
+   "name": "North Shore University Hospital",
+   "city": "Manhasset",
+   "zip": "11030",
+   "county": "Nassau",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330107",
+   "name": "Peconic Bay Medical Center",
+   "city": "Riverhead",
+   "zip": "11901",
+   "county": "Suffolk",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330108",
+   "name": "St Joseph's Hospital (Elmira)",
+   "city": "Elmira",
+   "zip": "14901",
+   "county": "Chemung",
+   "type": "Acute Care Hospitals",
+   "system": "Arnot Health",
+   "region": "Southern Tier",
+   "source": "nysdoh"
+  },
+  {
+   "ccn": "330111",
+   "name": "Bertrand Chaffee Hospital",
+   "city": "Springville",
+   "zip": "14141",
+   "county": "Erie",
+   "type": "Acute Care Hospitals",
+   "system": "Kaleida Health",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330115",
+   "name": "Oneida Health Hospital",
+   "city": "Oneida",
+   "zip": "13421",
+   "county": "Madison",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Central New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330119",
+   "name": "Lenox Hill Hospital",
+   "city": "New York",
+   "zip": "10075",
+   "county": "New York",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Manhattan",
+   "source": "cms"
+  },
+  {
+   "ccn": "330125",
+   "name": "Rochester General Hospital",
+   "city": "Rochester",
+   "zip": "14621",
+   "county": "Monroe",
+   "type": "Acute Care Hospitals",
+   "system": "Rochester Regional Health",
+   "region": "Finger Lakes",
+   "source": "cms"
+  },
+  {
+   "ccn": "330126",
+   "name": "Garnet Health Medical Center",
+   "city": "Middletown",
+   "zip": "10940",
+   "county": "Orange",
+   "type": "Acute Care Hospitals",
+   "system": "Garnet Health",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330127",
+   "name": "Jacobi Medical Center",
+   "city": "Bronx",
+   "zip": "10461",
+   "county": "Bronx",
+   "type": "Acute Care Hospitals",
+   "system": "NYC Health + Hospitals",
+   "region": "Bronx",
+   "source": "cms"
+  },
+  {
+   "ccn": "330128",
+   "name": "Elmhurst Hospital Center",
+   "city": "Elmhurst",
+   "zip": "11373",
+   "county": "Queens",
+   "type": "Acute Care Hospitals",
+   "system": "NYC Health + Hospitals",
+   "region": "Queens",
+   "source": "cms"
+  },
+  {
+   "ccn": "330135",
+   "name": "Bon Secours Community Hospital",
+   "city": "Port Jervis",
+   "zip": "12771",
+   "county": "Orange",
+   "type": "Acute Care Hospitals",
+   "system": "WMCHealth",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330136",
+   "name": "Bassett Healthcare",
+   "city": "Cooperstown",
+   "zip": "13326",
+   "county": "Otsego",
+   "type": "Acute Care Hospitals",
+   "system": "Bassett Healthcare Network",
+   "region": "Mohawk Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330140",
+   "name": "St Joseph'S Hospital Health Center",
+   "city": "Syracuse",
+   "zip": "13203",
+   "county": "Onondaga",
+   "type": "Acute Care Hospitals",
+   "system": "St. Joseph's Health (Trinity)",
+   "region": "Central New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330141",
+   "name": "Long Island Community Hospital",
+   "city": "Patchogue",
+   "zip": "11772",
+   "county": "Suffolk",
+   "type": "Acute Care Hospitals",
+   "system": "NYU Langone Health",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330151",
+   "name": "St James Hospital",
+   "city": "Hornell",
+   "zip": "14843",
+   "county": "Steuben",
+   "type": "Acute Care Hospitals",
+   "system": "UR Medicine",
+   "region": "Southern Tier",
+   "source": "cms"
+  },
+  {
+   "ccn": "330153",
+   "name": "Ellis Hospital",
+   "city": "Schenectady",
+   "zip": "12308",
+   "county": "Schenectady",
+   "type": "Acute Care Hospitals",
+   "system": "Ellis Medicine",
+   "region": "Capital Region",
+   "source": "cms"
+  },
+  {
+   "ccn": "330157",
+   "name": "Samaritan Medical Center",
+   "city": "Watertown",
+   "zip": "13601",
+   "county": "Jefferson",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "North Country",
+   "source": "cms"
+  },
+  {
+   "ccn": "330158",
+   "name": "Good Samaritan Hospital Of Suffern",
+   "city": "Suffern",
+   "zip": "10901",
+   "county": "Rockland",
+   "type": "Acute Care Hospitals",
+   "system": "WMCHealth",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330160",
+   "name": "Staten Island University Hospital",
+   "city": "Staten Island",
+   "zip": "10305",
+   "county": "Richmond",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Staten Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330162",
+   "name": "Northern Westchester Hospital",
+   "city": "Mount Kisco",
+   "zip": "10549",
+   "county": "Westchester",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330164",
+   "name": "Highland Hospital",
+   "city": "Rochester",
+   "zip": "14617",
+   "county": "Monroe",
+   "type": "Acute Care Hospitals",
+   "system": "UR Medicine",
+   "region": "Finger Lakes",
+   "source": "cms"
+  },
+  {
+   "ccn": "330167",
+   "name": "NYU Langone Hospital - Long Island",
+   "city": "Mineola",
+   "zip": "11501",
+   "county": "Nassau",
+   "type": "Acute Care Hospitals",
+   "system": "NYU Langone Health",
+   "region": "Long Island",
+   "source": "nysdoh"
+  },
+  {
+   "ccn": "330175",
+   "name": "Guthrie Cortland Regional Medical Center",
+   "city": "Cortland",
+   "zip": "13045",
+   "county": "Cortland",
+   "type": "Acute Care Hospitals",
+   "system": "Guthrie",
+   "region": "Central New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330180",
+   "name": "Samaritan Hospital Of Troy, New York",
+   "city": "Troy",
+   "zip": "12180",
+   "county": "Rensselaer",
+   "type": "Acute Care Hospitals",
+   "system": "St. Peter's Health Partners",
+   "region": "Capital Region",
+   "source": "cms"
+  },
+  {
+   "ccn": "330181",
+   "name": "Northwell Hospital Glen Cove",
+   "city": "Glen Cove",
+   "zip": "11542",
+   "county": "Nassau",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330182",
+   "name": "St Francis Hospital - The Heart Center",
+   "city": "Roslyn",
+   "zip": "11576",
+   "county": "Nassau",
+   "type": "Acute Care Hospitals",
+   "system": "Catholic Health (Long Island)",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330184",
+   "name": "Montefiore New Rochelle Hospital",
+   "city": "New Rochelle",
+   "zip": "10802",
+   "county": "Westchester",
+   "type": "Acute Care Hospitals",
+   "system": "Montefiore",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330185",
+   "name": "John T Mather Memorial Hospital Of Port Jefferson",
+   "city": "Port Jefferson",
+   "zip": "11777",
+   "county": "Suffolk",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330188",
+   "name": "Mount St. Mary'S Hospital & Health Center",
+   "city": "Lewiston",
+   "zip": "14092",
+   "county": "Niagara",
+   "type": "Acute Care Hospitals",
+   "system": "Catholic Health (Buffalo)",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330191",
+   "name": "Glens Falls Hospital",
+   "city": "Glens Falls",
+   "zip": "12801",
+   "county": "Warren",
+   "type": "Acute Care Hospitals",
+   "system": "Albany Med Health System",
+   "region": "Capital Region",
+   "source": "cms"
+  },
+  {
+   "ccn": "330193",
+   "name": "Flushing Hospital Medical Center",
+   "city": "Flushing",
+   "zip": "11355",
+   "county": "Queens",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Queens",
+   "source": "cms"
+  },
+  {
+   "ccn": "330194",
+   "name": "Maimonides Medical Center",
+   "city": "Brooklyn",
+   "zip": "11219",
+   "county": "Kings",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Brooklyn",
+   "source": "cms"
+  },
+  {
+   "ccn": "330195",
+   "name": "Long Island Jewish Medical Center",
+   "city": "New Hyde Park",
+   "zip": "11040",
+   "county": "Nassau",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330196",
+   "name": "South Brooklyn Health",
+   "city": "Brooklyn",
+   "zip": "11235",
+   "county": "Kings",
+   "type": "Acute Care Hospitals",
+   "system": "NYC Health + Hospitals",
+   "region": "Brooklyn",
+   "source": "cms"
+  },
+  {
+   "ccn": "330197",
+   "name": "Canton-Potsdam Hospital",
+   "city": "Potsdam",
+   "zip": "13676",
+   "county": "St. Lawrence",
+   "type": "Acute Care Hospitals",
+   "system": "Rochester Regional Health",
+   "region": "North Country",
+   "source": "cms"
+  },
+  {
+   "ccn": "330198",
+   "name": "Mount Sinai South Nassau",
+   "city": "Oceanside",
+   "zip": "11572",
+   "county": "Nassau",
+   "type": "Acute Care Hospitals",
+   "system": "Mount Sinai Health System",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330199",
+   "name": "Metropolitan Hospital Center",
+   "city": "New York",
+   "zip": "10029",
+   "county": "New York",
+   "type": "Acute Care Hospitals",
+   "system": "NYC Health + Hospitals",
+   "region": "Manhattan",
+   "source": "cms"
+  },
+  {
+   "ccn": "330202",
+   "name": "Kings County Hospital Center",
+   "city": "Brooklyn",
+   "zip": "11203",
+   "county": "Kings",
+   "type": "Acute Care Hospitals",
+   "system": "NYC Health + Hospitals",
+   "region": "Brooklyn",
+   "source": "cms"
+  },
+  {
+   "ccn": "330203",
+   "name": "Crouse Hospital",
+   "city": "Syracuse",
+   "zip": "13210",
+   "county": "Onondaga",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Central New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330204",
+   "name": "Bellevue Hospital Center",
+   "city": "New York",
+   "zip": "10016",
+   "county": "New York",
+   "type": "Acute Care Hospitals",
+   "system": "NYC Health + Hospitals",
+   "region": "Manhattan",
+   "source": "cms"
+  },
+  {
+   "ccn": "330205",
+   "name": "St Anthony Community Hospital",
+   "city": "Warwick",
+   "zip": "10990",
+   "county": "Orange",
+   "type": "Acute Care Hospitals",
+   "system": "WMCHealth",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330208",
+   "name": "St John'S Riverside Hospital",
+   "city": "Yonkers",
+   "zip": "10701",
+   "county": "Westchester",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330214",
+   "name": "Nyu Langone Hospitals",
+   "city": "New York",
+   "zip": "10016",
+   "county": "New York",
+   "type": "Acute Care Hospitals",
+   "system": "NYU Langone Health",
+   "region": "Manhattan",
+   "source": "cms"
+  },
+  {
+   "ccn": "330215",
+   "name": "Rome Memorial Hospital, Inc",
+   "city": "Rome",
+   "zip": "13440",
+   "county": "Oneida",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Mohawk Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330218",
+   "name": "Oswego Hospital",
+   "city": "Oswego",
+   "zip": "13069",
+   "county": "Oswego",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Central New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330219",
+   "name": "Erie County Medical Center",
+   "city": "Buffalo",
+   "zip": "14215",
+   "county": "Erie",
+   "type": "Acute Care Hospitals",
+   "system": "Erie County Medical Center",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330221",
+   "name": "Wyckoff Heights Medical Center",
+   "city": "Brooklyn",
+   "zip": "11237",
+   "county": "Kings",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Brooklyn",
+   "source": "cms"
+  },
+  {
+   "ccn": "330222",
+   "name": "Saratoga Hospital",
+   "city": "Saratoga Springs",
+   "zip": "12866",
+   "county": "Saratoga",
+   "type": "Acute Care Hospitals",
+   "system": "Albany Med Health System",
+   "region": "Capital Region",
+   "source": "cms"
+  },
+  {
+   "ccn": "330224",
+   "name": "Healthalliance Hospital Marys Avenue Campus",
+   "city": "Kingston",
+   "zip": "12401",
+   "county": "Ulster",
+   "type": "Acute Care Hospitals",
+   "system": "WMCHealth",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330226",
+   "name": "Unity Hospital",
+   "city": "Rochester",
+   "zip": "14626",
+   "county": "Monroe",
+   "type": "Acute Care Hospitals",
+   "system": "Rochester Regional Health",
+   "region": "Finger Lakes",
+   "source": "cms"
+  },
+  {
+   "ccn": "330229",
+   "name": "Brooks-Tlc Hospital System, Inc",
+   "city": "Dunkirk",
+   "zip": "14048",
+   "county": "Chautauqua",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330231",
+   "name": "Queens Hospital Center",
+   "city": "Jamaica",
+   "zip": "11432",
+   "county": "Queens",
+   "type": "Acute Care Hospitals",
+   "system": "NYC Health + Hospitals",
+   "region": "Queens",
+   "source": "cms"
+  },
+  {
+   "ccn": "330233",
+   "name": "Brookdale Hospital Medical Center",
+   "city": "Brooklyn",
+   "zip": "11212",
+   "county": "Kings",
+   "type": "Acute Care Hospitals",
+   "system": "One Brooklyn Health",
+   "region": "Brooklyn",
+   "source": "cms"
+  },
+  {
+   "ccn": "330234",
+   "name": "Westchester Medical Center",
+   "city": "Valhalla",
+   "zip": "10595",
+   "county": "Westchester",
+   "type": "Acute Care Hospitals",
+   "system": "WMCHealth",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330235",
+   "name": "Auburn Community Hospital",
+   "city": "Auburn",
+   "zip": "13021",
+   "county": "Cayuga",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Central New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330236",
+   "name": "NewYork-Presbyterian Brooklyn Methodist Hospital",
+   "city": "Brooklyn",
+   "zip": "11215",
+   "county": "Kings",
+   "type": "Acute Care Hospitals",
+   "system": "NewYork-Presbyterian",
+   "region": "Brooklyn",
+   "source": "nysdoh"
+  },
+  {
+   "ccn": "330238",
+   "name": "Nicholas H Noyes Memorial Hospital",
+   "city": "Dansville",
+   "zip": "14437",
+   "county": "Livingston",
+   "type": "Acute Care Hospitals",
+   "system": "UR Medicine",
+   "region": "Finger Lakes",
+   "source": "cms"
+  },
+  {
+   "ccn": "330239",
+   "name": "Upmc Chautauqua At Wca",
+   "city": "Jamestown",
+   "zip": "14701",
+   "county": "Chautauqua",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330240",
+   "name": "Harlem Hospital Center",
+   "city": "New York",
+   "zip": "10037",
+   "county": "New York",
+   "type": "Acute Care Hospitals",
+   "system": "NYC Health + Hospitals",
+   "region": "Manhattan",
+   "source": "cms"
+  },
+  {
+   "ccn": "330241",
+   "name": "University Hospital S U N Y Health Science Center",
+   "city": "Syracuse",
+   "zip": "13210",
+   "county": "Onondaga",
+   "type": "Acute Care Hospitals",
+   "system": "SUNY Upstate",
+   "region": "Central New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330250",
+   "name": "The University Of Vermont Health Network - Champl",
+   "city": "Plattsburgh",
+   "zip": "12901",
+   "county": "Clinton",
+   "type": "Acute Care Hospitals",
+   "system": "University of Vermont Health Network",
+   "region": "North Country",
+   "source": "cms"
+  },
+  {
+   "ccn": "330259",
+   "name": "Mercy Medical Center",
+   "city": "Rockville Centre",
+   "zip": "11571",
+   "county": "Nassau",
+   "type": "Acute Care Hospitals",
+   "system": "Catholic Health (Long Island)",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330261",
+   "name": "Phelps Hospital",
+   "city": "Sleepy Hollow",
+   "zip": "10591",
+   "county": "Westchester",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330264",
+   "name": "Montefiore St Luke'S Cornwall",
+   "city": "Newburgh",
+   "zip": "12550",
+   "county": "Orange",
+   "type": "Acute Care Hospitals",
+   "system": "Montefiore",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330265",
+   "name": "Clifton Springs Hospital And Clinic",
+   "city": "Clifton Springs",
+   "zip": "14432",
+   "county": "Ontario",
+   "type": "Acute Care Hospitals",
+   "system": "Rochester Regional Health",
+   "region": "Finger Lakes",
+   "source": "cms"
+  },
+  {
+   "ccn": "330267",
+   "name": "Hudson Valley Hospital Center",
+   "city": "Cortlandt Manor",
+   "zip": "10567",
+   "county": "Westchester",
+   "type": "Acute Care Hospitals",
+   "system": "NewYork-Presbyterian",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330273",
+   "name": "Putnam Hospital Center",
+   "city": "Carmel",
+   "zip": "10512",
+   "county": "Putnam",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330276",
+   "name": "Nathan Littauer Hospital",
+   "city": "Gloversville",
+   "zip": "12078",
+   "county": "Fulton",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Mohawk Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330277",
+   "name": "Corning Hospital",
+   "city": "Corning",
+   "zip": "14830",
+   "county": "Steuben",
+   "type": "Acute Care Hospitals",
+   "system": "Guthrie",
+   "region": "Southern Tier",
+   "source": "cms"
+  },
+  {
+   "ccn": "330279",
+   "name": "Mercy Hospital Of Buffalo",
+   "city": "Buffalo",
+   "zip": "14220",
+   "county": "Erie",
+   "type": "Acute Care Hospitals",
+   "system": "Catholic Health (Buffalo)",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "330285",
+   "name": "Strong Memorial Hospital",
+   "city": "Rochester",
+   "zip": "14642",
+   "county": "Monroe",
+   "type": "Acute Care Hospitals",
+   "system": "UR Medicine",
+   "region": "Finger Lakes",
+   "source": "cms"
+  },
+  {
+   "ccn": "330286",
+   "name": "Good Samaritan Hospital Medical Center",
+   "city": "West Islip",
+   "zip": "11795",
+   "county": "Suffolk",
+   "type": "Acute Care Hospitals",
+   "system": "Catholic Health (Long Island)",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330304",
+   "name": "White Plains Hospital Center",
+   "city": "White Plains",
+   "zip": "10601",
+   "county": "Westchester",
+   "type": "Acute Care Hospitals",
+   "system": "Montefiore",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330306",
+   "name": "NYU Langone Hospital - Brooklyn",
+   "city": "Brooklyn",
+   "zip": "11220",
+   "county": "Kings",
+   "type": "Acute Care Hospitals",
+   "system": "NYU Langone Health",
+   "region": "Brooklyn",
+   "source": "nysdoh"
+  },
+  {
+   "ccn": "330307",
+   "name": "Cayuga Medical Center At Ithaca",
+   "city": "Ithaca",
+   "zip": "14850",
+   "county": "Tompkins",
+   "type": "Acute Care Hospitals",
+   "system": "Cayuga Health",
+   "region": "Southern Tier",
+   "source": "cms"
+  },
+  {
+   "ccn": "330331",
+   "name": "Plainview Hospital",
+   "city": "Plainview",
+   "zip": "11803",
+   "county": "Nassau",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330332",
+   "name": "Chsli St Joseph Hospital",
+   "city": "Bethpage",
+   "zip": "11714",
+   "county": "Nassau",
+   "type": "Acute Care Hospitals",
+   "system": "Catholic Health (Long Island)",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330340",
+   "name": "Stony Brook Southampton Hospital",
+   "city": "Southampton",
+   "zip": "11968",
+   "county": "Suffolk",
+   "type": "Acute Care Hospitals",
+   "system": "Stony Brook Medicine",
+   "region": "Long Island",
+   "source": "nysdoh"
+  },
+  {
+   "ccn": "330350",
+   "name": "Suny/Downstate University Hospital Of Brooklyn",
+   "city": "Brooklyn",
+   "zip": "11203",
+   "county": "Kings",
+   "type": "Acute Care Hospitals",
+   "system": "SUNY Downstate",
+   "region": "Brooklyn",
+   "source": "cms"
+  },
+  {
+   "ccn": "330353",
+   "name": "Long Island Jewish Forest Hills",
+   "city": "Forest Hills",
+   "zip": "11375",
+   "county": "Queens",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Queens",
+   "source": "nysdoh"
+  },
+  {
+   "ccn": "330372",
+   "name": "Long Island Jewish Valley Stream",
+   "city": "Valley Stream",
+   "zip": "11580",
+   "county": "Nassau",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Long Island",
+   "source": "nysdoh"
+  },
+  {
+   "ccn": "330386",
+   "name": "Garnet Health Medical Center Catskills",
+   "city": "Harris",
+   "zip": "12742",
+   "county": "Sullivan",
+   "type": "Acute Care Hospitals",
+   "system": "Garnet Health",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "330393",
+   "name": "Suny/Stony Brook University Hospital",
+   "city": "Stony Brook",
+   "zip": "11794",
+   "county": "Suffolk",
+   "type": "Acute Care Hospitals",
+   "system": "Stony Brook Medicine",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330394",
+   "name": "United Health Services Hospitals, Inc",
+   "city": "Binghamton",
+   "zip": "13903",
+   "county": "Broome",
+   "type": "Acute Care Hospitals",
+   "system": "United Health Services",
+   "region": "Southern Tier",
+   "source": "cms"
+  },
+  {
+   "ccn": "330395",
+   "name": "St John'S Episcopal Hospital At South Shore",
+   "city": "Far Rockaway",
+   "zip": "11691",
+   "county": "Queens",
+   "type": "Acute Care Hospitals",
+   "system": "",
+   "region": "Queens",
+   "source": "cms"
+  },
+  {
+   "ccn": "330396",
+   "name": "Woodhull Medical & Mental Health Center",
+   "city": "Brooklyn",
+   "zip": "11206",
+   "county": "Kings",
+   "type": "Acute Care Hospitals",
+   "system": "NYC Health + Hospitals",
+   "region": "Brooklyn",
+   "source": "cms"
+  },
+  {
+   "ccn": "330397",
+   "name": "Interfaith Medical Center",
+   "city": "Brooklyn",
+   "zip": "11213",
+   "county": "Kings",
+   "type": "Acute Care Hospitals",
+   "system": "One Brooklyn Health",
+   "region": "Brooklyn",
+   "source": "nysdoh"
+  },
+  {
+   "ccn": "330398",
+   "name": "Syosset Hospital",
+   "city": "Syosset",
+   "zip": "11791",
+   "county": "Nassau",
+   "type": "Acute Care Hospitals",
+   "system": "Northwell Health",
+   "region": "Long Island",
+   "source": "nysdoh"
+  },
+  {
+   "ccn": "330399",
+   "name": "St Barnabas Hospital",
+   "city": "Bronx",
+   "zip": "10457",
+   "county": "Bronx",
+   "type": "Acute Care Hospitals",
+   "system": "SBH Health System",
+   "region": "Bronx",
+   "source": "cms"
+  },
+  {
+   "ccn": "330401",
+   "name": "St Catherine Of Siena Hospital",
+   "city": "Smithtown",
+   "zip": "11787",
+   "county": "Suffolk",
+   "type": "Acute Care Hospitals",
+   "system": "Catholic Health (Long Island)",
+   "region": "Long Island",
+   "source": "cms"
+  },
+  {
+   "ccn": "330799",
+   "name": "Clifton-Fine Hospital",
+   "city": "Star Lake",
+   "zip": "13690",
+   "county": "St. Lawrence",
+   "type": "Rural Emergency Hospital",
+   "system": "",
+   "region": "North Country",
+   "source": "cms"
+  },
+  {
+   "ccn": "330800",
+   "name": "Ira Davenport Memorial Hospital",
+   "city": "Bath",
+   "zip": "14810",
+   "county": "Steuben",
+   "type": "Rural Emergency Hospital",
+   "system": "Arnot Health",
+   "region": "Southern Tier",
+   "source": "cms"
+  },
+  {
+   "ccn": "330801",
+   "name": "Westfield Memorial Hospital, Inc",
+   "city": "Westfield",
+   "zip": "14787",
+   "county": "Chautauqua",
+   "type": "Rural Emergency Hospital",
+   "system": "",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "331301",
+   "name": "Cuba Memorial Hospital, Inc",
+   "city": "Cuba",
+   "zip": "14727",
+   "county": "Allegany",
+   "type": "Critical Access Hospitals",
+   "system": "",
+   "region": "Western New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "331302",
+   "name": "Elizabethtown Community Hospital",
+   "city": "Elizabethtown",
+   "zip": "12932",
+   "county": "Essex",
+   "type": "Critical Access Hospitals",
+   "system": "",
+   "region": "North Country",
+   "source": "cms"
+  },
+  {
+   "ccn": "331303",
+   "name": "Garnet Health Medical Center Catskills",
+   "city": "Callicoon",
+   "zip": "12723",
+   "county": "Sullivan",
+   "type": "Critical Access Hospitals",
+   "system": "Garnet Health",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "331304",
+   "name": "Margaretville Memorial Hospital",
+   "city": "Margaretville",
+   "zip": "12455",
+   "county": "Delaware",
+   "type": "Critical Access Hospitals",
+   "system": "WMCHealth",
+   "region": "Southern Tier",
+   "source": "cms"
+  },
+  {
+   "ccn": "331305",
+   "name": "O'Connor Hospital",
+   "city": "Delhi",
+   "zip": "13753",
+   "county": "Delaware",
+   "type": "Critical Access Hospitals",
+   "system": "Bassett Healthcare Network",
+   "region": "Southern Tier",
+   "source": "cms"
+  },
+  {
+   "ccn": "331309",
+   "name": "River Hospital Clinics",
+   "city": "Alexandria Bay",
+   "zip": "13607",
+   "county": "Jefferson",
+   "type": "Critical Access Hospitals",
+   "system": "",
+   "region": "North Country",
+   "source": "cms"
+  },
+  {
+   "ccn": "331310",
+   "name": "Ellenville Regional Hospital",
+   "city": "Ellenville",
+   "zip": "12428",
+   "county": "Ulster",
+   "type": "Critical Access Hospitals",
+   "system": "",
+   "region": "Hudson Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "331311",
+   "name": "Little Falls Hospital",
+   "city": "Little Falls",
+   "zip": "13365",
+   "county": "Herkimer",
+   "type": "Critical Access Hospitals",
+   "system": "Bassett Healthcare Network",
+   "region": "Mohawk Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "331312",
+   "name": "Delaware Valley Hospital, Inc",
+   "city": "Walton",
+   "zip": "13856",
+   "county": "Delaware",
+   "type": "Critical Access Hospitals",
+   "system": "United Health Services",
+   "region": "Southern Tier",
+   "source": "cms"
+  },
+  {
+   "ccn": "331313",
+   "name": "Schuyler Hospital",
+   "city": "Montour Falls",
+   "zip": "14865",
+   "county": "Schuyler",
+   "type": "Critical Access Hospitals",
+   "system": "Cayuga Health",
+   "region": "Southern Tier",
+   "source": "cms"
+  },
+  {
+   "ccn": "331314",
+   "name": "Soldiers And Sailors Memorial Hospital Of Yates",
+   "city": "Penn Yan",
+   "zip": "14527",
+   "county": "Yates",
+   "type": "Critical Access Hospitals",
+   "system": "UR Medicine",
+   "region": "Finger Lakes",
+   "source": "cms"
+  },
+  {
+   "ccn": "331315",
+   "name": "Gouverneur Hospital",
+   "city": "Gouverneur",
+   "zip": "13642",
+   "county": "St. Lawrence",
+   "type": "Critical Access Hospitals",
+   "system": "Rochester Regional Health",
+   "region": "North Country",
+   "source": "cms"
+  },
+  {
+   "ccn": "331316",
+   "name": "Community Memorial Hospital, Inc",
+   "city": "Hamilton",
+   "zip": "13346",
+   "county": "Madison",
+   "type": "Critical Access Hospitals",
+   "system": "",
+   "region": "Central New York",
+   "source": "cms"
+  },
+  {
+   "ccn": "331317",
+   "name": "Lewis County General Hospital",
+   "city": "Lowville",
+   "zip": "13367",
+   "county": "Lewis",
+   "type": "Critical Access Hospitals",
+   "system": "",
+   "region": "North Country",
+   "source": "cms"
+  },
+  {
+   "ccn": "331318",
+   "name": "Carthage Area Hospital, Inc",
+   "city": "Carthage",
+   "zip": "13619",
+   "county": "Jefferson",
+   "type": "Critical Access Hospitals",
+   "system": "",
+   "region": "North Country",
+   "source": "cms"
+  },
+  {
+   "ccn": "331319",
+   "name": "Medina Memorial Hospital",
+   "city": "Medina",
+   "zip": "14103",
+   "county": "Orleans",
+   "type": "Critical Access Hospitals",
+   "system": "",
+   "region": "Finger Lakes",
+   "source": "cms"
+  },
+  {
+   "ccn": "331320",
+   "name": "Cobleskill Regional Hospital",
+   "city": "Cobleskill",
+   "zip": "12043",
+   "county": "Schoharie",
+   "type": "Critical Access Hospitals",
+   "system": "Bassett Healthcare Network",
+   "region": "Mohawk Valley",
+   "source": "cms"
+  },
+  {
+   "ccn": "331321",
+   "name": "The University Of Vermont Health Network-Alice Hy",
+   "city": "Malone",
+   "zip": "12953",
+   "county": "Franklin",
+   "type": "Critical Access Hospitals",
+   "system": "University of Vermont Health Network",
+   "region": "North Country",
+   "source": "cms"
+  },
+  {
+   "ccn": "331322",
+   "name": "Slhs Massena, Inc",
+   "city": "Massena",
+   "zip": "13662",
+   "county": "St. Lawrence",
+   "type": "Critical Access Hospitals",
+   "system": "Rochester Regional Health",
+   "region": "North Country",
+   "source": "cms"
+  },
+  {
+   "ccn": "331323",
+   "name": "Wyoming County",
+   "city": "Warsaw",
+   "zip": "14569",
+   "county": "Wyoming",
+   "type": "Critical Access Hospitals",
+   "system": "",
+   "region": "Finger Lakes",
+   "source": "cms"
+  },
+  {
+   "ccn": "331324",
+   "name": "Carthage Area Hospital, Inc",
+   "city": "Ogdensburg",
+   "zip": "13669",
+   "county": "St. Lawrence",
+   "type": "Critical Access Hospitals",
+   "system": "",
+   "region": "North Country",
+   "source": "cms"
+  }
+ ]
+}
