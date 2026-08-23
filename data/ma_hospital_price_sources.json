@@ -73,7 +73,7 @@
       "system": "Merrimack Health",
       "region": "Merrimack Valley",
       "city": "Lawrence",
-      "status": "MRF_FOUND",
+      "status": "SHARED_SYSTEM_MRF",
       "format": "csv",
       "mrf_url": "https://www.mhlawrencehospital.org/getmedia/e6c34e8a-4f60-484a-a120-519d4d00f386/042103586_LawerenceGeneralHospital_standardcharges.csv",
       "transparency_page_url": "https://www.mhlawrencehospital.org/your-visit/billing-and-financial-assistance/price-transparency",
@@ -82,7 +82,7 @@
       "last_updated": "unknown",
       "vendor_name": "",
       "evidence": "https://www.mhlawrencehospital.org/your-visit/billing-and-financial-assistance/price-transparency",
-      "notes": "Merrimack Health (Lawrence General). EIN 042103586. www.lawrencegeneral.org 301-redirects to mhlawrencehospital.org. Filename literally spells 'Lawerence'. Contact PriceTransparency@lawrencegeneral.org."
+      "notes": "Merrimack Health (Lawrence General). EIN 042103586. www.lawrencegeneral.org 301-redirects to mhlawrencehospital.org. Filename literally spells 'Lawerence'. Contact PriceTransparency@lawrencegeneral.org. | Merrimack Health system MRF (EIN 042103586) shared with Holy Family 220080; the system charges are published under Holy Family (51 procedures). Lawrence's duplicate copy removed to avoid double-attribution."
     },
     {
       "ccn": "220011",
