@@ -29,6 +29,7 @@ class Market:
 SUPPORTED_MARKETS: tuple[Market, ...] = (
     Market("NH", "New Hampshire", consumer_visible=True, status="active"),
     Market("MA", "Massachusetts", consumer_visible=True, status="active"),
+    Market("NY", "New York", consumer_visible=False, status="preparing"),
     Market("ME", "Maine", consumer_visible=False, status="preparing"),
     Market("VT", "Vermont", consumer_visible=False, status="preparing"),
     Market("RI", "Rhode Island", consumer_visible=False, status="preparing"),
