@@ -4,10 +4,9 @@
   "retrieval_date": "2026-08-23",
   "denominator": 157,
   "status_counts": {
-   "FOUND": 152,
+   "FOUND": 154,
    "SOURCE_BLOCKED": 2,
-   "INDEX_ONLY": 2,
-   "NO_SOURCE_FOUND": 1
+   "INDEX_ONLY": 1
   },
   "shared_files": {
    "133957095_NYP": [
@@ -2340,15 +2339,15 @@
    "organization": "Independent",
    "region": "Western New York",
    "city": "Westfield",
-   "mrf_url": "",
-   "format": "unknown",
-   "vendor": "",
-   "status": "NO_SOURCE_FOUND",
+   "mrf_url": "https://www.ahn.org/content/dam/ahn/en/dmxahn/documents/patients-visitors/patients/financial-services/hospital-charges/160743222_westfield-memorial-hospital-inc_standardcharges.csv",
+   "format": "csv",
+   "vendor": "self-hosted (AHN)",
+   "status": "FOUND",
    "download_status": "PENDING",
    "ingest_status": "PENDING",
    "publication_status": "UNPUBLISHED",
    "blocker": "",
-   "notes": "",
+   "notes": "Westfield REH = Allegheny Health Network",
    "provenance": "org cms-hpt.txt / price-transparency page (agent-discovered 2026-08-23)"
   },
   {
@@ -2442,15 +2441,15 @@
    "organization": "Independent",
    "region": "North Country",
    "city": "Alexandria Bay",
-   "mrf_url": "",
+   "mrf_url": "https://search.hospitalpriceindex.com/hpi2/machineReadable/RiverHospital/13057",
    "format": "csv",
-   "vendor": "Panacea",
-   "status": "INDEX_ONLY",
+   "vendor": "HospitalPriceIndex",
+   "status": "FOUND",
    "download_status": "PENDING",
    "ingest_status": "PENDING",
    "publication_status": "UNPUBLISHED",
-   "blocker": "River Hospital facility 13057; exact blob unverified",
-   "notes": "River Hospital facility 13057; exact blob unverified",
+   "blocker": "",
+   "notes": "download endpoint serves River Hospital CSV",
    "provenance": "org cms-hpt.txt / price-transparency page (agent-discovered 2026-08-23)"
   },
   {
