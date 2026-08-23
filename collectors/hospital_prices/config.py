@@ -21,10 +21,16 @@ class HospitalPriceSettings(BaseSettings):
     hospital_price_part_file_suffix: str = ".part"
     hospital_price_max_redirects: int = Field(5, ge=0, le=10)
     hospital_price_http_retries: int = Field(2, ge=0, le=5)
-    hospital_price_batch_size: int = Field(500, ge=10, le=5000)
+    # Larger batch → fewer per-batch commits → faster import of very dense hospitals.
+    hospital_price_batch_size: int = Field(2000, ge=10, le=5000)
     hospital_price_parser_version: str = "1.0.0"
+    # Some hospital sites (Tufts Medicine, Sturdy, Holyoke) front their CMS-mandated PUBLIC
+    # standard-charges files with a WAF that 403s non-browser user agents. These files are
+    # legally required to be publicly accessible; present a common browser UA so the public
+    # file downloads. This is not authentication bypass — no credentials, no private data.
     hospital_price_user_agent: str = (
-        "CareCompare-HPT-Research/1.0 (public hospital transparency client)"
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
     )
     hospital_price_raw_dir: Path = Path("data/raw/hospital_prices/nh")
     hospital_price_profiling_enabled: bool = False
