@@ -8,8 +8,8 @@ The consumer hospital directory derives its state dropdown from the
   - "active"     — consumer pricing is live for this state.
   - "preparing"  — data is being ingested/validated; NOT shown to consumers.
 
-Do NOT set MA `consumer_visible=True` until Phase 5 ingestion/validation gates
-pass.
+MA was activated 2026-08-23 after Phase 2 hospital pricing completed its gates
+(46/53 hospitals published; safety PASS; fp-detector CLEAN; NH intact).
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ class Market:
 # Ordered by launch. Extend this list to add states; the API + web adapt.
 SUPPORTED_MARKETS: tuple[Market, ...] = (
     Market("NH", "New Hampshire", consumer_visible=True, status="active"),
-    Market("MA", "Massachusetts", consumer_visible=False, status="preparing"),
+    Market("MA", "Massachusetts", consumer_visible=True, status="active"),
     Market("ME", "Maine", consumer_visible=False, status="preparing"),
     Market("VT", "Vermont", consumer_visible=False, status="preparing"),
     Market("RI", "Rhode Island", consumer_visible=False, status="preparing"),
