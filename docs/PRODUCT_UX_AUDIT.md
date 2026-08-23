@@ -126,20 +126,31 @@ listed so nothing is lost. Ordered by consumer value ÷ risk.
 
 ---
 
-## Deployment
+## Deployment — DONE (2026-08-23)
 
-Web is built and gated. Deploy (owner must be authenticated as `hcao@cao-tech.com`):
+Deployed and production-verified. Web revision **`carevero-beta-web-00052-x8g`**, image
+`us-east4-docker.pkg.dev/carecompare-development/carevero/web:ux-coverage-fix1`, serving 100%.
+
+Canonical procedure (project `carecompare-development`, repo `carevero`, image `web`):
 
 ```bash
-gcloud builds submit --config infrastructure/cloudbuild/web.yaml \
-  --substitutions=_IMAGE_TAG=ux-coverage-fix1 .
-gcloud run services update carevero-beta-web \
-  --image=us-east4-docker.pkg.dev/$PROJECT/carevero/web:ux-coverage-fix1 --region=us-east4
+gcloud builds submit --project=carecompare-development --region=us-east4 \
+  --config infrastructure/cloudbuild/web.yaml \
+  --substitutions=_IMAGE_TAG=ux-coverage-fix1,\
+_API_PUBLIC_URL=https://carevero-beta-api-650406651221.us-east4.run.app,\
+_PUBLIC_APP_URL=https://carevero-beta-web-650406651221.us-east4.run.app .
+gcloud run services update carevero-beta-web --project=carecompare-development --region=us-east4 \
+  --image=us-east4-docker.pkg.dev/carecompare-development/carevero/web:ux-coverage-fix1
 ```
 
-Then production-QA the homepage in all 5 locales: confirm the coverage line reads the multi-state
-sentence with a live procedure count (no "N of 26" ratio), and the expansion card reads
-"Now live in New Hampshire and Massachusetts."
+> **Deploy gotcha (hit and fixed):** the image lives in project `carecompare-development`, repo
+> `carevero`, image `web` — the `_IMAGE_URI` default in `web.yaml`. Do **not** hand-construct
+> `$PROJECT/carevero/web`; a bare `$PROJECT` resolves to `carevero` and Cloud Run returns
+> `PERMISSION_DENIED` on the nonexistent `projects/carevero/repositories/web`.
 
-**Rollback:** copy-only change to the web service; NH and MA price data are untouched and
-independent. Revert the web image to the prior revision if needed.
+**Prod-QA (PASS, all 5 locales):** homepage coverage reads the multi-state sentence with the live
+procedure count (52); the broken "80 of 26 active hospitals" string is gone (0 occurrences).
+Web-image-only deploy — runtime `CARECOMPARE_API_URL` preserved; server `apiGet` unaffected.
+
+**Rollback:** copy-only change; NH and MA price data untouched and independent. Revert to revision
+`carevero-beta-web-00063-tih` if needed.
