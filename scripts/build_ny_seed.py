@@ -53,19 +53,19 @@ DISPOSED = {d["ccn"] for grp in (DISPO_CLOSED, DISPO_MERGED, DISPO_SUPERSEDED, D
 # --- Additions: operating general-acute hospitals CMS Care Compare omits (NYSDOH-confirmed) ---
 # CCN, name, city, zip, county, type, system. Region derived from county.
 ADDITIONS = [
-    {"ccn": "330061", "name": "NewYork-Presbyterian Westchester", "city": "Bronxville", "zip": "10708", "county": "WESTCHESTER", "type": "Acute Care Hospitals", "system": "NewYork-Presbyterian", "ccn_confidence": "moderate (330060/330061 legacy Lawrence ambiguity — verify at MRF time)"},
-    {"ccn": "330064", "name": "NewYork-Presbyterian Lower Manhattan Hospital", "city": "New York", "zip": "10038", "county": "NEW YORK", "type": "Acute Care Hospitals", "system": "NewYork-Presbyterian", "ccn_confidence": "moderate — verify at MRF time"},
-    {"ccn": "330072", "name": "Montefiore Wakefield Campus", "city": "Bronx", "zip": "10466", "county": "BRONX", "type": "Acute Care Hospitals", "system": "Montefiore"},
-    {"ccn": "330088", "name": "Stony Brook Eastern Long Island Hospital", "city": "Greenport", "zip": "11944", "county": "SUFFOLK", "type": "Acute Care Hospitals", "system": "Stony Brook Medicine"},
-    {"ccn": "330108", "name": "St Joseph's Hospital (Elmira)", "city": "Elmira", "zip": "14901", "county": "CHEMUNG", "type": "Acute Care Hospitals", "system": "Arnot Health"},
-    {"ccn": "330167", "name": "NYU Langone Hospital - Long Island", "city": "Mineola", "zip": "11501", "county": "NASSAU", "type": "Acute Care Hospitals", "system": "NYU Langone Health"},
-    {"ccn": "330236", "name": "NewYork-Presbyterian Brooklyn Methodist Hospital", "city": "Brooklyn", "zip": "11215", "county": "KINGS", "type": "Acute Care Hospitals", "system": "NewYork-Presbyterian"},
-    {"ccn": "330306", "name": "NYU Langone Hospital - Brooklyn", "city": "Brooklyn", "zip": "11220", "county": "KINGS", "type": "Acute Care Hospitals", "system": "NYU Langone Health"},
-    {"ccn": "330340", "name": "Stony Brook Southampton Hospital", "city": "Southampton", "zip": "11968", "county": "SUFFOLK", "type": "Acute Care Hospitals", "system": "Stony Brook Medicine"},
-    {"ccn": "330353", "name": "Long Island Jewish Forest Hills", "city": "Forest Hills", "zip": "11375", "county": "QUEENS", "type": "Acute Care Hospitals", "system": "Northwell Health"},
-    {"ccn": "330372", "name": "Long Island Jewish Valley Stream", "city": "Valley Stream", "zip": "11580", "county": "NASSAU", "type": "Acute Care Hospitals", "system": "Northwell Health"},
-    {"ccn": "330397", "name": "Interfaith Medical Center", "city": "Brooklyn", "zip": "11213", "county": "KINGS", "type": "Acute Care Hospitals", "system": "One Brooklyn Health"},
-    {"ccn": "330398", "name": "Syosset Hospital", "city": "Syosset", "zip": "11791", "county": "NASSAU", "type": "Acute Care Hospitals", "system": "Northwell Health"},
+    {"ccn": "330061", "name": "NewYork-Presbyterian Westchester", "address": "55 Palmer Avenue", "city": "Bronxville", "zip": "10708", "county": "WESTCHESTER", "type": "Acute Care Hospitals", "system": "NewYork-Presbyterian", "ccn_confidence": "moderate (330060/330061 legacy Lawrence ambiguity — verify at MRF time)"},
+    {"ccn": "330064", "name": "NewYork-Presbyterian Lower Manhattan Hospital", "address": "170 William Street", "city": "New York", "zip": "10038", "county": "NEW YORK", "type": "Acute Care Hospitals", "system": "NewYork-Presbyterian", "ccn_confidence": "moderate — verify at MRF time"},
+    {"ccn": "330072", "name": "Montefiore Wakefield Campus", "address": "600 East 233rd Street", "city": "Bronx", "zip": "10466", "county": "BRONX", "type": "Acute Care Hospitals", "system": "Montefiore"},
+    {"ccn": "330088", "name": "Stony Brook Eastern Long Island Hospital", "address": "201 Manor Place", "city": "Greenport", "zip": "11944", "county": "SUFFOLK", "type": "Acute Care Hospitals", "system": "Stony Brook Medicine"},
+    {"ccn": "330108", "name": "St Joseph's Hospital (Elmira)", "address": "555 St. Joseph's Boulevard", "city": "Elmira", "zip": "14901", "county": "CHEMUNG", "type": "Acute Care Hospitals", "system": "Arnot Health"},
+    {"ccn": "330167", "name": "NYU Langone Hospital - Long Island", "address": "259 First Street", "city": "Mineola", "zip": "11501", "county": "NASSAU", "type": "Acute Care Hospitals", "system": "NYU Langone Health"},
+    {"ccn": "330236", "name": "NewYork-Presbyterian Brooklyn Methodist Hospital", "address": "506 Sixth Street", "city": "Brooklyn", "zip": "11215", "county": "KINGS", "type": "Acute Care Hospitals", "system": "NewYork-Presbyterian"},
+    {"ccn": "330306", "name": "NYU Langone Hospital - Brooklyn", "address": "150 55th Street", "city": "Brooklyn", "zip": "11220", "county": "KINGS", "type": "Acute Care Hospitals", "system": "NYU Langone Health"},
+    {"ccn": "330340", "name": "Stony Brook Southampton Hospital", "address": "240 Meeting House Lane", "city": "Southampton", "zip": "11968", "county": "SUFFOLK", "type": "Acute Care Hospitals", "system": "Stony Brook Medicine"},
+    {"ccn": "330353", "name": "Long Island Jewish Forest Hills", "address": "102-01 66th Road", "city": "Forest Hills", "zip": "11375", "county": "QUEENS", "type": "Acute Care Hospitals", "system": "Northwell Health"},
+    {"ccn": "330372", "name": "Long Island Jewish Valley Stream", "address": "900 Franklin Avenue", "city": "Valley Stream", "zip": "11580", "county": "NASSAU", "type": "Acute Care Hospitals", "system": "Northwell Health"},
+    {"ccn": "330397", "name": "Interfaith Medical Center", "address": "1545 Atlantic Avenue", "city": "Brooklyn", "zip": "11213", "county": "KINGS", "type": "Acute Care Hospitals", "system": "One Brooklyn Health"},
+    {"ccn": "330398", "name": "Syosset Hospital", "address": "221 Jericho Turnpike", "city": "Syosset", "zip": "11791", "county": "NASSAU", "type": "Acute Care Hospitals", "system": "Northwell Health"},
 ]
 
 # --- System map for CMS-sourced hospitals (CCN -> system); "" = independent/unassigned ---------
@@ -154,6 +154,7 @@ def main() -> int:
         hospitals.append({
             "ccn": ccn,
             "name": h["facility_name"].title().replace("  ", " ").strip(),
+            "address": h["address"].title() if h.get("address") else "",
             "city": h["citytown"].title(),
             "zip": h["zip_code"],
             "county": h["countyparish"].title(),
@@ -165,7 +166,8 @@ def main() -> int:
     for a in ADDITIONS:
         region = resolve_region(TAX, a["county"], a["city"])
         rec = {
-            "ccn": a["ccn"], "name": a["name"], "city": a["city"], "zip": a["zip"],
+            "ccn": a["ccn"], "name": a["name"], "address": a.get("address", ""),
+            "city": a["city"], "zip": a["zip"],
             "county": a["county"].title(), "type": a["type"], "system": a.get("system", ""),
             "region": region, "source": "nysdoh",
         }
