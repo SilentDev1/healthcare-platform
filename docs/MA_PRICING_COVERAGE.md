@@ -1,7 +1,7 @@
 # Massachusetts Pricing Coverage Dashboard — Phase 2 (FINAL)
 
 **53/53 hospitals accounted for. 46 published with verified prices; 7 precisely dispositioned.**
-NH untouched throughout. MA consumer-visibility flip staged (`markets.py`) — owner-confirm before deploy.
+NH untouched throughout. **MA consumer-visibility ACTIVATED** (owner-confirmed, deployed 2026-08-23) — MA is live in the consumer state picker (API `states[]` = NH+MA; web reads it dynamically).
 
 ## Headline
 
