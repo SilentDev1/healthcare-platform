@@ -412,8 +412,18 @@ def download_price_source(
             # Check for resumable partial download
             resume_bytes = 0
             digest = hashlib.sha256()
+            # Browser-like headers so WAF/CDN-fronted (Akamai, etc.) PUBLIC standard-charges
+            # files download. Referer/Sec-Fetch mimic a same-origin navigation from the file's
+            # own host, which some hospital CDNs (e.g. Sturdy) require. Legally-public data; no auth.
+            _origin = f"{parsed.scheme}://{parsed.netloc}"
             request_headers: dict[str, str] = {
                 "User-Agent": settings.hospital_price_user_agent,
+                "Accept": "text/csv,application/json,application/zip,*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Referer": _origin + "/",
+                "Sec-Fetch-Site": "same-origin",
+                "Sec-Fetch-Mode": "navigate",
+                "Sec-Fetch-Dest": "document",
             }
             saved = _load_part_meta(meta_path)
             if saved and part_path.exists():
