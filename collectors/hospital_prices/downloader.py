@@ -414,7 +414,7 @@ def download_price_source(
             digest = hashlib.sha256()
             # Browser-like headers so WAF/CDN-fronted (Akamai, etc.) PUBLIC standard-charges
             # files download. Referer/Sec-Fetch mimic a same-origin navigation from the file's
-            # own host, which some hospital CDNs (e.g. Sturdy) require. Legally-public data; no auth.
+            # own host, which some hospital CDNs (e.g. Sturdy) require. Legally public; no auth.
             _origin = f"{parsed.scheme}://{parsed.netloc}"
             request_headers: dict[str, str] = {
                 "User-Agent": settings.hospital_price_user_agent,
