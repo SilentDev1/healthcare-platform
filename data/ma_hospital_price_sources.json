@@ -56,7 +56,7 @@
       "system": "Sturdy Health",
       "region": "Southeastern MA / South Coast",
       "city": "Attleboro",
-      "status": "MRF_FOUND",
+      "status": "SOURCE_BLOCKED",
       "format": "csv",
       "mrf_url": "https://www.sturdyhealth.org/app/files/public/1c200832-86f8-4295-b5a2-038937879590/04-2768252_Sturdy-Memorial-Hospital_standardcharges.csv",
       "transparency_page_url": "https://www.sturdyhealth.org/patients-visitors/billing-insurance/",
@@ -65,7 +65,7 @@
       "last_updated": "unknown",
       "vendor_name": "",
       "evidence": "https://www.sturdyhealth.org/patients-visitors/billing-insurance/",
-      "notes": "Rebranded Sturdy Health (sturdymemorial.org -> sturdyhealth.org). Site WAF returns HTTP 403 to automated fetch of /cms-hpt.txt and /.well-known/cms-hpt.txt, so the direct MRF URL could not be verified; not fabricating. MRF is expected to exist. EIN not confirmed. | URL discovered 2026-08-23 via cms-hpt.txt (browser UA). EIN 04-2768252 (embedded in filename). Site is behind Akamai WAF (edgesuite.net 'Access Denied' to plain clients; legacy www.sturdymemorial.org also 403s and now redirects to sturdyhealth.org). cms-hpt.txt cleared the WAF with browser headers, but the /app/files/public/ download path additionally required Sec-Fetch-Site: same-origin AND a Referer of the billing-insurance source page to return 200 (otherwise 403). Note the mrf-url in cms-hpt.txt has a trailing space that must be stripped. No /.well-known/cms-hpt.txt (that path 403s). READ-ONLY: verified via headers only, file not saved."
+      "notes": "Rebranded Sturdy Health (sturdymemorial.org -> sturdyhealth.org). Site WAF returns HTTP 403 to automated fetch of /cms-hpt.txt and /.well-known/cms-hpt.txt, so the direct MRF URL could not be verified; not fabricating. MRF is expected to exist. EIN not confirmed. | URL discovered 2026-08-23 via cms-hpt.txt (browser UA). EIN 04-2768252 (embedded in filename). Site is behind Akamai WAF (edgesuite.net 'Access Denied' to plain clients; legacy www.sturdymemorial.org also 403s and now redirects to sturdyhealth.org). cms-hpt.txt cleared the WAF with browser headers, but the /app/files/public/ download path additionally required Sec-Fetch-Site: same-origin AND a Referer of the billing-insurance source page to return 200 (otherwise 403). Note the mrf-url in cms-hpt.txt has a trailing space that must be stripped. No /.well-known/cms-hpt.txt (that path 403s). READ-ONLY: verified via headers only, file not saved. | URL known but sturdyhealth.org Akamai bot-manager 403s httpx even with browser UA+Referer+Sec-Fetch (needs real browser/JS). SOURCE_BLOCKED."
     },
     {
       "ccn": "220010",
@@ -201,7 +201,7 @@
       "last_updated": "~2025-10 (per page description; unverified)",
       "vendor_name": "",
       "evidence": "https://www.holyokehealth.com/patients-visitors/cost-for-care/",
-      "notes": "Rebranded Holyoke Health (holyokehealth.com). Site WAF returns HTTP 403 to automated fetch of /cms-hpt.txt, /.well-known/cms-hpt.txt, and the Cost for Care page, so the direct MRF URL could not be captured; not fabricating. Cost for Care page describes an annually-updated CSV MRF; EIN not confirmed. | URL discovered 2026-08-23 via cms-hpt.txt (browser UA). EIN 22-2520073 (embedded in filename). Site is on WordPress behind an Automattic/nginx CDN; a plain WebFetch client is 403'd but a normal browser User-Agent alone cleared it for both the index and the download. Apex holyokehealth.com 301-redirects to www. /.well-known/cms-hpt.txt returns a 404 WordPress page (not used). READ-ONLY: verified via HEAD, file not saved."
+      "notes": "Rebranded Holyoke Health (holyokehealth.com). Site WAF returns HTTP 403 to automated fetch of /cms-hpt.txt, /.well-known/cms-hpt.txt, and the Cost for Care page, so the direct MRF URL could not be captured; not fabricating. Cost for Care page describes an annually-updated CSV MRF; EIN not confirmed. | URL discovered 2026-08-23 via cms-hpt.txt (browser UA). EIN 22-2520073 (embedded in filename). Site is on WordPress behind an Automattic/nginx CDN; a plain WebFetch client is 403'd but a normal browser User-Agent alone cleared it for both the index and the download. Apex holyokehealth.com 301-redirects to www. /.well-known/cms-hpt.txt returns a 404 WordPress page (not used). READ-ONLY: verified via HEAD, file not saved. | IMPORTED 2026-08-23 (browser UA cleared holyokehealth.com WordPress CDN)."
     },
     {
       "ccn": "220029",
