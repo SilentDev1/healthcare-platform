@@ -24,6 +24,7 @@ COPY data/ma_hospital_price_sources.json data/ma_hospital_price_sources.json
 COPY data/ny_hospitals_seed.json data/ny_hospitals_seed.json
 COPY data/ny_cms_hospital_snapshot.json data/ny_cms_hospital_snapshot.json
 COPY data/ny_region_taxonomy.json data/ny_region_taxonomy.json
+COPY data/ny_pricing_acquisition_ledger.json data/ny_pricing_acquisition_ledger.json
 RUN useradd --create-home --uid 10001 carevero && mkdir -p /data/downloads && chown -R carevero:carevero /app /data
 USER carevero
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1 HOSPITAL_PRICE_RAW_DIR=/data/downloads/hospital-prices/US/NH
