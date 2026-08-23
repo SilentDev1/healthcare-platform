@@ -33,8 +33,13 @@ describe("Home", () => {
     expect(
       screen.getByText(/Carevero is expanding across New England/),
     ).toBeInTheDocument();
-    // Transparent current coverage still surfaced below the hero.
-    expect(screen.getByText(/12 of 26 active hospitals/)).toBeInTheDocument();
+    // Transparent current coverage still surfaced below the hero: multi-state,
+    // published-procedure count (no stale hospital ratio now that MA is live).
+    expect(
+      screen.getByText(
+        /Live in New Hampshire and Massachusetts, with published prices for 48 procedures/,
+      ),
+    ).toBeInTheDocument();
     expect(
       screen.getByText(/Missing data stays visibly missing/),
     ).toBeInTheDocument();

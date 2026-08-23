@@ -276,7 +276,7 @@ const en = {
   homeDataBody:
     "Hospital files provide pricing. CMS Care Compare provides applicable quality information. Missing data stays visibly missing.",
   homeCoverageSummary:
-    "Published prices are currently available for {withPrices} of {total} active hospitals in the launch region, covering {procedures} procedures.",
+    "Live in New Hampshire and Massachusetts, with published prices for {procedures} procedures — always shown with their sources and limitations.",
   homeCoverageFallback:
     "Coverage is incomplete and varies by hospital and procedure. Availability is always shown with each result.",
   homeViewCoverageMethodology: "View coverage and methodology",
@@ -1047,7 +1047,7 @@ export const messages: Record<Locale, Messages> = {
     homeDataBody:
       "Los archivos de los hospitales aportan los precios. CMS Care Compare aporta la información de calidad correspondiente. Los datos faltantes se muestran claramente como faltantes.",
     homeCoverageSummary:
-      "Actualmente hay precios publicados de {withPrices} de {total} hospitales activos en la región de lanzamiento, que cubren {procedures} procedimientos.",
+      "Disponible en New Hampshire y Massachusetts, con precios publicados para {procedures} procedimientos, siempre mostrados con sus fuentes y limitaciones.",
     homeCoverageFallback:
       "La cobertura es incompleta y varía según el hospital y el procedimiento. La disponibilidad siempre se muestra con cada resultado.",
     homeViewCoverageMethodology: "Ver cobertura y metodología",
@@ -1716,7 +1716,7 @@ export const messages: Record<Locale, Messages> = {
     homeDataBody:
       "Tệp của bệnh viện cung cấp giá. CMS Care Compare cung cấp thông tin chất lượng liên quan. Dữ liệu còn thiếu vẫn được hiển thị rõ là còn thiếu.",
     homeCoverageSummary:
-      "Hiện có giá công bố cho {withPrices} trong số {total} bệnh viện đang hoạt động ở khu vực ra mắt, bao gồm {procedures} thủ thuật.",
+      "Đã có mặt tại New Hampshire và Massachusetts, với giá công bố cho {procedures} thủ thuật — luôn kèm nguồn và giới hạn.",
     homeCoverageFallback:
       "Phạm vi dữ liệu chưa đầy đủ và thay đổi tùy theo bệnh viện và thủ thuật. Tình trạng có sẵn luôn được hiển thị cùng mỗi kết quả.",
     homeViewCoverageMethodology: "Xem phạm vi dữ liệu và phương pháp",
@@ -2362,7 +2362,7 @@ export const messages: Record<Locale, Messages> = {
     homeDataBody:
       "醫院檔案提供價格。CMS Care Compare 提供相關品質資訊。缺少的資料會明確顯示為缺少。",
     homeCoverageSummary:
-      "目前在啟用地區的 {total} 家運作中醫院中，有 {withPrices} 家提供公布價格，涵蓋 {procedures} 項醫療項目。",
+      "已在新罕布夏州和麥薩諸塞州上線，公布 {procedures} 項醫療項目的價格，並始終附上來源與限制。",
     homeCoverageFallback:
       "資料涵蓋範圍並不完整，且因醫院與醫療項目而異。每筆結果都會顯示是否有價格。",
     homeViewCoverageMethodology: "查看資料涵蓋範圍與方法",
@@ -2975,7 +2975,7 @@ export const messages: Record<Locale, Messages> = {
     homeDataBody:
       "医院文件提供价格。CMS Care Compare 提供相关质量信息。缺少的数据会明确显示为缺少。",
     homeCoverageSummary:
-      "目前在启用地区的 {total} 家运作中医院中，有 {withPrices} 家提供公布价格，涵盖 {procedures} 项医疗项目。",
+      "已在新罕布什尔州和马萨诸塞州上线，公布 {procedures} 项医疗项目的价格，并始终附上来源与限制。",
     homeCoverageFallback:
       "数据涵盖范围并不完整，且因医院与医疗项目而异。每条结果都会显示是否有价格。",
     homeViewCoverageMethodology: "查看数据涵盖范围与方法",

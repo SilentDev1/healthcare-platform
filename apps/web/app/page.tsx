@@ -170,13 +170,10 @@ export default async function Home() {
         </div>
         <CoverageNotice messages={t}>
           {coverage
-            ? t.homeCoverageSummary
-                .replace(
-                  "{withPrices}",
-                  String(coverage.facilities_with_publishable_prices),
-                )
-                .replace("{total}", String(coverage.nh_facilities))
-                .replace("{procedures}", String(coverage.publishable_procedures))
+            ? t.homeCoverageSummary.replace(
+                "{procedures}",
+                String(coverage.publishable_procedures),
+              )
             : t.homeCoverageFallback}
         </CoverageNotice>
         <Link

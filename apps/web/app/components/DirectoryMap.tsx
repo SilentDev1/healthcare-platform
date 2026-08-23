@@ -50,6 +50,10 @@ export function DirectoryMap({
   const [features, setFeatures] = useState<MapFeature[]>([]);
   const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
 
+  // Canonical async-fetch-in-effect with a cancel guard: the setState calls run
+  // in async callbacks after filters change, not synchronously during the effect,
+  // so the render-loop the rule guards against cannot occur here.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const query = new URLSearchParams({ state });
     if (capability) query.set("capability", capability);
@@ -68,6 +72,7 @@ export function DirectoryMap({
       cancelled = true;
     };
   }, [state, capability, region]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (status === "error") {
     return <p className="pd-map-msg error">{t.mapUnavailable}</p>;

@@ -24,7 +24,7 @@ export const homeMessages: Record<Locale, HomeStrings> = {
     eyebrow: "Healthcare prices, made clear",
     expandTitle: "Carevero is expanding across New England",
     expandBody:
-      "We’re starting in New Hampshire and bringing verified price data to more states soon.",
+      "Now live in New Hampshire and Massachusetts, with more of New England coming soon.",
     statusLive: "Live",
     statusNext: "Next",
     mapAria:
@@ -34,7 +34,7 @@ export const homeMessages: Record<Locale, HomeStrings> = {
     eyebrow: "Precios de salud, con claridad",
     expandTitle: "Carevero se expande por Nueva Inglaterra",
     expandBody:
-      "Comenzamos en New Hampshire y pronto llevaremos datos de precios verificados a más estados.",
+      "Ahora disponible en New Hampshire y Massachusetts; pronto llegaremos a más de Nueva Inglaterra.",
     statusLive: "Activo",
     statusNext: "Próximo",
     mapAria:
@@ -44,7 +44,7 @@ export const homeMessages: Record<Locale, HomeStrings> = {
     eyebrow: "Giá dịch vụ y tế, rõ ràng",
     expandTitle: "Carevero đang mở rộng khắp New England",
     expandBody:
-      "Chúng tôi bắt đầu từ New Hampshire và sẽ sớm mang dữ liệu giá đã xác minh đến nhiều tiểu bang hơn.",
+      "Hiện đã có tại New Hampshire và Massachusetts; sẽ sớm mở rộng khắp New England.",
     statusLive: "Đang hoạt động",
     statusNext: "Sắp tới",
     mapAria:
@@ -53,7 +53,7 @@ export const homeMessages: Record<Locale, HomeStrings> = {
   "zh-CN": {
     eyebrow: "医疗价格，一目了然",
     expandTitle: "Carevero 正在向新英格兰扩展",
-    expandBody: "我们从新罕布什尔州起步，很快会将已验证的价格数据带到更多州。",
+    expandBody: "现已在新罕布什尔州和马萨诸塞州上线，很快会覆盖更多新英格兰地区。",
     statusLive: "已上线",
     statusNext: "即将",
     mapAria:
@@ -62,7 +62,7 @@ export const homeMessages: Record<Locale, HomeStrings> = {
   "zh-TW": {
     eyebrow: "醫療價格，一目了然",
     expandTitle: "Carevero 正在向新英格蘭擴展",
-    expandBody: "我們從新罕布夏州起步，很快會將已驗證的價格資料帶到更多州。",
+    expandBody: "現已在新罕布夏州和麥薩諸塞州上線，很快會覆蓋更多新英格蘭地區。",
     statusLive: "已上線",
     statusNext: "即將",
     mapAria:

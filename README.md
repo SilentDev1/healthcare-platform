@@ -164,6 +164,24 @@ Future consumer accounts, provider products, employer tools, analytics, and comm
 APIs are valid extension paths, but they are not permission to create unused identity,
 billing, authorization, advertising, or microservice infrastructure today.
 
+### Consumer product / UX
+
+Carevero answers one question — *"Where should I go for this service, and what will it cost
+me?"* — as the plain-language layer over verified prices, never another raw-data / MRF viewer.
+The consumer app is honesty-first: prices are labeled *"estimates for comparison, not a quote,"*
+self-pay/cash is a first-class path ("Show cash prices first"), "What the price may include" is
+disclosed, missing prices stay visibly *"not available"* (never `$0`), and no CPT/MRF/chargemaster
+jargon leaks into consumer copy. **UI/UX changes must never weaken data integrity**
+(`ai_modified_prices` stays 0; provenance, billing scope, cash-vs-negotiated distinction, and the
+deterministic pre-LLM medical-safety gate are preserved).
+
+- Full audit + findings + prioritized backlog: [`docs/PRODUCT_UX_AUDIT.md`](docs/PRODUCT_UX_AUDIT.md)
+- Consumer research basis: [`docs/CONSUMER_PRODUCT_RESEARCH.md`](docs/CONSUMER_PRODUCT_RESEARCH.md)
+- Privacy-first analytics spec (not yet implemented): [`docs/PRODUCT_ANALYTICS_PLAN.md`](docs/PRODUCT_ANALYTICS_PLAN.md)
+
+Homepage coverage copy is multi-state and reads live counts from `/api/v1/pricing/coverage`
+(no hardcoded numbers, no stale single-state hospital ratio now that MA is live).
+
 When handing off work, report exactly what changed, what was verified, whether production
 or data state changed, the deployed URLs/revisions if applicable, Git status, and commit
 hashes.
