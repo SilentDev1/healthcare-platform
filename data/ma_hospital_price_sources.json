@@ -379,7 +379,7 @@
       "system": "Tufts Medicine",
       "region": "Merrimack Valley",
       "city": "Lowell",
-      "status": "MRF_FOUND",
+      "status": "SOURCE_BLOCKED",
       "format": "zip",
       "mrf_url": "https://www.tuftsmedicine.org/sites/default/files/2026-03/042103590_lowellgeneralhospital_standardcharges.csv.zip",
       "transparency_page_url": "https://www.tuftsmedicine.org/get-care/cost-estimate",
@@ -388,7 +388,7 @@
       "last_updated": "2026-03-30 (Last-Modified); path dir 2026-03",
       "vendor_name": "",
       "evidence": "https://www.tuftsmedicine.org/get-care/cost-estimate",
-      "notes": "EIN 042103590. Single file covers Lowell General main campus AND Saints Campus. Zipped CSV. HEAD verified HTTP 200 application/zip."
+      "notes": "EIN 042103590. Single file covers Lowell General main campus AND Saints Campus. Zipped CSV. HEAD verified HTTP 200 application/zip. | tuftsmedicine.org WAF returns 403 to automated fetch (verified 2026-08-22). SOURCE_BLOCKED; retryable with browser UA."
     },
     {
       "ccn": "220065",
@@ -430,7 +430,7 @@
       "system": "Tufts Medicine",
       "region": "Greater Boston",
       "city": "Melrose",
-      "status": "MRF_FOUND",
+      "status": "SOURCE_BLOCKED",
       "format": "zip",
       "mrf_url": "https://www.tuftsmedicine.org/sites/default/files/2026-03/042767880_melrosewakefieldhealthcare_standardcharges.csv.zip",
       "transparency_page_url": "https://www.tuftsmedicine.org/get-care/cost-estimate",
@@ -439,7 +439,7 @@
       "last_updated": "2026-03-30 (Last-Modified); path dir 2026-03",
       "vendor_name": "",
       "evidence": "https://www.tuftsmedicine.org/get-care/cost-estimate",
-      "notes": "EIN 042767880. Single file covers MelroseWakefield Hospital Campus AND Lawrence Memorial Hospital Campus. Zipped CSV. HEAD verified HTTP 200 application/zip."
+      "notes": "EIN 042767880. Single file covers MelroseWakefield Hospital Campus AND Lawrence Memorial Hospital Campus. Zipped CSV. HEAD verified HTTP 200 application/zip. | tuftsmedicine.org WAF returns 403 to automated fetch (verified 2026-08-22). SOURCE_BLOCKED; retryable with browser UA."
     },
     {
       "ccn": "220071",
@@ -719,7 +719,7 @@
       "system": "Tufts Medicine",
       "region": "Greater Boston",
       "city": "Boston",
-      "status": "MRF_FOUND",
+      "status": "SOURCE_BLOCKED",
       "format": "zip",
       "mrf_url": "https://www.tuftsmedicine.org/sites/default/files/2026-03/043400617_tuftsmedicalcenter_standardcharges.csv.zip",
       "transparency_page_url": "https://www.tuftsmedicine.org/get-care/cost-estimate",
@@ -728,7 +728,7 @@
       "last_updated": "2026-03-30 (Last-Modified); path dir 2026-03",
       "vendor_name": "",
       "evidence": "https://www.tuftsmedicine.org/get-care/cost-estimate",
-      "notes": "EIN 043400617. Zipped CSV. HEAD verified HTTP 200 application/zip."
+      "notes": "EIN 043400617. Zipped CSV. HEAD verified HTTP 200 application/zip. | tuftsmedicine.org WAF returns 403 to automated fetch (verified 2026-08-22). SOURCE_BLOCKED; retryable with browser UA."
     },
     {
       "ccn": "220119",
