@@ -414,6 +414,23 @@ def import_price_source(
                     if any(value < 0 for value in values):
                         raise ValueError("negative price")
 
+                    # Resolve the billing code + procedure mapping BEFORE building the
+                    # record, so a mapped-only import can skip non-canonical rows without
+                    # any write. Same resolution reused for PriceServiceCode + mapping below.
+                    system = _code_system(row["code_type"])
+                    resolved_code = code
+                    if system in ("CDM", "UNKNOWN"):
+                        crosswalk_result = apply_cdm_crosswalk(code, system, description)
+                        if crosswalk_result:
+                            resolved_code, system, _cdm_conf = crosswalk_result
+                    mapping = caches.lookup_code(system, resolved_code)
+                    if settings.hospital_price_import_mapped_only and not mapping:
+                        # This row can never become a published summary (rebuild publishes
+                        # only reviewed exact_approved_code mappings), so skip it entirely —
+                        # no record, code, candidate, anomaly, or rate detail. No published
+                        # price is affected; import volume drops by orders of magnitude.
+                        continue
+
                     # Pre-assign UUID so children can reference it without flush
                     rec_uuid = uuid.uuid4()
                     normalized_desc = caches.normalize_description(description)
@@ -444,14 +461,7 @@ def import_price_source(
                     summary.records_normalized += 1
                     profiler.record_insert()
 
-                    system = _code_system(row["code_type"])
-                    resolved_code = code
-                    # CDM crosswalk: attempt to resolve CDM/UNKNOWN codes
-                    if system in ("CDM", "UNKNOWN"):
-                        crosswalk_result = apply_cdm_crosswalk(code, system, description)
-                        if crosswalk_result:
-                            resolved_code, system, _cdm_conf = crosswalk_result
-
+                    # system + resolved_code already resolved above (before the record)
                     batch.codes.append(
                         PriceServiceCode(
                             hospital_price_record_id=rec_uuid,
@@ -469,8 +479,7 @@ def import_price_source(
                     )
                     summary.codes += 1
 
-                    # Procedure mapping via in-memory cache
-                    mapping = caches.lookup_code(system, resolved_code)
+                    # Procedure mapping (resolved above, before the record was built)
                     if mapping:
                         procedure_id, mapping_id = mapping
                         batch.mappings.append(

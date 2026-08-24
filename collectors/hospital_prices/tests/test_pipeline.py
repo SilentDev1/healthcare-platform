@@ -246,3 +246,45 @@ def test_txt_extraction_ignores_non_mrf_urls() -> None:
     )
     assert len(urls) == 2
     assert all(url.startswith("https://example.test/") for url in urls)
+
+def test_import_mapped_only_drops_unmapped_rows_but_preserves_published_prices(
+    monkeypatch,
+) -> None:
+    """mapped_only import must skip rows with no canonical mapping (huge volume win)
+    while publishing the EXACT same summaries — rebuild only ever used mapped rows."""
+    from collectors.hospital_prices.config import hospital_price_settings
+    from packages.database import PriceRecordProcedureMapping
+
+    settings_dir = Path("data/fixtures/hospital_prices")
+
+    def _run() -> tuple[int, int, int]:
+        engine = create_engine("sqlite://")
+        Base.metadata.create_all(engine)
+        with Session(engine) as session:
+            _seed_facilities(session)
+            seed_catalog(session)
+            session.commit()
+            summary = run_fixture_pipeline(session, settings_dir)
+            recs = session.scalar(select(func.count(HospitalPriceRecord.id)))
+            # Reviewed exact-approved-code mappings are exactly what rebuild publishes from.
+            maps = session.scalar(
+                select(func.count(PriceRecordProcedureMapping.id)).where(
+                    PriceRecordProcedureMapping.reviewed.is_(True)
+                )
+            )
+            norm = summary.records_normalized
+        engine.dispose()
+        return norm, recs, maps
+
+    full_norm, full_recs, full_maps = _run()
+    monkeypatch.setattr(hospital_price_settings, "hospital_price_import_mapped_only", True)
+    mo_norm, mo_recs, mo_maps = _run()
+
+    # Unmapped rows are skipped entirely at import (huge volume reduction).
+    assert mo_recs < full_recs
+    assert mo_norm < full_norm
+    # But every publishable mapping survives — no price is lost.
+    assert mo_maps == full_maps
+    assert full_maps > 0
+    # In mapped-only mode every persisted record carries a publishable mapping.
+    assert mo_recs == mo_maps

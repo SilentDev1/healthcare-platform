@@ -44,6 +44,17 @@ class HospitalPriceSettings(BaseSettings):
     # large MRFs across several runs well before a platform task timeout hard-kills
     # the process. Never re-imports already-committed rows.
     hospital_price_import_soft_deadline_seconds: int = Field(0, ge=0)
+    # When True, the importer persists ONLY rows whose billing code resolves to an
+    # exact approved-code procedure mapping (the only rows that ever become published
+    # summaries — see projections.rebuild_price_summaries, which publishes solely
+    # reviewed exact_approved_code mappings). Non-matching rows (the 99%+ of an all-payer
+    # MRF that map to no canonical procedure) are skipped entirely — no record, code,
+    # candidate, anomaly, or rate detail is written. This drops per-hospital import volume
+    # by orders of magnitude (e.g. a 4.58M-row NYC file → a few thousand publishable rows)
+    # WITHOUT changing any published price: rebuild only ever used mapped rows. Default
+    # False preserves the full-fidelity behavior NH/MA imported under (which also retains
+    # candidates for procedure-catalog review). Enabled for large-market ingestion (NY).
+    hospital_price_import_mapped_only: bool = False
 
 
 hospital_price_settings = HospitalPriceSettings()
