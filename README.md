@@ -9,6 +9,7 @@ site.
 The product is currently a New Hampshire private beta. Its core search, price browsing,
 facility detail, and comparison flows are anonymous and free—an account is not required.
 
+
 ## Local development
 
 Prerequisites: Docker Desktop, Python 3.12+, [`uv`](https://docs.astral.sh/uv/), Node.js

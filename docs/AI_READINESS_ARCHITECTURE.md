@@ -75,5 +75,5 @@ price, a distance, a savings number, a network claim, or an image.
 
 ## 5. Provider note
 
-When the assistant is built, follow the Anthropic/Claude API guidance for model
+When the assistant is built, follow the chosen LLM provider's API guidance for model
 choice, tool use, and caching. Not part of this phase.

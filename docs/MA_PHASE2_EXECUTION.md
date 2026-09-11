@@ -97,7 +97,7 @@ MRFs in one job is too much. It left partial, summary-less (invisible) records +
 Each large academic MRF (UMass 756 MB, Baystate 444 MB, BWH, BMC) is a **30–60 min isolated ingestion job**;
 Cloud Run jobs cap at 2 hr. So pricing all 53 is inherently **sequential, multi-session** work — done in
 **small waves with large hospitals one-per-job**, gating (safety + fp) after each. Exact per-wave commands +
-the wave-B/remaining CCN list are in `CLAUDE_HANDOFF.md` (machine-actionable resume point). Job image `ma-scale4`.
+the wave-B/remaining CCN list are tracked in the internal ops notes (machine-actionable resume point). Job image `ma-scale4`.
 
 ## Phase-2 status: PARTIAL (safe, proven, ongoing)
 
